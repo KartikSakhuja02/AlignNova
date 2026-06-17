@@ -1,0 +1,331 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>AlignNova | Loading Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#dee8ff",
+                        "on-tertiary-container": "#ffd4a4",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-variant": "#d8e3fb",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-secondary-fixed": "#002113",
+                        "tertiary": "#684000",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-surface-variant": "#464555",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "on-primary-fixed": "#0f0069",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-primary-container": "#dad7ff",
+                        "inverse-surface": "#263143",
+                        "surface-container": "#e7eeff",
+                        "outline-variant": "#c7c4d8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "background": "#f9f9ff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#c3c0ff",
+                        "surface": "#f9f9ff",
+                        "primary-container": "#4f46e5",
+                        "outline": "#777587",
+                        "surface-tint": "#4d44e3",
+                        "on-surface": "#111c2d",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-dim": "#cfdaf2",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed": "#e2dfff",
+                        "secondary-container": "#6cf8bb",
+                        "secondary": "#006c49",
+                        "primary": "#3525cd",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#00714d",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-background": "#111c2d",
+                        "tertiary-container": "#885500"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "p-lg": "2rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1280px",
+                        "p-sm": "1rem",
+                        "p-md": "1.5rem",
+                        "margin-page": "2rem",
+                        "p-xl": "3rem"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "caption": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Sidebar Shell -->
+<aside class="flex flex-col h-full p-p-md fixed left-0 top-0 z-40 bg-surface border-r border-outline-variant/30 w-72 hidden md:flex">
+<div class="mb-10 px-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<div>
+<h1 class="font-display-lg text-display-lg font-black text-primary !text-[20px] leading-none">AlignNova</h1>
+<p class="font-label-md text-label-md text-on-surface-variant opacity-70">Placement Portal</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-2">
+<div class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<div class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200">
+<span class="material-symbols-outlined">work</span>
+<span class="font-label-md text-label-md">Drives</span>
+</div>
+<div class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Applications</span>
+</div>
+<!-- Active Navigation - Profile -->
+<div class="bg-primary-container text-on-primary-container font-bold rounded-xl flex items-center gap-3 px-4 py-3 cursor-pointer transition-all active:scale-98">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</div>
+<div class="text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+</nav>
+<div class="mt-auto p-4 bg-surface-container-low rounded-2xl border border-outline-variant/20">
+<p class="font-label-md text-label-md text-primary font-bold mb-2">New Opportunities</p>
+<p class="text-[12px] text-on-surface-variant mb-4">48 companies are actively recruiting this week.</p>
+<button class="w-full py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md hover:scale-[1.01] transition-transform">View New Jobs</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-72 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-p-lg h-20 sticky top-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative max-w-md w-full hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 font-body-md text-body-md focus:ring-2 focus:ring-primary/20" placeholder="Search internships, skills, companies..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all text-on-surface-variant cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-all text-on-surface-variant cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full bg-slate-200 skeleton-shimmer border border-outline-variant/30"></div>
+</div>
+</header>
+<!-- Profile Canvas -->
+<div class="flex-1 p-p-lg md:p-p-xl max-w-7xl mx-auto w-full space-y-8 overflow-hidden">
+<!-- Header Skeleton Card -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg shadow-sm">
+<div class="flex flex-col md:flex-row gap-8 items-start md:items-center">
+<div class="w-32 h-32 rounded-3xl skeleton-shimmer shrink-0"></div>
+<div class="flex-1 space-y-4 w-full">
+<div class="h-8 w-1/3 skeleton-shimmer rounded-lg"></div>
+<div class="h-4 w-1/4 skeleton-shimmer rounded-md"></div>
+<div class="flex gap-4 pt-2">
+<div class="h-10 w-32 skeleton-shimmer rounded-xl"></div>
+<div class="h-10 w-32 skeleton-shimmer rounded-xl"></div>
+</div>
+</div>
+<div class="hidden md:block space-y-2 text-right">
+<div class="h-4 w-32 skeleton-shimmer rounded ml-auto"></div>
+<div class="h-4 w-24 skeleton-shimmer rounded ml-auto"></div>
+</div>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Experience & Education -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Experience Section -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg">
+<div class="flex justify-between items-center mb-8">
+<div class="h-6 w-40 skeleton-shimmer rounded"></div>
+<div class="h-8 w-8 skeleton-shimmer rounded-full"></div>
+</div>
+<div class="space-y-10">
+<!-- Experience Item 1 -->
+<div class="flex gap-6">
+<div class="w-14 h-14 rounded-xl skeleton-shimmer shrink-0"></div>
+<div class="flex-1 space-y-3">
+<div class="h-5 w-2/5 skeleton-shimmer rounded"></div>
+<div class="h-4 w-1/4 skeleton-shimmer rounded"></div>
+<div class="h-4 w-full skeleton-shimmer rounded"></div>
+<div class="h-4 w-3/4 skeleton-shimmer rounded"></div>
+</div>
+</div>
+<!-- Experience Item 2 -->
+<div class="flex gap-6">
+<div class="w-14 h-14 rounded-xl skeleton-shimmer shrink-0"></div>
+<div class="flex-1 space-y-3">
+<div class="h-5 w-1/3 skeleton-shimmer rounded"></div>
+<div class="h-4 w-1/5 skeleton-shimmer rounded"></div>
+<div class="h-4 w-5/6 skeleton-shimmer rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Education Section -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg">
+<div class="flex justify-between items-center mb-8">
+<div class="h-6 w-32 skeleton-shimmer rounded"></div>
+<div class="h-8 w-8 skeleton-shimmer rounded-full"></div>
+</div>
+<div class="space-y-8">
+<div class="flex gap-6">
+<div class="w-14 h-14 rounded-xl skeleton-shimmer shrink-0"></div>
+<div class="flex-1 space-y-3">
+<div class="h-5 w-1/2 skeleton-shimmer rounded"></div>
+<div class="h-4 w-1/4 skeleton-shimmer rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Skills & Details -->
+<div class="space-y-8">
+<!-- Skills Chip Cloud -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg">
+<div class="h-6 w-24 skeleton-shimmer rounded mb-6"></div>
+<div class="flex flex-wrap gap-2">
+<div class="h-8 w-20 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-24 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-16 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-28 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-20 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-24 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-14 skeleton-shimmer rounded-full"></div>
+<div class="h-8 w-22 skeleton-shimmer rounded-full"></div>
+</div>
+</div>
+<!-- Profile Completeness / Stats -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg">
+<div class="h-6 w-48 skeleton-shimmer rounded mb-6"></div>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-full border-4 border-slate-100 border-t-slate-200 skeleton-shimmer"></div>
+<div class="flex-1">
+<div class="h-4 w-3/4 skeleton-shimmer rounded"></div>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-outline-variant/20">
+<div class="flex justify-between">
+<div class="h-4 w-20 skeleton-shimmer rounded"></div>
+<div class="h-4 w-10 skeleton-shimmer rounded"></div>
+</div>
+<div class="flex justify-between">
+<div class="h-4 w-24 skeleton-shimmer rounded"></div>
+<div class="h-4 w-12 skeleton-shimmer rounded"></div>
+</div>
+</div>
+</div>
+<!-- Languages -->
+<div class="bg-surface rounded-2xl border border-outline-variant/30 p-p-lg">
+<div class="h-6 w-32 skeleton-shimmer rounded mb-6"></div>
+<div class="space-y-4">
+<div class="h-5 w-full skeleton-shimmer rounded"></div>
+<div class="h-5 w-5/6 skeleton-shimmer rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Footer for mobile nav visibility simulation if needed -->
+<div class="md:hidden sticky bottom-0 w-full bg-surface/90 backdrop-blur-lg border-t border-outline-variant/30 flex justify-around py-4 z-50">
+<span class="material-symbols-outlined text-on-surface-variant">dashboard</span>
+<span class="material-symbols-outlined text-on-surface-variant">work</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</div>
+</main>
+<script>
+        // Simple script to toggle dark mode for previewing if needed
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Simulating the loading state finishing
+        window.addEventListener('load', () => {
+            console.log('Skeleton screen initialized. Simulating fetching process...');
+            // In a real app, this is where you'd fetch data and replace components
+        });
+    </script>
+</body></html>
