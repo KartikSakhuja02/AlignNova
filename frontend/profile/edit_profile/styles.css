@@ -1,0 +1,33 @@
+/* ============================================
+   AlignNova - styles.css
+   Custom styles on top of Tailwind CSS
+   ============================================ */
+
+/* Material Symbols icon rendering */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Filled variant for active/selected icons */
+.fill-icon {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Base body font */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #f9f9ff;
+}
+
+/* Glassmorphism header utility */
+.glass-header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Custom focus ring for all form inputs */
+.input-focus-ring:focus {
+  outline: none;
+  border-color: #3525cd;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}

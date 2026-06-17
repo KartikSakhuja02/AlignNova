@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Profile | Alignova Executive Precision</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Config -->
+  <script src="tailwind.config.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="font-body-md text-body-md">
+
+  <!-- Sidebar -->
+  <aside class="bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 border-r border-outline-variant shadow-sm z-50 flex flex-col p-md">
+    <div class="mb-10">
+      <h1 class="font-headline-md text-headline-md font-bold text-primary">AlignNova</h1>
+      <p class="text-on-surface-variant font-label-md text-label-md uppercase tracking-widest opacity-60">&nbsp;&nbsp;</p>
+    </div>
+    <nav class="flex-1 space-y-2">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+        <span class="material-symbols-outlined">dashboard</span>
+        <span class="font-label-md text-label-md">Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+        <span class="material-symbols-outlined">work</span>
+        <span class="font-label-md text-label-md">Drives</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+        <span class="material-symbols-outlined">assignment_turned_in</span>
+        <span class="font-label-md text-label-md">Applications</span>
+      </a>
+      <!-- Active: Profile -->
+      <a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="#">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+        <span class="font-label-md text-label-md">Profile</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+        <span class="material-symbols-outlined">settings</span>
+        <span class="font-label-md text-label-md">Settings</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant"></div>
+  </aside>
+
+  <!-- Top App Bar -->
+  <header class="fixed top-0 right-0 left-64 h-20 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-p-lg">
+    <div class="flex items-center bg-surface-container-low rounded-full px-4 py-2 w-96 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+      <span class="material-symbols-outlined text-outline">search</span>
+      <input class="bg-transparent border-none focus:ring-0 text-body-md w-full ml-2" placeholder="Search opportunities..." type="text">
+    </div>
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-4">
+        <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+        <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">help</span></button>
+        <button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">sync_alt</span></button>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
+        <img alt="Alex Rivera" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXCEVOuawOTdLs1navn2d75UpL5fUUOQmi_1vV91Cw4FYIOQosWf5YjpgPfg5_BkZADq0xYzzdKK10DJCzbuVuRckLDjozrFYH11tC0i1VugCaHi3zsi-rhoBb86JcG5JOkR5HYzBMfGzVRftm9K1X-Gt3W16ygKyC2xm_90s3fRlqtb5BnU5sE13l2xLdRCiNPC33VUNN8M52Cxu0hkAJxvwhLYWXm3tMRSWrBlA2s9dKRqXqNHQ4In0TVZd3sM9BMVW_pvNhSdY">
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="ml-64 pt-20 p-p-lg profile-mesh min-h-screen">
+    <div class="max-w-[1200px] mx-auto pb-24">
+
+      <!-- Profile Header -->
+      <section class="mb-12">
+        <div class="card-elevated rounded-2xl p-p-lg flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full"></div>
+          <div class="w-40 h-40 rounded-2xl overflow-hidden border-4 border-surface-container-low shadow-sm flex-shrink-0">
+            <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjyte09l6ApNxry136O0ZUg1NWYCHl_-IbfLQCWZbibWugYL3pUDOul_zL1J_xOuiGwPOAFPbYDvgCTmXIapLFLq_pTAwL0s_gnD_WBGgdch0o09hadNfrysII8rtuFXJbw4oxWgXPCiwffUzg1yK_rOVqkh6mM4Eg_DSX2I27OMZa4W_PJQ_IYRb3nFaGwwHwyr-F34-iBXFexH6sPGqFkBCd750KLbiSUgG5lH2l1epBrfsyhk1CzX24tZIcYotwOEFm2fSQtbN8">
+          </div>
+          <div class="text-center md:text-left flex-1">
+            <div class="flex flex-col md:flex-row md:items-end gap-3 mb-2">
+              <h2 class="font-headline-lg text-headline-lg text-on-surface">Alex Rivera</h2>
+              <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md mb-1">Actively Seeking</span>
+            </div>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-4">Computer Science &amp; Data Analytics @ Stanford University</p>
+            <div class="flex flex-wrap gap-6 text-outline">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                <span class="font-label-md">Palo Alto, CA</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">mail</span>
+                <span class="font-label-md">a.rivera@stanford.edu</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">link</span>
+                <span class="font-label-md">linkedin.com/in/alexrivera</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-3">
+            <button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined">share</span> Share Portfolio
+            </button>
+            <button class="border border-outline-variant text-on-surface-variant px-8 py-3 rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+              Edit Profile
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bento Grid -->
+      <div class="bento-grid">
+
+        <!-- Education & Experience Column -->
+        <div class="col-span-12 lg:col-span-8 space-y-6">
+
+          <!-- Education -->
+          <section class="card-elevated rounded-2xl p-p-lg">
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">school</span> Education
+              </h3>
+            </div>
+            <div class="space-y-8">
+              <div class="flex gap-6 relative">
+                <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                  <span class="material-symbols-outlined text-primary">account_balance</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-body-lg text-body-lg font-bold">Stanford University</h4>
+                    <span class="text-outline font-label-md">2021 — 2025</span>
+                  </div>
+                  <p class="text-primary font-label-md mb-2">B.S. in Computer Science, Minor in Economics</p>
+                  <p class="text-on-surface-variant">GPA: 3.92/4.00. Focus on Distributed Systems and Machine Learning. Relevant coursework includes Algorithm Design, Data Mining, and Quantitative Finance.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Experience -->
+          <section class="card-elevated rounded-2xl p-p-lg">
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary">work_history</span> Experience
+              </h3>
+            </div>
+            <div class="space-y-10">
+
+              <!-- Job 1 -->
+              <div class="flex gap-6">
+                <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                  <span class="material-symbols-outlined text-primary">code</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-body-lg text-body-lg font-bold">Software Engineer Intern</h4>
+                    <span class="text-outline font-label-md">Jun 2023 — Aug 2023</span>
+                  </div>
+                  <p class="text-primary font-label-md mb-2">Google Cloud Platform (GCP)</p>
+                  <ul class="text-on-surface-variant list-disc ml-4 space-y-2">
+                    <li>Optimized latency for internal observability dashboards by 15% using Go and gRPC.</li>
+                    <li>Implemented a high-throughput data pipeline using Apache Kafka for real-time log analysis.</li>
+                    <li>Collaborated with cross-functional teams to deploy containerized microservices via Kubernetes.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Job 2 -->
+              <div class="flex gap-6">
+                <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                  <span class="material-symbols-outlined text-primary">analytics</span>
+                </div>
+                <div class="flex-1">
+                  <div class="flex justify-between items-start mb-1">
+                    <h4 class="font-body-lg text-body-lg font-bold">Data Science Research Assistant</h4>
+                    <span class="text-outline font-label-md">Sep 2022 — May 2023</span>
+                  </div>
+                  <p class="text-primary font-label-md mb-2">Stanford AI Lab</p>
+                  <p class="text-on-surface-variant">Developed predictive models for urban traffic flow using Python and TensorFlow. Processed large-scale sensor data representing over 10M distinct events.</p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+        </div>
+
+        <!-- Skills & Resume Column -->
+        <div class="col-span-12 lg:col-span-4 space-y-6">
+
+          <!-- Skills -->
+          <section class="card-elevated rounded-2xl p-p-lg">
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-6">Expertise</h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">Python</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">Java</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">C++</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">TypeScript</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">React.js</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">Kubernetes</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">SQL</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">PyTorch</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">AWS</span>
+              <span class="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 font-label-md">Git</span>
+            </div>
+          </section>
+
+          <!-- Resume -->
+          <section class="card-elevated rounded-2xl p-p-lg bg-primary text-on-primary">
+            <h3 class="font-headline-md text-headline-md mb-4">Official Resume</h3>
+            <p class="opacity-80 mb-6 text-body-md">Last updated: Oct 24, 2023. Version 4.2 (ATS Optimized)</p>
+            <div class="space-y-3">
+              <button class="w-full bg-white text-primary py-3 rounded-xl font-label-md flex items-center justify-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">
+                <span class="material-symbols-outlined">download</span> Download PDF
+              </button>
+              <button class="w-full bg-primary-container text-on-primary-container border border-white/20 py-3 rounded-xl font-label-md flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
+                <span class="material-symbols-outlined">upload</span> Update Resume
+              </button>
+            </div>
+          </section>
+
+          <!-- Languages -->
+          <section class="card-elevated rounded-2xl p-p-lg">
+            <h3 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-4">Languages</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="font-body-md">English</span>
+                <span class="text-secondary font-label-md">Native</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-body-md">Spanish</span>
+                <span class="text-secondary font-label-md">Fluent</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="font-body-md">Mandarin</span>
+                <span class="text-outline font-label-md">Basic</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Projects Section -->
+        <section class="col-span-12 card-elevated rounded-2xl p-p-lg">
+          <div class="flex items-center justify-between mb-8">
+            <h3 class="font-headline-md text-headline-md text-on-surface">Key Projects</h3>
+            <a class="text-primary font-label-md flex items-center gap-1 hover:underline" href="#">View GitHub <span class="material-symbols-outlined text-[18px]">open_in_new</span></a>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Project 1 -->
+            <div class="border border-outline-variant rounded-2xl p-6 hover:border-primary transition-colors group">
+              <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <span class="material-symbols-outlined">database</span>
+              </div>
+              <h4 class="font-body-lg font-bold mb-2">Distributed Ledger System</h4>
+              <p class="text-on-surface-variant text-body-md mb-4 line-clamp-2">A high-performance blockchain implementation focused on consensus efficiency in low-latency networks.</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="text-[12px] font-bold text-outline uppercase">Go</span>
+                <span class="text-[12px] font-bold text-outline uppercase">Docker</span>
+                <span class="text-[12px] font-bold text-outline uppercase">gRPC</span>
+              </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="border border-outline-variant rounded-2xl p-6 hover:border-primary transition-colors group">
+              <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <span class="material-symbols-outlined">smart_toy</span>
+              </div>
+              <h4 class="font-body-lg font-bold mb-2">Algorithmic Trade Bot</h4>
+              <p class="text-on-surface-variant text-body-md mb-4 line-clamp-2">Quantitative trading engine that utilizes sentiment analysis on social media feeds to predict crypto volatility.</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="text-[12px] font-bold text-outline uppercase">Python</span>
+                <span class="text-[12px] font-bold text-outline uppercase">Pandas</span>
+                <span class="text-[12px] font-bold text-outline uppercase">NLTK</span>
+              </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="border border-outline-variant rounded-2xl p-6 hover:border-primary transition-colors group">
+              <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <h4 class="font-body-lg font-bold mb-2">HealthTrack AI</h4>
+              <p class="text-on-surface-variant text-body-md mb-4 line-clamp-2">Deep learning model for early detection of diabetic retinopathy using retinal scans.</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="text-[12px] font-bold text-outline uppercase">PyTorch</span>
+                <span class="text-[12px] font-bold text-outline uppercase">Scikit-learn</span>
+                <span class="text-[12px] font-bold text-outline uppercase">FastAPI</span>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
