@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -12,8 +13,8 @@ from pydantic import BaseModel
 import hashlib
 import os
 
-from backend.database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
-from backend.models import UserPublic
+from database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse
 
 load_dotenv()
@@ -23,9 +24,13 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 app = FastAPI(title="AlignNova")
+main = app
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-templates = Jinja2Templates(directory="frontend")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+
+templates = Jinja2Templates(directory=FRONTEND_DIR)
 
 
 @app.on_event("startup")
@@ -44,7 +49,7 @@ def on_startup():
         pass
 
 # Serve frontend static files under /frontend
-app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
@@ -254,7 +259,7 @@ def get_applications(request: Request):
     if not user:
         raise HTTPException(status_code=404, detail='user_not_found')
     
-    from backend.database import SessionLocal, Application, Drive, User
+    from database import SessionLocal, Application, Drive, User
     with SessionLocal() as db:
         if role == 'admin':
             results = []
@@ -311,7 +316,7 @@ def update_app_status(app_id: int, payload: dict, request: Request):
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
     
-    from backend.database import SessionLocal, Application
+    from database import SessionLocal, Application
     with SessionLocal() as db:
         app_entry = db.query(Application).filter(Application.id == app_id).first()
         if not app_entry:
