@@ -13,7 +13,7 @@ from pydantic import BaseModel
 import hashlib
 import os
 
-from backend.database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications
 from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse
 
@@ -130,6 +130,22 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=401, detail="invalid_credentials")
     token = create_access_token({"sub": user["username"], "role": user.get("role")})
     return {"access_token": token, "token_type": "bearer", "role": user.get("role")}
+
+
+@app.post('/api/signup')
+def signup(data: SignupData):
+    existing = get_user(data.username)
+    if existing:
+        raise HTTPException(status_code=400, detail='username_taken')
+    if data.email and get_user_by_email(data.email):
+        raise HTTPException(status_code=400, detail='email_taken')
+    hashed = hash_password(data.password)
+    try:
+        user = create_user(data.username, hashed, role=data.role, full_name=data.full_name, email=data.email, phone=data.phone)
+    except ValueError:
+        raise HTTPException(status_code=400, detail='username_taken')
+    token = create_access_token({'sub': user['username'], 'role': user.get('role')})
+    return {'access_token': token, 'token_type': 'bearer', 'role': user.get('role')}
 
 
 def get_current_user_from_token(token: str) -> UserPublic:
@@ -332,39 +348,39 @@ def update_app_status(app_id: int, payload: dict, request: Request):
 def root(request: Request):
     user = get_optional_user(request)
     if user and user.role == 'admin':
-        return RedirectResponse('/frontend/admin_dashboard/index.html')
+        return RedirectResponse('/frontend/application_dashboard.html')
     if user:
-        return RedirectResponse('/frontend/students_dashboard/index.html')
-    return RedirectResponse('/frontend/signin/signin_page/index.html')
+        return RedirectResponse('/frontend/student_dashboard.html')
+    return RedirectResponse('/frontend/signin.html')
 
 
 @app.get('/signin')
 def signin_route():
-    return RedirectResponse('/frontend/signin/signin_page/index.html')
+    return RedirectResponse('/frontend/signin.html')
 
 
 @app.get('/drives')
 def drives_route():
-    return RedirectResponse('/frontend/drives_dashboard/index.html')
+    return RedirectResponse('/frontend/drives_dashboard.html')
 
 
 @app.get('/applications')
 def applications_route():
-    return RedirectResponse('/frontend/applications_dashboard/index.html')
+    return RedirectResponse('/frontend/application_dashboard.html')
 
 
 @app.get('/admin')
 def admin_route(request: Request):
     user = get_optional_user(request)
     if not user or user.role != 'admin':
-        return RedirectResponse('/frontend/signin/signin_page/index.html')
-    return RedirectResponse('/frontend/admin_dashboard/index.html')
+        return RedirectResponse('/frontend/signin.html')
+    return RedirectResponse('/frontend/application_dashboard.html')
 
 
 @app.get('/profile')
 def profile_route(request: Request):
     user = get_optional_user(request)
     if not user:
-        return RedirectResponse('/frontend/signin/signin_page/index.html')
-    return RedirectResponse('/frontend/profile/profile_dashboard/index.html')
+        return RedirectResponse('/frontend/signin.html')
+    return RedirectResponse('/frontend/profile.html')
 

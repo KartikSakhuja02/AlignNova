@@ -69,6 +69,22 @@ def get_user(username: str):
         }
 
 
+def get_user_by_email(email: str):
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            return None
+        return {
+            "username": user.username,
+            "hashed_password": user.hashed_password,
+            "role": user.role,
+            "full_name": user.full_name,
+            "email": user.email,
+            "phone": user.phone,
+            "id": user.id,
+        }
+
+
 def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
