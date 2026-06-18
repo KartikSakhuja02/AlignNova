@@ -13,8 +13,8 @@ from pydantic import BaseModel
 import hashlib
 import os
 
-from database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
-from models import UserPublic
+from backend.database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse
 
 load_dotenv()
@@ -259,7 +259,7 @@ def get_applications(request: Request):
     if not user:
         raise HTTPException(status_code=404, detail='user_not_found')
     
-    from database import SessionLocal, Application, Drive, User
+    from backend.database import SessionLocal, Application, Drive, User
     with SessionLocal() as db:
         if role == 'admin':
             results = []
@@ -316,7 +316,7 @@ def update_app_status(app_id: int, payload: dict, request: Request):
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
     
-    from database import SessionLocal, Application
+    from backend.database import SessionLocal, Application
     with SessionLocal() as db:
         app_entry = db.query(Application).filter(Application.id == app_id).first()
         if not app_entry:
