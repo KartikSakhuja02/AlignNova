@@ -1,48 +1,149 @@
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Drives | Alignova Executive Precision</title>
- 
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet">
-<script id="tailwind-config" src="tailwind-config.js"></script>
-<link rel="stylesheet" href="styles.css">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#ffd4a4",
+                        "outline": "#777587",
+                        "secondary": "#006c49",
+                        "tertiary-fixed": "#ffddb8",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#e7eeff",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-primary-fixed": "#0f0069",
+                        "inverse-primary": "#c3c0ff",
+                        "inverse-on-surface": "#ecf1ff",
+                        "inverse-surface": "#263143",
+                        "surface-tint": "#4d44e3",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "background": "#f9f9ff",
+                        "on-surface-variant": "#464555",
+                        "primary-container": "#4f46e5",
+                        "on-primary-container": "#dad7ff",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#c7c4d8",
+                        "on-background": "#111c2d",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#885500",
+                        "tertiary": "#684000",
+                        "surface-container-low": "#f0f3ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-dim": "#cfdaf2",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#4edea3",
+                        "secondary-container": "#6cf8bb",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-fixed": "#002113",
+                        "on-secondary-container": "#00714d",
+                        "surface": "#f9f9ff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d8e3fb",
+                        "on-surface": "#111c2d",
+                        "primary": "#3525cd",
+                        "surface-container-high": "#dee8ff",
+                        "tertiary-fixed-dim": "#ffb95f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "p-xl": "3rem",
+                        "margin-page": "2rem",
+                        "container-max": "1280px",
+                        "p-sm": "1rem",
+                        "p-md": "1.5rem",
+                        "gutter": "1.5rem",
+                        "p-lg": "2rem"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Plus Jakarta Sans"],
+                        "caption": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid #F1F5F9;
+        }
+    </style>
 </head>
 <body class="bg-background text-on-surface">
 <!-- SideNavBar Anchor -->
 <aside class="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline shadow-sm flex flex-col p-md z-50" style="transform: translateY(0px);">
 <div class="mb-10">
-<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">AlignNova</h1>
-<p class="font-label-md text-label-md text-outline"><span class="" style="color: rgb(70, 69, 85); letter-spacing: 0.7px; background-color: rgb(249, 249, 255);">Placement Portal</span></p>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary">&nbsp; &nbsp;<div class="">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;AlignNova</div></h1>
+<p class="font-label-md text-label-md text-outline"><span class="" style="color: rgb(70, 69, 85); letter-spacing: 0.7px; background-color: rgb(249, 249, 255);">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Placement Portal</span></p>
 </div>
 <nav class="flex-1 space-y-2">
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="/frontend/students_dashboard/index.html">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="#">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-label-md text-label-md">Dashboard</span>
 </a>
 <!-- Active State: Drives -->
-<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-inverse-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="/frontend/drives_dashboard/index.html">
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-inverse-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="#">
 <span class="material-symbols-outlined">work</span>
 <span class="font-label-md text-label-md">Drives</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="/frontend/applications_dashboard/index.html">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="#">
 <span class="material-symbols-outlined">assignment_turned_in</span>
 <span class="font-label-md text-label-md">Applications</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="/frontend/profile/profile_dashboard/index.html">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="#">
 <span class="material-symbols-outlined">person</span>
 <span class="font-label-md text-label-md">Profile</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="/frontend/settings/index.html">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:text-primary hover:bg-surface-container-low dark:hover:bg-surface-variant transition-all duration-200 active:scale-95" href="#">
 <span class="material-symbols-outlined">settings</span>
 <span class="font-label-md text-label-md">Settings</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 transition-all duration-200 active:scale-95" href="#" id="logout-btn">
-<span class="material-symbols-outlined">logout</span>
-<span class="font-label-md text-label-md">Logout</span>
 </a>
 </nav>
 <div class="mt-auto p-4">
@@ -89,7 +190,7 @@
 <!-- Drives Bento Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
 <!-- Drive Card: Google -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col" style="transform: translateY(0px);">
 <div class="flex justify-between items-start mb-6">
 <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant p-2">
 <img alt="Google Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClOcfRkWYRRdnezHy2s5r2cYS6eXJBcY_lET5a7G6LehKSZsbqy11rFgPAGY2_RG8apHttXWn4Xquy50K5kATqs3y9ptBcHqEFFf5tP8YAHpthRNkLnAB4b1P4fbvig9KjpEGhmwmHnEP9Dlt7AV7_nmkxC_XhWLNxJalz2249SzrTxC4Vjh_Speofp9iyW87o3vRkN7tKuG-rKo9_geuSUgXvGfPhuGcgdZv06xxp9KJcejAYmk9Mxi1Lk-lRaQxID93WyaQmcZk">
@@ -120,7 +221,7 @@
 </div>
 </div>
 <!-- Drive Card: Stripe -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col" style="transform: translateY(0px);">
 <div class="flex justify-between items-start mb-6">
 <div class="w-14 h-14 rounded-xl bg-[#635BFF]/10 flex items-center justify-center border border-[#635BFF]/20 p-2">
 <img alt="Stripe Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvvIDD6_zQQ6Kgn2tsYHLu3g8aojCKBP0EZn2QqABdSUAQcENkumn8iaJD9tLuiEml83QCnYeCpc5C8-7FJL_MrQfC3Mo6lptPb_tH899b7v2ttkw9k9rqgk8iHDZbKynbMUzBTFeRrBNC8hBikXmJ2yM2YphSQwSbevds6_lFNN4aCkXge6EKjzuzMsITnDq8Yiq8P3XAWah92c5cNavDt_QGSqUd7Tg-283mxK8Wfl-57zKXLdKZmkDfcQG3LHcJoDxTRZhWGI4">
@@ -182,7 +283,7 @@
 </div>
 </div>
 <!-- Drive Card: Amazon -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col" style="transform: translateY(-4px);">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col" style="transform: translateY(0px);">
 <div class="flex justify-between items-start mb-6">
 <div class="w-14 h-14 rounded-xl bg-[#FF9900]/10 flex items-center justify-center border border-[#FF9900]/20 p-2">
 <img alt="Amazon Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl5kFgTRHWBieneCyd40apKBqyGDdIKFokX33rqoRKi_8j43Mcx4m4HuvJO6NZqKnMT9nddiXqm5_bFGgtm9bk9pWlSf2572RlNRiTAWS_Py_HNOUhbcIxObYy6YBRT4fg3DaUsgbeEH4VboQ9UgWi0oxDRdljFlPt5j_i-udRoA-y2apWoa5eZ9eeNZumyr8f9atB0rO2jp7tnq1WdHf1DUu4wgNfHAlLryvZZ6LP7bZNPFB6KYWLCXxsrXoOZtCCAbogR7nfCTU">
@@ -213,7 +314,7 @@
 </div>
 </div>
 <!-- Drive Card: Microsoft (Asymmetric sizing if needed) -->
-<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 flex flex-col" style="transform: translateY(0px);">
 <div class="flex justify-between items-start mb-6">
 <div class="w-14 h-14 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant p-2">
 <img alt="Microsoft Logo" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlArAEVo7czm_pf0a3pKC18-FBBdLe9LZL-agFlxgL_0IGuMaNcnOmMtkBjKRykaPugQ-pFBOi9zZ_VFag_Hnt46lhBj7lvdGe1gBIGOSnH15twcmQ2PJ4Z9dJsq0AthOe1sxio_OqDeDnEAq95p-t1fBrf9q8_L9MGF5fhX0oNOklkE_wkQ4HOiyIi8wg0GiRtgsxaAeN-ADVE-NgRlTiOt5RBoe4U4Veqq0ea8bE1d-tMoB6pR56leKoYwhuaoX-yO3_8EJOflY">
@@ -277,6 +378,21 @@
 <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
 </section>
 </main>
-<script src="script.js"></script>
-</body>
-</html>
+<script>
+        // Simple Micro-interaction for cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+
+
+
+
+
+</body></html>
