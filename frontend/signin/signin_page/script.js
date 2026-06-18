@@ -1,5 +1,5 @@
 // Form submission with loading/success micro-interaction
-document.getElementById('login-form').addEventListener('submit', function (e) {
+document.getElementById('login-form').addEventListener('submit', async function (e) {
   e.preventDefault();
   const btn = this.querySelector('button[type="submit"]');
   const originalContent = btn.innerHTML;
@@ -13,20 +13,37 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
     <span>Authenticating...</span>
   `;
 
-  setTimeout(() => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    const form = new URLSearchParams();
+    form.append('username', email);
+    form.append('password', password);
+    const res = await fetch('/api/login', { method: 'POST', body: form });
+    if (!res.ok) throw new Error('Invalid credentials');
+    const data = await res.json();
+    const token = data.access_token;
+    const role = data.role || 'patient';
+    // set cookie (simple, not httpOnly) for demo
+    document.cookie = `access_token=${token};path=/`;
+    // small success microinteraction then redirect
     btn.innerHTML = `
       <span class="material-symbols-outlined text-[20px]">check_circle</span>
       <span>Success</span>
     `;
     btn.classList.replace('bg-primary', 'bg-secondary');
-
     setTimeout(() => {
-      alert('Redirecting to dashboard...');
-      btn.disabled = false;
-      btn.innerHTML = originalContent;
-      btn.classList.replace('bg-secondary', 'bg-primary');
-    }, 1000);
-  }, 1500);
+      // redirect based on role
+      if (role === 'admin') location.href = '/frontend/admin_dashboard/index.html';
+      else location.href = '/frontend/students_dashboard/index.html';
+    }, 700);
+  } catch (err) {
+    alert('Login failed: ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = originalContent;
+    btn.classList.replace('bg-secondary', 'bg-primary');
+  }
 });
 
 // Subtle parallax effect on background blobs

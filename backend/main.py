@@ -1,0 +1,365 @@
+from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from dotenv import load_dotenv
+from pydantic import BaseModel
+import hashlib
+import os
+
+from backend.database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from backend.models import UserPublic
+from fastapi.responses import RedirectResponse, FileResponse
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+
+app = FastAPI(title="AlignNova")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+templates = Jinja2Templates(directory="frontend")
+
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
+    # seed demo users for presentation
+    try:
+        if not get_user("admin"):
+            create_user("admin", hash_password("adminpass"), role="admin", full_name="Administrator", email="admin@demo.local")
+    except Exception:
+        pass
+    try:
+        if not get_user("alice"):
+            create_user("alice", hash_password("alicepass"), role="patient", full_name="Alice Demo", email="alice@demo.local")
+    except Exception:
+        pass
+
+# Serve frontend static files under /frontend
+app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
+
+
+def _get_token_from_request(request: Request) -> Optional[str]:
+    # Prefer Authorization header, fall back to cookie named access_token
+    auth = request.headers.get('Authorization')
+    if auth:
+        parts = auth.split()
+        if len(parts) == 2 and parts[0].lower() == 'bearer':
+            return parts[1]
+    return request.cookies.get('access_token')
+
+
+def get_optional_user(request: Request) -> Optional[UserPublic]:
+    token = _get_token_from_request(request)
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        username = payload.get('sub')
+        if not username:
+            return None
+    except JWTError:
+        return None
+    user = get_user(username)
+    if not user:
+        return None
+    return UserPublic(username=user['username'], role=user.get('role', 'patient'), full_name=user.get('full_name'), email=user.get('email'), phone=user.get('phone'))
+
+
+def hash_password(password: str) -> str:
+    password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    plain_password = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+    to_encode.update({"exp": expire, "sub": data.get("sub"), "role": data.get("role")})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict:
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+class SignupData(BaseModel):
+    username: str
+    password: str
+    role: Optional[str] = "patient"
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+
+@app.post("/api/signup")
+def signup(data: SignupData):
+    existing = get_user(data.username)
+    if existing:
+        raise HTTPException(status_code=400, detail="username_taken")
+    hashed = hash_password(data.password)
+    try:
+        user = create_user(data.username, hashed, role=data.role, full_name=data.full_name, email=data.email, phone=data.phone)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="username_taken")
+    token = create_access_token({"sub": user["username"], "role": user.get("role")})
+    return {"access_token": token, "token_type": "bearer", "role": user.get("role")}
+
+
+@app.post("/api/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = get_user(form_data.username)
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="invalid_credentials")
+    token = create_access_token({"sub": user["username"], "role": user.get("role")})
+    return {"access_token": token, "token_type": "bearer", "role": user.get("role")}
+
+
+def get_current_user_from_token(token: str) -> UserPublic:
+    try:
+        payload = decode_token(token)
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="invalid_token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="invalid_token")
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=401, detail="user_not_found")
+    return UserPublic(username=user["username"], role=user.get("role", "patient"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"))
+
+
+@app.get("/api/me")
+def me(request: Request, authorization: Optional[str] = None):
+    # Accept Authorization header like: Bearer <token>
+    auth = request.headers.get("Authorization")
+    if not auth:
+        raise HTTPException(status_code=401, detail="missing_authorization")
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="invalid_authorization")
+    token = parts[1]
+    user = get_current_user_from_token(token)
+    return user.dict()
+
+
+@app.get('/api/profile')
+def get_profile(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    user = get_current_user_from_token(token)
+    return user.dict()
+
+
+@app.post('/api/profile')
+def post_profile(request: Request, payload: dict):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    updated = update_profile(username, full_name=payload.get('full_name'), email=payload.get('email'), phone=payload.get('phone'))
+    if not updated:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    return updated
+
+
+@app.post('/api/drives')
+def post_drive(request: Request, payload: dict):
+    # only admin may create drives
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    drive = create_drive(payload.get('company', ''), payload.get('role', ''), type=payload.get('type'), eligibility=payload.get('eligibility'), package=payload.get('package'), drive_date=payload.get('drive_date'))
+    return drive
+
+
+@app.get('/api/drives')
+def get_drives():
+    return list_drives()
+
+
+@app.post('/api/apply')
+def apply_drive(request: Request, payload: dict):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    app_entry = create_application(user_id=user['id'], drive_id=int(payload.get('drive_id')))
+    return app_entry
+
+
+@app.get('/api/applications')
+def get_applications(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    
+    from backend.database import SessionLocal, Application, Drive, User
+    with SessionLocal() as db:
+        if role == 'admin':
+            results = []
+            apps = db.query(Application).order_by(Application.created_at.desc()).all()
+            for app in apps:
+                d = db.query(Drive).filter(Drive.id == app.drive_id).first()
+                u = db.query(User).filter(User.id == app.user_id).first()
+                results.append({
+                    "id": app.id,
+                    "user_id": app.user_id,
+                    "drive_id": app.drive_id,
+                    "status": app.status,
+                    "created_at": app.created_at.isoformat() if app.created_at else None,
+                    "company": d.company if d else "Unknown",
+                    "role": d.role if d else "Unknown",
+                    "student_name": u.full_name if u else "Unknown",
+                    "student_email": u.email if u else "Unknown",
+                    "student_phone": u.phone if u else "Unknown"
+                })
+            return results
+        else:
+            results = []
+            apps = db.query(Application).filter(Application.user_id == user['id']).order_by(Application.created_at.desc()).all()
+            for app in apps:
+                d = db.query(Drive).filter(Drive.id == app.drive_id).first()
+                results.append({
+                    "id": app.id,
+                    "user_id": app.user_id,
+                    "drive_id": app.drive_id,
+                    "status": app.status,
+                    "created_at": app.created_at.isoformat() if app.created_at else None,
+                    "company": d.company if d else "Unknown",
+                    "role": d.role if d else "Unknown",
+                    "package": d.package if d else None,
+                    "drive_date": d.drive_date if d else None
+                })
+            return results
+
+
+@app.post('/api/applications/{app_id}/status')
+def update_app_status(app_id: int, payload: dict, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    
+    from backend.database import SessionLocal, Application
+    with SessionLocal() as db:
+        app_entry = db.query(Application).filter(Application.id == app_id).first()
+        if not app_entry:
+            raise HTTPException(status_code=404, detail='application_not_found')
+        app_entry.status = payload.get('status', 'approved')
+        db.add(app_entry)
+        db.commit()
+        db.refresh(app_entry)
+        return {"id": app_entry.id, "status": app_entry.status}
+
+
+@app.get('/')
+def root(request: Request):
+    user = get_optional_user(request)
+    if user and user.role == 'admin':
+        return RedirectResponse('/frontend/admin_dashboard/index.html')
+    if user:
+        return RedirectResponse('/frontend/students_dashboard/index.html')
+    return RedirectResponse('/frontend/signin/signin_page/index.html')
+
+
+@app.get('/signin')
+def signin_route():
+    return RedirectResponse('/frontend/signin/signin_page/index.html')
+
+
+@app.get('/drives')
+def drives_route():
+    return RedirectResponse('/frontend/drives_dashboard/index.html')
+
+
+@app.get('/applications')
+def applications_route():
+    return RedirectResponse('/frontend/applications_dashboard/index.html')
+
+
+@app.get('/admin')
+def admin_route(request: Request):
+    user = get_optional_user(request)
+    if not user or user.role != 'admin':
+        return RedirectResponse('/frontend/signin/signin_page/index.html')
+    return RedirectResponse('/frontend/admin_dashboard/index.html')
+
+
+@app.get('/profile')
+def profile_route(request: Request):
+    user = get_optional_user(request)
+    if not user:
+        return RedirectResponse('/frontend/signin/signin_page/index.html')
+    return RedirectResponse('/frontend/profile/profile_dashboard/index.html')
+

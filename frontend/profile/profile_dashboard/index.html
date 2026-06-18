@@ -6,14 +6,14 @@
   <title>Profile | Alignova Executive Precision</title>
 
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
   <!-- Tailwind Config -->
-  <script src="tailwind.config.js"></script>
+  <script src="tailwind-config.js"></script>
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="styles.css">
@@ -27,26 +27,30 @@
       <p class="text-on-surface-variant font-label-md text-label-md uppercase tracking-widest opacity-60">&nbsp;&nbsp;</p>
     </div>
     <nav class="flex-1 space-y-2">
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="/frontend/students_dashboard/index.html">
         <span class="material-symbols-outlined">dashboard</span>
         <span class="font-label-md text-label-md">Dashboard</span>
       </a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="/frontend/drives_dashboard/index.html">
         <span class="material-symbols-outlined">work</span>
         <span class="font-label-md text-label-md">Drives</span>
       </a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="/frontend/applications_dashboard/index.html">
         <span class="material-symbols-outlined">assignment_turned_in</span>
         <span class="font-label-md text-label-md">Applications</span>
       </a>
       <!-- Active: Profile -->
-      <a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="#">
+      <a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="/frontend/profile/profile_dashboard/index.html">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
         <span class="font-label-md text-label-md">Profile</span>
       </a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="#">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all duration-200 active:scale-95" href="/frontend/settings/index.html">
         <span class="material-symbols-outlined">settings</span>
         <span class="font-label-md text-label-md">Settings</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 transition-all duration-200 active:scale-95" href="#" id="logout-btn">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="font-label-md text-label-md">Logout</span>
       </a>
     </nav>
     <div class="mt-auto pt-6 border-t border-outline-variant"></div>
@@ -79,11 +83,11 @@
         <div class="card-elevated rounded-2xl p-p-lg flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
           <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full"></div>
           <div class="w-40 h-40 rounded-2xl overflow-hidden border-4 border-surface-container-low shadow-sm flex-shrink-0">
-            <img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjyte09l6ApNxry136O0ZUg1NWYCHl_-IbfLQCWZbibWugYL3pUDOul_zL1J_xOuiGwPOAFPbYDvgCTmXIapLFLq_pTAwL0s_gnD_WBGgdch0o09hadNfrysII8rtuFXJbw4oxWgXPCiwffUzg1yK_rOVqkh6mM4Eg_DSX2I27OMZa4W_PJQ_IYRb3nFaGwwHwyr-F34-iBXFexH6sPGqFkBCd750KLbiSUgG5lH2l1epBrfsyhk1CzX24tZIcYotwOEFm2fSQtbN8">
+            <img alt="Profile" class="w-full h-full object-cover shadow-avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjyte09l6ApNxry136O0ZUg1NWYCHl_-IbfLQCWZbibWugYL3pUDOul_zL1J_xOuiGwPOAFPbYDvgCTmXIapLFLq_pTAwL0s_gnD_WBGgdch0o09hadNfrysII8rtuFXJbw4oxWgXPCiwffUzg1yK_rOVqkh6mM4Eg_DSX2I27OMZa4W_PJQ_IYRb3nFaGwwHwyr-F34-iBXFexH6sPGqFkBCd750KLbiSUgG5lH2l1epBrfsyhk1CzX24tZIcYotwOEFm2fSQtbN8">
           </div>
           <div class="text-center md:text-left flex-1">
             <div class="flex flex-col md:flex-row md:items-end gap-3 mb-2">
-              <h2 class="font-headline-lg text-headline-lg text-on-surface">Alex Rivera</h2>
+              <h2 class="font-headline-lg text-headline-lg text-on-surface" id="profile-name">Alex Rivera</h2>
               <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md mb-1">Actively Seeking</span>
             </div>
             <p class="font-body-lg text-body-lg text-on-surface-variant mb-4">Computer Science &amp; Data Analytics @ Stanford University</p>
@@ -94,11 +98,11 @@
               </div>
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">mail</span>
-                <span class="font-label-md">a.rivera@stanford.edu</span>
+                <span class="font-label-md" id="profile-email">a.rivera@stanford.edu</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[18px]">link</span>
-                <span class="font-label-md">linkedin.com/in/alexrivera</span>
+                <span class="material-symbols-outlined text-[18px]">phone</span>
+                <span class="font-label-md" id="profile-phone">+1 (555) 000-0000</span>
               </div>
             </div>
           </div>
@@ -106,7 +110,7 @@
             <button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
               <span class="material-symbols-outlined">share</span> Share Portfolio
             </button>
-            <button class="border border-outline-variant text-on-surface-variant px-8 py-3 rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+            <button class="border border-outline-variant text-on-surface-variant px-8 py-3 rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-colors" onclick="location.href='/frontend/profile/edit_profile/index.html'">
               Edit Profile
             </button>
           </div>

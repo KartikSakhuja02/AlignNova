@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Edit Profile | AlignNova</title>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="tailwind.config.js"></script>
+  <script src="tailwind-config.js"></script>
 </head>
 <body class="bg-background text-on-surface antialiased">
 
@@ -17,10 +17,10 @@
     <div class="flex items-center gap-8">
       <h1 class="font-display-lg text-display-lg font-extrabold text-primary">AlignNova</h1>
       <nav class="hidden md:flex gap-6">
-        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="#">Dashboard</a>
-        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="#">Drives</a>
-        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="#">Applications</a>
-        <a class="text-primary font-bold border-b-2 border-primary pb-1 cursor-pointer active:scale-95 transition-transform" href="#">Profile</a>
+        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="/frontend/students_dashboard/index.html">Dashboard</a>
+        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="/frontend/drives_dashboard/index.html">Drives</a>
+        <a class="text-on-surface-variant hover:text-on-surface cursor-pointer active:scale-95 transition-transform" href="/frontend/applications_dashboard/index.html">Applications</a>
+        <a class="text-primary font-bold border-b-2 border-primary pb-1 cursor-pointer active:scale-95 transition-transform" href="/frontend/profile/profile_dashboard/index.html">Profile</a>
       </nav>
     </div>
     <div class="flex items-center gap-4">
@@ -39,20 +39,23 @@
       <p class="text-on-surface-variant text-label-md font-label-md">Manage your digital presence</p>
     </div>
     <div class="space-y-1">
-      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="#">
+      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="/frontend/students_dashboard/index.html">
         <span class="material-symbols-outlined">dashboard</span> Dashboard
       </a>
-      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="#">
+      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="/frontend/drives_dashboard/index.html">
         <span class="material-symbols-outlined">work</span> Drives
       </a>
-      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="#">
+      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="/frontend/applications_dashboard/index.html">
         <span class="material-symbols-outlined">description</span> Applications
       </a>
-      <a class="flex items-center gap-3 p-3 bg-primary-container text-on-primary-container font-bold rounded-xl transition-all font-label-md text-label-md" href="#">
+      <a class="flex items-center gap-3 p-3 bg-primary-container text-on-primary-container font-bold rounded-xl transition-all font-label-md text-label-md" href="/frontend/profile/profile_dashboard/index.html">
         <span class="material-symbols-outlined fill-icon">person</span> Profile
       </a>
-      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="#">
+      <a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl transition-all font-label-md text-label-md" href="/frontend/settings/index.html">
         <span class="material-symbols-outlined">settings</span> Settings
+      </a>
+      <a class="flex items-center gap-3 p-3 text-error hover:bg-error/10 rounded-xl transition-all font-label-md text-label-md" href="#" id="logout-btn">
+        <span class="material-symbols-outlined">logout</span> Logout
       </a>
     </div>
     <div class="mt-auto p-4 bg-surface-container-low rounded-2xl border border-outline-variant/20">
@@ -73,8 +76,8 @@
           <p class="text-on-surface-variant font-body-md text-body-md">Refine your academic and professional identity for recruiter visibility.</p>
         </div>
         <div class="flex items-center gap-3">
-          <button class="px-6 py-2.5 border border-outline-variant text-on-surface-variant rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-all">Cancel</button>
-          <button class="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] hover:shadow-lg active:scale-95 transition-all">Save Changes</button>
+          <button class="px-6 py-2.5 border border-outline-variant text-on-surface-variant rounded-xl font-label-md text-label-md hover:bg-surface-container-low transition-all" onclick="location.href='/frontend/profile/profile_dashboard/index.html'">Cancel</button>
+          <button id="save-btn" class="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] hover:shadow-lg active:scale-95 transition-all">Save Changes</button>
         </div>
       </div>
 
@@ -124,6 +127,20 @@
                   <input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md input-focus-ring transition-all" placeholder="https://portfolio.com" type="text">
                 </div>
               </div>
+              <div class="space-y-1.5">
+                <label class="text-label-md font-bold text-on-surface-variant ml-1">Email Address</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">mail</span>
+                  <input id="email" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md input-focus-ring transition-all" type="email" placeholder="alex.rivera@example.com">
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-label-md font-bold text-on-surface-variant ml-1">Phone Number</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">phone</span>
+                  <input id="phone" class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md input-focus-ring transition-all" type="tel" placeholder="+1 (555) 000-0000">
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -137,7 +154,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div class="space-y-1.5">
                 <label class="text-label-md font-bold text-on-surface-variant ml-1">Full Name</label>
-                <input class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md input-focus-ring transition-all" type="text" value="Alex Rivera">
+                <input id="full_name" class="w-full px-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md input-focus-ring transition-all" type="text" value="Alex Rivera">
               </div>
               <div class="space-y-1.5">
                 <label class="text-label-md font-bold text-on-surface-variant ml-1">Headline</label>
@@ -225,8 +242,8 @@
 
   <!-- Mobile Footer Action Bar -->
   <div class="fixed bottom-0 left-0 w-full lg:hidden bg-surface-container-highest border-t border-outline-variant p-4 flex gap-4 z-50">
-    <button class="flex-1 py-3 border border-outline-variant text-on-surface-variant rounded-xl font-label-md text-label-md bg-surface">Cancel</button>
-    <button class="flex-1 py-3 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-lg">Save</button>
+    <button class="flex-1 py-3 border border-outline-variant text-on-surface-variant rounded-xl font-label-md text-label-md bg-surface" onclick="location.href='/frontend/profile/profile_dashboard/index.html'">Cancel</button>
+    <button id="mobile-save-btn" class="flex-1 py-3 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-lg">Save</button>
   </div>
 
   <script src="script.js"></script>

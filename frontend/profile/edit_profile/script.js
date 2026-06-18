@@ -1,43 +1,97 @@
-/* ============================================
-   AlignNova - script.js
-   UI micro-interactions and save handling
-   ============================================ */
+// Edit Profile Integration Logic
 
-/**
- * Input / textarea focus ring enhancement.
- * Adds a highlighted border class to the parent card
- * when any form field is focused.
- */
-document.querySelectorAll('input, textarea').forEach(input => {
-  input.addEventListener('focus', function () {
-    this.parentElement.parentElement.classList.add('border-primary/40');
-  });
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Get Token and Perform Auth Check
+    const token = (document.cookie.split('; ').find(r => r.startsWith('access_token=')) || '').split('=')[1];
+    if (!token) {
+        location.href = '/frontend/signin/signin_page/index.html';
+        return;
+    }
 
-  input.addEventListener('blur', function () {
-    this.parentElement.parentElement.classList.remove('border-primary/40');
-  });
-});
+    // Logout Button Handler
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.cookie = 'access_token=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+            location.href = '/frontend/signin/signin_page/index.html';
+        });
+    }
 
-/**
- * Save button click handler.
- * Appends an animated check icon to the button,
- * then shows a success confirmation after a short delay.
- */
-document.querySelectorAll('button').forEach(btn => {
-  if (btn.textContent.trim().startsWith('Save')) {
-    btn.addEventListener('click', () => {
-      // Prevent stacking icons on repeated clicks
-      if (btn.querySelector('.save-icon')) return;
+    // Fetch and populate current profile data
+    try {
+        const profileRes = await fetch('/api/profile', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (profileRes.ok) {
+            const profile = await profileRes.json();
+            const fullNameInput = document.getElementById('full_name');
+            if (fullNameInput) fullNameInput.value = profile.full_name || '';
+            
+            const emailInput = document.getElementById('email');
+            if (emailInput) emailInput.value = profile.email || '';
+            
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput) phoneInput.value = profile.phone || '';
+        }
+    } catch (err) {
+        console.error('Error loading profile details:', err);
+    }
 
-      const icon = document.createElement('span');
-      icon.className = 'material-symbols-outlined ml-2 animate-bounce save-icon';
-      icon.innerText = 'check_circle';
-      btn.appendChild(icon);
+    // Save Action handler
+    async function saveProfile(btn) {
+        const full_name = document.getElementById('full_name')?.value || '';
+        const email = document.getElementById('email')?.value || '';
+        const phone = document.getElementById('phone')?.value || '';
 
-      setTimeout(() => {
-        icon.remove();
-        alert('Profile updated successfully!');
-      }, 1000);
+        btn.disabled = true;
+        const originalContent = btn.textContent;
+        btn.textContent = 'Saving...';
+
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ full_name, email, phone })
+            });
+
+            if (!res.ok) throw new Error('Failed to save profile');
+
+            alert('Profile updated successfully!');
+            // Redirect back to profile page
+            location.href = '/frontend/profile/profile_dashboard/index.html';
+        } catch (err) {
+            alert('Error: ' + err.message);
+            btn.disabled = false;
+            btn.textContent = originalContent;
+        }
+    }
+
+    // Attach to desktop save button
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => saveProfile(saveBtn));
+    }
+
+    // Attach to mobile save button
+    const mobileSaveBtn = document.getElementById('mobile-save-btn');
+    if (mobileSaveBtn) {
+        mobileSaveBtn.addEventListener('click', () => saveProfile(mobileSaveBtn));
+    }
+
+    // Input highlight handlers
+    document.querySelectorAll('input, textarea').forEach(input => {
+        input.addEventListener('focus', function () {
+            const group = this.closest('.space-y-1.5') || this.parentElement.parentElement;
+            group.classList.add('border-primary/40');
+        });
+
+        input.addEventListener('blur', function () {
+            const group = this.closest('.space-y-1.5') || this.parentElement.parentElement;
+            group.classList.remove('border-primary/40');
+        });
     });
-  }
 });

@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Applications | Alignova Executive Precision</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+ 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<script src="tailwind.config.js"></script>
+<script src="tailwind-config.js"></script>
 <link href="styles.css" rel="stylesheet">
 </head>
 <body class="text-on-surface">
@@ -18,26 +18,30 @@
 <p class="font-label-md text-label-md text-outline">Executive Precision</p>
 </div>
 <nav class="flex-1 space-y-2">
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="/frontend/students_dashboard/index.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-label-md">Dashboard</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="/frontend/drives_dashboard/index.html">
 <span class="material-symbols-outlined">work</span>
 <span class="font-label-md">Drives</span>
 </a>
 <!-- Active State: Applications -->
-<a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-primary bg-primary-fixed-dim/10 rounded-xl font-bold active:scale-95 transition-transform" href="/frontend/applications_dashboard/index.html">
 <span class="material-symbols-outlined">assignment_turned_in</span>
 <span class="font-label-md">Applications</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="/frontend/profile/profile_dashboard/index.html">
 <span class="material-symbols-outlined">person</span>
 <span class="font-label-md">Profile</span>
 </a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="#">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-all duration-200 rounded-xl" href="/frontend/settings/index.html">
 <span class="material-symbols-outlined">settings</span>
 <span class="font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error/10 transition-all duration-200 rounded-xl active:scale-95" href="#" id="logout-btn">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md">Logout</span>
 </a>
 </nav>
 <div class="mt-auto pt-6 border-t border-outline-variant">
