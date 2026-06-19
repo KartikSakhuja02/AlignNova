@@ -2,7 +2,6 @@
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -13,8 +12,8 @@ from pydantic import BaseModel
 import hashlib
 import os
 
-from database import init_db, get_user, create_user, update_profile, create_drive, list_drives, create_application, list_applications
-from models import UserPublic
+from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse
 
 load_dotenv()
@@ -28,9 +27,8 @@ main = app
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
-
-templates = Jinja2Templates(directory=FRONTEND_DIR)
+# React build output (produced by: cd frontend && npm run build)
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend_dist")
 
 
 @app.on_event("startup")
@@ -48,8 +46,10 @@ def on_startup():
     except Exception:
         pass
 
-# Serve frontend static files under /frontend
-app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+# Serve React static assets (JS/CSS/images) — only if the build exists
+_dist_assets = os.path.join(FRONTEND_DIST, "assets")
+if os.path.isdir(_dist_assets):
+    app.mount("/assets", StaticFiles(directory=_dist_assets), name="assets")
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
@@ -126,10 +126,28 @@ def signup(data: SignupData):
 @app.post("/api/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user(form_data.username)
+    if not user:
+        user = get_user_by_email(form_data.username)
     if not user or not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="invalid_credentials")
     token = create_access_token({"sub": user["username"], "role": user.get("role")})
     return {"access_token": token, "token_type": "bearer", "role": user.get("role")}
+
+
+@app.post('/api/signup')
+def signup(data: SignupData):
+    existing = get_user(data.username)
+    if existing:
+        raise HTTPException(status_code=400, detail='username_taken')
+    if data.email and get_user_by_email(data.email):
+        raise HTTPException(status_code=400, detail='email_taken')
+    hashed = hash_password(data.password)
+    try:
+        user = create_user(data.username, hashed, role=data.role, full_name=data.full_name, email=data.email, phone=data.phone)
+    except ValueError:
+        raise HTTPException(status_code=400, detail='username_taken')
+    token = create_access_token({'sub': user['username'], 'role': user.get('role')})
+    return {'access_token': token, 'token_type': 'bearer', 'role': user.get('role')}
 
 
 def get_current_user_from_token(token: str) -> UserPublic:
@@ -259,7 +277,7 @@ def get_applications(request: Request):
     if not user:
         raise HTTPException(status_code=404, detail='user_not_found')
     
-    from database import SessionLocal, Application, Drive, User
+    from backend.database import SessionLocal, Application, Drive, User
     with SessionLocal() as db:
         if role == 'admin':
             results = []
@@ -316,7 +334,7 @@ def update_app_status(app_id: int, payload: dict, request: Request):
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
     
-    from database import SessionLocal, Application
+    from backend.database import SessionLocal, Application
     with SessionLocal() as db:
         app_entry = db.query(Application).filter(Application.id == app_id).first()
         if not app_entry:
@@ -328,43 +346,13 @@ def update_app_status(app_id: int, payload: dict, request: Request):
         return {"id": app_entry.id, "status": app_entry.status}
 
 
-@app.get('/')
-def root(request: Request):
-    user = get_optional_user(request)
-    if user and user.role == 'admin':
-        return RedirectResponse('/frontend/admin_dashboard/index.html')
-    if user:
-        return RedirectResponse('/frontend/students_dashboard/index.html')
-    return RedirectResponse('/frontend/signin/signin_page/index.html')
-
-
-@app.get('/signin')
-def signin_route():
-    return RedirectResponse('/frontend/signin/signin_page/index.html')
-
-
-@app.get('/drives')
-def drives_route():
-    return RedirectResponse('/frontend/drives_dashboard/index.html')
-
-
-@app.get('/applications')
-def applications_route():
-    return RedirectResponse('/frontend/applications_dashboard/index.html')
-
-
-@app.get('/admin')
-def admin_route(request: Request):
-    user = get_optional_user(request)
-    if not user or user.role != 'admin':
-        return RedirectResponse('/frontend/signin/signin_page/index.html')
-    return RedirectResponse('/frontend/admin_dashboard/index.html')
-
-
-@app.get('/profile')
-def profile_route(request: Request):
-    user = get_optional_user(request)
-    if not user:
-        return RedirectResponse('/frontend/signin/signin_page/index.html')
-    return RedirectResponse('/frontend/profile/profile_dashboard/index.html')
+# ── SPA catch-all ────────────────────────────────────────────────────────────
+# All non-API routes return the React index.html so client-side routing works.
+@app.get('/{full_path:path}')
+def spa_catchall(full_path: str):
+    index = os.path.join(FRONTEND_DIST, 'index.html')
+    if os.path.isfile(index):
+        return FileResponse(index)
+    # Fallback if the frontend hasn't been built yet
+    return JSONResponse({'detail': 'Frontend not built. Run: cd frontend && npm run build'}, status_code=503)
 
