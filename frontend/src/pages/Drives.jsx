@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -84,6 +85,7 @@ const drives = [
 
 function DriveCard({ drive }) {
   const cardRef = useRef(null);
+  const navigate = useNavigate();
   const [bookmarked, setBookmarked] = useState(false);
 
   const handleMouseEnter = () => {
@@ -135,7 +137,10 @@ function DriveCard({ drive }) {
 
       {/* Actions */}
       <div className="mt-auto pt-8 flex gap-3">
-        <button className="flex-1 bg-primary text-on-primary py-3 rounded-xl text-label-md font-semibold hover:shadow-md hover:bg-primary/90 transition-all active:scale-95">
+        <button
+          onClick={() => navigate(`/apply/${drive.id}`)}
+          className="flex-1 bg-primary text-on-primary py-3 rounded-xl text-label-md font-semibold hover:shadow-md hover:bg-primary/90 transition-all active:scale-95 cursor-pointer"
+        >
           Apply Now
         </button>
         <button

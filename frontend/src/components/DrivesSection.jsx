@@ -1,7 +1,9 @@
 import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function DriveCard({ logo, altText, type, company, role, salary, location, locationIcon }) {
+function DriveCard({ id, logo, altText, type, company, role, salary, location, locationIcon }) {
   const cardRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleMouseMove = (e) => {
     const card = cardRef.current;
@@ -66,7 +68,10 @@ function DriveCard({ logo, altText, type, company, role, salary, location, locat
         </span>
       </div>
 
-      <button className="w-full py-4 bg-primary text-white font-bold rounded-xl active:scale-95 transition-transform hover:bg-primary/90">
+      <button
+        onClick={() => navigate(`/apply/${id}`)}
+        className="w-full py-4 bg-primary text-white font-bold rounded-xl active:scale-95 transition-transform hover:bg-primary/90 cursor-pointer"
+      >
         Apply Now
       </button>
     </div>
@@ -75,6 +80,7 @@ function DriveCard({ logo, altText, type, company, role, salary, location, locat
 
 const drives = [
   {
+    id: 1,
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfHpajwGKBn2unI1eH1FKj6S5qwldgxjH1X-ODaUtDasXctpPritjFepnpKL-FCXAEQ6GwfA3FE8AwsJbHgVs2sePuzPJwyhDCskQyVDaDUlJJzhs3SbtLYRPgccQu0FdF2QTRgouR4B7SsVHdozq6eh7CnPX3wiP-lJQSIEoeUXKwuN8DqM0ouH6yUNXlGjoyzNlp3QViLKPZjmBro6VLtBQgwklmU0zB-WTVaMFhv4c-3smHxQ3f07U0Vb-gMVh1H_bWm2GgwJE',
     altText: 'Google Logo',
     type: 'Internship',
@@ -85,6 +91,7 @@ const drives = [
     locationIcon: 'location_on',
   },
   {
+    id: 2,
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCZEFlssyk9kz6WpaSNAq-uJJlJHRWmIfnpvGQOrGyjsIvQ28DXduUK5WsC0HBS7ufThW9qk6wRJuNu2eD7jqvgaiy6OwEChbEtae46FNXV1akQm6xGRUaqS_8_tGwtj4qjVfDCGvBKP8jG-IjktrxefMnJOWR_-_7WbwAEdbLIoSJyhq8kB7lAhFp3weF42eoGdcRmTItgo5qJdMS9Qvszqp7Zr4qoXobXygvYK5-Ir2gByYD7YH-8nQAd1Lm3rExmkT5RjV9MDxU',
     altText: 'Stripe Logo',
     type: 'Full-Time',
@@ -95,6 +102,7 @@ const drives = [
     locationIcon: 'home_work',
   },
   {
+    id: 3,
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA8MI9NNI7cXZYzkIGsJtzxB-pTl3BgMcYt7GRe8n08njxpYIjUmjXijsTxdKf60NgstGUc0lPILTBXZtcRIEBEYrrCuXeeEimxwXglFEQx6Y6KlPj-iLvqzyV4w5iHqeo0Db3oO1PMh7QIRNtlvLTCI2yPwfI0VBT5A9OGg4dYh6oNfUtdY1pI8sMbg6B3KhecU0NSH7Fe5V-NRDnci7czCB99TR65FzoK2dlRNM35o9Jr3KJ4ULFXEuPkG0QR_9dltL70H4NYt0o',
     altText: 'Figma Logo',
     type: 'Internship',
@@ -118,7 +126,10 @@ export default function DrivesSection() {
             Top-tier companies currently accepting applications
           </p>
         </div>
-        <button className="flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all duration-200">
+        <button
+          onClick={() => navigate('/drives')}
+          className="flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all duration-200 cursor-pointer"
+        >
           View All Drives
           <span className="material-symbols-outlined">arrow_forward</span>
         </button>

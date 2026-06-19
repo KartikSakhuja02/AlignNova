@@ -13,6 +13,7 @@ import Applications from './pages/Applications';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Premium from './pages/Premium';
+import DriveApplication from './pages/DriveApplication';
 import AdminDashboard from './pages/AdminDashboard';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
@@ -90,6 +91,7 @@ export default function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/premium" element={<Premium />} />
+              <Route path="/apply/:driveId" element={<DriveApplication />} />
             </Route>
           </Route>
 
