@@ -61,7 +61,10 @@ export default function Sidebar() {
           <p className="text-[10px] text-on-surface-variant mb-3">
             Get advanced interview coaching and resume reviews.
           </p>
-          <button className="w-full py-2 bg-primary text-white text-caption rounded-lg font-bold hover:scale-[1.02] transition-transform">
+          <button
+            onClick={() => navigate('/premium')}
+            className="w-full py-2 bg-primary text-white text-caption rounded-lg font-bold hover:scale-[1.02] transition-transform cursor-pointer"
+          >
             Learn More
           </button>
         </div>

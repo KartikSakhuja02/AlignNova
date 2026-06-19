@@ -12,6 +12,7 @@ import Drives from './pages/Drives';
 import Applications from './pages/Applications';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Premium from './pages/Premium';
 import AdminDashboard from './pages/AdminDashboard';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
@@ -84,6 +85,7 @@ export default function App() {
               <Route path="/applications" element={<Applications />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/premium" element={<Premium />} />
             </Route>
           </Route>
 
