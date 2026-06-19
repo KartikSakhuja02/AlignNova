@@ -2,7 +2,6 @@
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -28,9 +27,8 @@ main = app
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
-
-templates = Jinja2Templates(directory=FRONTEND_DIR)
+# React build output (produced by: cd frontend && npm run build)
+FRONTEND_DIST = os.path.join(BASE_DIR, "frontend_dist")
 
 
 @app.on_event("startup")
@@ -48,8 +46,10 @@ def on_startup():
     except Exception:
         pass
 
-# Serve frontend static files under /frontend
-app.mount("/frontend", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
+# Serve React static assets (JS/CSS/images) — only if the build exists
+_dist_assets = os.path.join(FRONTEND_DIST, "assets")
+if os.path.isdir(_dist_assets):
+    app.mount("/assets", StaticFiles(directory=_dist_assets), name="assets")
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
@@ -346,43 +346,13 @@ def update_app_status(app_id: int, payload: dict, request: Request):
         return {"id": app_entry.id, "status": app_entry.status}
 
 
-@app.get('/')
-def root(request: Request):
-    user = get_optional_user(request)
-    if user and user.role == 'admin':
-        return RedirectResponse('/frontend/application_dashboard.html')
-    if user:
-        return RedirectResponse('/frontend/student_dashboard.html')
-    return RedirectResponse('/frontend/signin.html')
-
-
-@app.get('/signin')
-def signin_route():
-    return RedirectResponse('/frontend/signin.html')
-
-
-@app.get('/drives')
-def drives_route():
-    return RedirectResponse('/frontend/drives_dashboard.html')
-
-
-@app.get('/applications')
-def applications_route():
-    return RedirectResponse('/frontend/application_dashboard.html')
-
-
-@app.get('/admin')
-def admin_route(request: Request):
-    user = get_optional_user(request)
-    if not user or user.role != 'admin':
-        return RedirectResponse('/frontend/signin.html')
-    return RedirectResponse('/frontend/application_dashboard.html')
-
-
-@app.get('/profile')
-def profile_route(request: Request):
-    user = get_optional_user(request)
-    if not user:
-        return RedirectResponse('/frontend/signin.html')
-    return RedirectResponse('/frontend/profile.html')
+# ── SPA catch-all ────────────────────────────────────────────────────────────
+# All non-API routes return the React index.html so client-side routing works.
+@app.get('/{full_path:path}')
+def spa_catchall(full_path: str):
+    index = os.path.join(FRONTEND_DIST, 'index.html')
+    if os.path.isfile(index):
+        return FileResponse(index)
+    # Fallback if the frontend hasn't been built yet
+    return JSONResponse({'detail': 'Frontend not built. Run: cd frontend && npm run build'}, status_code=503)
 
