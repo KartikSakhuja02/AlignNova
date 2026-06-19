@@ -270,15 +270,7 @@ export default function SignIn() {
           </div>
         </div>
 
-        {/* Sign up link */}
-        <div className="mt-8 text-center">
-          <p className="text-body-md text-on-surface-variant">
-            Don't have an account?{' '}
-            <a href="#" className="text-label-md text-primary font-bold hover:underline decoration-2 underline-offset-4">
-              Sign up
-            </a>
-          </p>
-        </div>
+
 
         {/* Animated bars */}
         <div className="mt-12 flex justify-center opacity-40">
