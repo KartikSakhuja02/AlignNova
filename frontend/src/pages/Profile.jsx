@@ -725,7 +725,11 @@ export default function Profile() {
               </span>
             </div>
             <p className="text-body-lg text-on-surface-variant mb-4">
-              {profile.headline || 'Student at AlignNova'}
+              {profile.headline || (
+                profile.education && profile.education.length > 0
+                  ? `${profile.education[0].degree || 'Student'} at ${profile.education[0].institution}`
+                  : 'Student'
+              )}
             </p>
             <div className="flex flex-wrap gap-6 text-outline">
               <div className="flex items-center gap-2">
