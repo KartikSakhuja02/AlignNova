@@ -21,7 +21,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    role = Column(String, default="patient")
+    role = Column(String, default="student")
     full_name = Column(String, nullable=True)
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
@@ -143,7 +143,7 @@ def list_applications(for_user_id: int | None = None):
         return [{"id": r.id, "user_id": r.user_id, "drive_id": r.drive_id, "status": r.status} for r in rows]
 
 
-def create_user(username: str, hashed_password: str, role: str = "patient", full_name: str | None = None, email: str | None = None, phone: str | None = None):
+def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None):
     with SessionLocal() as db:
         existing = db.query(User).filter(User.username == username).first()
         if existing:

@@ -46,7 +46,7 @@ def on_startup():
         pass
     try:
         if not get_user("alice"):
-            create_user("alice", hash_password("alicepass"), role="patient", full_name="Alice Demo", email="alice@demo.local")
+            create_user("alice", hash_password("alicepass"), role="student", full_name="Alice Demo", email="alice@demo.local")
     except Exception:
         pass
 
@@ -73,7 +73,7 @@ def get_current_user_from_token(token: str) -> UserPublic:
     user = get_user(username)
     if not user:
         raise HTTPException(status_code=401, detail="user_not_found")
-    return UserPublic(username=user["username"], role=user.get("role", "patient"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"))
+    return UserPublic(username=user["username"], role=user.get("role", "student"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"))
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
@@ -99,7 +99,7 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
     user = get_user(username)
     if not user:
         return None
-    return UserPublic(username=user['username'], role=user.get('role', 'patient'), full_name=user.get('full_name'), email=user.get('email'), phone=user.get('phone'))
+    return UserPublic(username=user['username'], role=user.get('role', 'student'), full_name=user.get('full_name'), email=user.get('email'), phone=user.get('phone'))
 
 
 def hash_password(password: str) -> str:
