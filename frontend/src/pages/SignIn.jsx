@@ -1,44 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-// ─── FloatingInput ─────────────────────────────────────────────────────────
-
-function FloatingInput({ id, label, type = 'text', value, onChange, required }) {
-  const [focused, setFocused] = useState(false);
-  const lifted = focused || value.length > 0;
-
-  return (
-    <div className="relative">
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        required={required}
-        className={`w-full h-14 px-4 pt-3 border rounded-xl bg-transparent outline-none transition-all text-body-md text-on-surface
-          ${focused
-            ? 'border-primary ring-4 ring-primary/10'
-            : 'border-outline-variant'
-          }`}
-      />
-      <label
-        htmlFor={id}
-        className={`absolute left-4 pointer-events-none transition-all duration-200 ${
-          lifted
-            ? '-top-2.5 text-xs bg-white px-1 text-primary font-semibold'
-            : 'top-4 text-label-md text-on-surface-variant'
-        }`}
-      >
-        {label}
-      </label>
-    </div>
-  );
-}
-
-// ─── SignIn Page ─────────────────────────────────────────────────────────────
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -46,13 +8,24 @@ export default function SignIn() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Parallax blob refs
-  const blob1Ref = useRef(null);
-  const blob2Ref = useRef(null);
+  // Mouse-tracking background shift
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const x = e.clientX / window.innerWidth;
+      const y = e.clientY / window.innerHeight;
+      setMousePos({
+        x: (x - 0.5) * 10,
+        y: (y - 0.5) * 10,
+      });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Redirect if already signed in
   useEffect(() => {
@@ -61,29 +34,16 @@ export default function SignIn() {
     }
   }, [isAuthenticated, isAdmin, navigate]);
 
-  // Parallax effect
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      const moveX = (e.clientX - window.innerWidth / 2) / 50;
-      const moveY = (e.clientY - window.innerHeight / 2) / 50;
-      if (blob1Ref.current)
-        blob1Ref.current.style.transform = `translate(${moveX}px, ${moveY}px)`;
-      if (blob2Ref.current)
-        blob2Ref.current.style.transform = `translate(${-moveX}px, ${-moveY}px)`;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email || !password) return;
     setStatus('loading');
     setErrorMsg('');
 
     try {
       // OAuth2PasswordRequestForm expects x-www-form-urlencoded
       const body = new URLSearchParams();
-      body.append('username', email); // backend supports email as username
+      body.append('username', email); // backend treats email as username
       body.append('password', password);
 
       const res = await fetch('/api/login', {
@@ -94,9 +54,11 @@ export default function SignIn() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail === 'invalid_credentials'
-          ? 'Invalid email or password. Please try again.'
-          : 'Login failed. Please try again.');
+        throw new Error(
+          data.detail === 'invalid_credentials'
+            ? 'Invalid email or password. Please try again.'
+            : 'Login failed. Please try again.'
+        );
       }
 
       const data = await res.json();
@@ -112,192 +74,173 @@ export default function SignIn() {
     }
   };
 
+  const isLoading = status === 'loading';
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Background blobs */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          ref={blob1Ref}
-          className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] transition-transform duration-75"
-        />
-        <div
-          ref={blob2Ref}
-          className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-secondary-container/20 blur-[120px] transition-transform duration-75"
-        />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#F8FAFC]">
+      {/* Background Pattern Decorative Element */}
+      <div className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none">
+        <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1"></path>
+            </pattern>
+          </defs>
+          <rect fill="url(#grid)" height="100%" width="100%"></rect>
+        </svg>
       </div>
 
-      {/* Main card */}
-      <main className="relative z-10 w-full max-w-[480px]">
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span
-                className="material-symbols-outlined text-white"
-                style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}
-              >
-                insights
-              </span>
-            </div>
-            <h1 className="text-[48px] font-extrabold text-primary leading-none tracking-tight">
-              Alignova
-            </h1>
+      {/* Main Container */}
+      <main
+        className="relative z-10 w-full max-w-[480px] px-p-md fade-in transition-transform duration-75"
+        style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px)` }}
+      >
+        {/* Branding Header */}
+        <div className="text-center mb-p-xl">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-p-md shadow-lg shadow-primary/20">
+            <span className="material-symbols-outlined text-on-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+              bolt
+            </span>
           </div>
-          <p className="text-body-md text-on-surface-variant">
-            The future of executive career placement
-          </p>
+          <h1 className="font-display-lg text-display-lg text-primary tracking-tight">AlignNova</h1>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Elevating high-stakes career placement.</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.02),0_2px_4px_-2px_rgba(0,0,0,0.02)] transition-all duration-300">
-          <div className="mb-6">
-            <h2 className="text-headline-md font-bold text-on-surface mb-1">Welcome Back</h2>
-            <p className="text-body-md text-on-surface-variant">
-              Access your professional network and opportunities.
-            </p>
-          </div>
+        {/* Sign In Card */}
+        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-p-xl shadow-sm">
+          <header className="mb-p-lg">
+            <h2 className="font-headline-lg text-headline-lg text-on-surface">Sign In</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant">Enter your university credentials to continue.</p>
+          </header>
 
+          {/* Sign In Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <FloatingInput
-              id="email"
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <FloatingInput
-              id="password"
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block" htmlFor="email">
+                University Email
+              </label>
+              <div className="relative group">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
+                  mail
+                </span>
+                <input
+                  required
+                  id="email"
+                  type="email"
+                  disabled={isLoading}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="alex.chen@university.edu"
+                  className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
+                    ${isLoading 
+                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 
+                      : 'bg-transparent border-outline-variant text-on-surface focus:border-primary focus:ring-4 focus:ring-primary/10'
+                    }`}
+                />
+              </div>
+            </div>
 
-            {/* Error message */}
+            {/* Password Field */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" htmlFor="password">
+                  Password
+                </label>
+                <a className="font-label-md text-label-md text-primary hover:underline cursor-not-allowed opacity-50" href="#">
+                  Forgot?
+                </a>
+              </div>
+              <div className="relative group">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
+                  lock
+                </span>
+                <input
+                  required
+                  id="password"
+                  type="password"
+                  disabled={isLoading}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
+                    ${isLoading 
+                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 
+                      : 'bg-transparent border-outline-variant text-on-surface focus:border-primary focus:ring-4 focus:ring-primary/10'
+                    }`}
+                />
+              </div>
+            </div>
+
+            {/* Error state alert banner */}
             {status === 'error' && (
-              <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
-                {errorMsg}
+              <div className="flex items-center gap-3 px-4 py-3 bg-error-container text-on-error-container rounded-xl font-semibold text-label-md border border-error/15 fade-in">
+                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  error
+                </span>
+                <span>{errorMsg}</span>
               </div>
             )}
 
-            {/* Actions row */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/20"
-                />
-                <span className="text-label-md text-on-surface-variant group-hover:text-on-surface transition-colors">
-                  Remember me
+            {/* Loading / Action Button */}
+            {isLoading ? (
+              <button
+                disabled
+                className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-primary/80 text-on-primary rounded-xl font-label-md text-label-md transition-all duration-200 cursor-wait relative overflow-hidden"
+              >
+                {/* Shimmer effect overlay for button */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                <div className="spinner"></div>
+                <span>Verifying Credentials...</span>
+              </button>
+            ) : status === 'success' ? (
+              <button
+                disabled
+                className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary text-on-secondary rounded-xl font-label-md text-label-md transition-all duration-200 cursor-wait"
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>
+                  check_circle
                 </span>
-              </label>
-              <a href="#" className="text-label-md text-primary hover:underline decoration-2 underline-offset-4">
-                Forgot password?
-              </a>
-            </div>
-
-            {/* Submit button */}
-            <button
-              type="submit"
-              disabled={status === 'loading' || status === 'success'}
-              className={`w-full h-14 font-semibold text-label-md rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]
-                ${status === 'success'
-                  ? 'bg-secondary text-on-secondary'
-                  : 'bg-primary text-on-primary hover:shadow-lg hover:scale-[1.01]'
-                }
-                ${(status === 'loading' || status === 'success') ? 'opacity-90 cursor-not-allowed' : ''}`}
-            >
-              {status === 'loading' && (
-                <>
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Authenticating...</span>
-                </>
-              )}
-              {status === 'success' && (
-                <>
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>check_circle</span>
-                  <span>Success! Redirecting...</span>
-                </>
-              )}
-              {(status === 'idle' || status === 'error') && (
-                <>
-                  <span>Sign In</span>
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_forward</span>
-                </>
-              )}
-            </button>
+                <span>Redirecting...</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="w-full py-4 px-6 bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:scale-[1.01] hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.99]"
+              >
+                Sign In
+              </button>
+            )}
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-outline-variant/30" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-surface-container-lowest px-4 text-caption text-outline">
-                OR CONTINUE WITH
-              </span>
-            </div>
-          </div>
-
-          {/* Social buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="h-12 border border-outline-variant rounded-xl text-label-md text-on-surface flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
-              <img
-                alt="Google"
-                className="w-5 h-5"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVq-ED0OZ1HsKAZdV3zD7mtETPQRGn0A-cTqF0_HBbkQwRsZ4BcWXt7yZpg0MO_VDCczZmL3F_u6akShwWPNmDgGd5SR9jw7x3Gao83L6eNITyAIqYbSeyqehKWEHa73jB9Vcx-4ETJMjrbyCW25zjzizLzL8RqclMRqdlUMRJsLet7ZKoFPgm-HqIg-tmrqo3pZx0FSulIUQTrAb5vzlbK6jhr1_lmeAsHja0iAsUEO9CmD4iBYXCP5mz_1OmtnbUNkLQuEVUyPA"
-              />
-              Google
-            </button>
-            <button className="h-12 border border-outline-variant rounded-xl text-label-md text-on-surface flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px', color: '#0077b5' }}
-              >
-                work
-              </span>
-              LinkedIn
-            </button>
+          {/* Footer Registrar Link */}
+          <div className="mt-p-lg pt-p-md border-t border-outline-variant/20 text-center">
+            <p className="font-body-md text-body-md text-on-surface-variant">
+              Don't have an account?{' '}
+              <a className="text-primary font-bold hover:underline cursor-not-allowed opacity-50" href="#">
+                Contact Registrar
+              </a>
+            </p>
           </div>
         </div>
 
-
-
-        {/* Animated bars */}
-        <div className="mt-12 flex justify-center opacity-40">
-          <div className="flex space-x-4 items-end">
-            {[
-              { h: 'h-8', color: 'bg-outline-variant', dur: '3s' },
-              { h: 'h-12', color: 'bg-primary', dur: '4s' },
-              { h: 'h-6', color: 'bg-secondary', dur: '2s' },
-              { h: 'h-10', color: 'bg-outline-variant', dur: '5s' },
-              { h: 'h-8', color: 'bg-primary/50', dur: '3.5s' },
-            ].map((bar, i) => (
-              <div
-                key={i}
-                className={`w-1 ${bar.h} ${bar.color} rounded-full`}
-                style={{ animation: `pulse ${bar.dur} infinite` }}
-              />
-            ))}
-          </div>
+        {/* Security Badge */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-on-surface-variant/40">
+          <span className="material-symbols-outlined text-[18px]">verified_user</span>
+          <span className="font-label-md text-caption uppercase tracking-widest">Encrypted Tier 1 Security</span>
         </div>
       </main>
 
-      {/* Footer */}
-      <div className="fixed bottom-8 left-8 hidden lg:block">
-        <p className="text-caption text-outline select-none">
-          © 2026 AlignNova Executive Placement. Confidential Platform.
-        </p>
-      </div>
+      {/* Footer Identity */}
+      <footer className="fixed bottom-8 w-full text-center px-p-md pointer-events-none opacity-40">
+        <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center">
+          <p className="font-label-md text-caption">© 2024 AlignNova Placement Technologies</p>
+          <div className="flex gap-6 mt-2 md:mt-0">
+            <span className="font-label-md text-caption">Privacy Architecture</span>
+            <span className="font-label-md text-caption">System Status</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
