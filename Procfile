@@ -1,1 +1,2 @@
 web: gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --log-file -
+uvicorn main:main --reload
