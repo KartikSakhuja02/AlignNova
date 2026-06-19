@@ -148,6 +148,8 @@ export default function Profile() {
   // Fetch real profile from backend
   const fetchProfile = useCallback(async () => {
     if (!token) return;
+    setLoading(true);
+    const start = Date.now();
     try {
       const res = await fetch('/api/profile', {
         headers: { Authorization: `Bearer ${token}` },
@@ -157,6 +159,13 @@ export default function Profile() {
         setProfile(data);
       }
     } catch (_) {}
+    
+    // Ensure loading state page is shown for a short period to make it visually clear
+    const elapsed = Date.now() - start;
+    const minDelay = 1500;
+    if (elapsed < minDelay) {
+      await new Promise((resolve) => setTimeout(resolve, minDelay - elapsed));
+    }
     setLoading(false);
   }, [token]);
 
@@ -193,6 +202,139 @@ export default function Profile() {
     .join('')
     .toUpperCase();
 
+  if (loading) {
+    return (
+      <div
+        className="p-p-lg min-h-screen"
+        style={{
+          background:
+            'radial-gradient(at 0% 0%, rgba(79,70,229,0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.05) 0px, transparent 50%)',
+        }}
+      >
+        <div className="max-w-[1200px] mx-auto pb-24 space-y-8 overflow-hidden">
+          {/* Header Skeleton Card */}
+          <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+            <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+              <div className="w-32 h-32 rounded-3xl skeleton-shimmer shrink-0"></div>
+              <div className="flex-1 space-y-4 w-full">
+                <div className="h-8 w-1/3 skeleton-shimmer rounded-lg"></div>
+                <div className="h-4 w-1/4 skeleton-shimmer rounded-md"></div>
+                <div className="flex gap-4 pt-2">
+                  <div className="h-10 w-32 skeleton-shimmer rounded-xl"></div>
+                  <div className="h-10 w-32 skeleton-shimmer rounded-xl"></div>
+                </div>
+              </div>
+              <div className="hidden md:block space-y-2 text-right">
+                <div className="h-4 w-32 skeleton-shimmer rounded ml-auto"></div>
+                <div className="h-4 w-24 skeleton-shimmer rounded ml-auto"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Grid Layout */}
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Column: Experience & Education */}
+            <div className="col-span-12 lg:col-span-8 space-y-6">
+              {/* Experience Section */}
+              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="h-6 w-40 skeleton-shimmer rounded"></div>
+                  <div className="h-8 w-8 skeleton-shimmer rounded-full"></div>
+                </div>
+                <div className="space-y-10">
+                  {/* Experience Item 1 */}
+                  <div className="flex gap-6">
+                    <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0"></div>
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 w-2/5 skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-1/4 skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-full skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-3/4 skeleton-shimmer rounded"></div>
+                    </div>
+                  </div>
+                  {/* Experience Item 2 */}
+                  <div className="flex gap-6">
+                    <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0"></div>
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 w-1/3 skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-1/5 skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-5/6 skeleton-shimmer rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Education Section */}
+              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                  <div className="h-6 w-32 skeleton-shimmer rounded"></div>
+                  <div className="h-8 w-8 skeleton-shimmer rounded-full"></div>
+                </div>
+                <div className="space-y-8">
+                  <div className="flex gap-6">
+                    <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0"></div>
+                    <div className="flex-1 space-y-3">
+                      <div className="h-5 w-1/2 skeleton-shimmer rounded"></div>
+                      <div className="h-4 w-1/4 skeleton-shimmer rounded"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Skills & Details */}
+            <div className="col-span-12 lg:col-span-4 space-y-6">
+              {/* Skills Chip Cloud */}
+              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+                <div className="h-6 w-24 skeleton-shimmer rounded mb-6"></div>
+                <div className="flex flex-wrap gap-2">
+                  <div className="h-8 w-20 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-24 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-16 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-28 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-20 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-24 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-14 skeleton-shimmer rounded-full"></div>
+                  <div className="h-8 w-22 skeleton-shimmer rounded-full"></div>
+                </div>
+              </div>
+
+              {/* Profile Completeness / Stats */}
+              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+                <div className="h-6 w-48 skeleton-shimmer rounded mb-6"></div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-full border-4 border-slate-100 border-t-slate-200 skeleton-shimmer"></div>
+                  <div className="flex-1">
+                    <div className="h-4 w-3/4 skeleton-shimmer rounded"></div>
+                  </div>
+                </div>
+                <div className="space-y-4 pt-4 border-t border-outline-variant/20">
+                  <div className="flex justify-between">
+                    <div className="h-4 w-20 skeleton-shimmer rounded"></div>
+                    <div className="h-4 w-10 skeleton-shimmer rounded"></div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div className="h-4 w-24 skeleton-shimmer rounded"></div>
+                    <div className="h-4 w-12 skeleton-shimmer rounded"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Languages */}
+              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+                <div className="h-6 w-32 skeleton-shimmer rounded mb-6"></div>
+                <div className="space-y-4">
+                  <div className="h-5 w-full skeleton-shimmer rounded"></div>
+                  <div className="h-5 w-5/6 skeleton-shimmer rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="p-p-lg min-h-screen"
@@ -206,6 +348,7 @@ export default function Profile() {
       )}
 
       <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
+
 
         {/* ── Save success toast ── */}
         {saveMsg && (
