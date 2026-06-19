@@ -172,6 +172,123 @@ def _send_via_resend(to_email: str, subject: str, html: str, plain: str) -> None
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+def get_config_status() -> dict:
+    """Return current email config for diagnostics (passwords are masked)."""
+    if SMTP_USER and SMTP_PASS:
+        provider = "gmail_smtp"
+    elif RESEND_API_KEY:
+        provider = "resend"
+    else:
+        provider = "none"
+
+    return {
+        "provider": provider,
+        "smtp_host": SMTP_HOST,
+        "smtp_port": SMTP_PORT,
+        "smtp_user": SMTP_USER or "(not set)",
+        "smtp_pass_set": bool(SMTP_PASS),
+        "smtp_pass_length": len(SMTP_PASS),
+        "resend_api_key_set": bool(RESEND_API_KEY),
+        "resend_key_prefix": RESEND_API_KEY[:8] + "..." if RESEND_API_KEY else "(not set)",
+        "from_email": FROM_EMAIL,
+        "from_name": FROM_NAME,
+        "app_base_url": APP_BASE_URL,
+    }
+
+
+def print_config():
+    """Print email config to stdout at startup so it shows in Render logs."""
+    cfg = get_config_status()
+    print("=" * 60)
+    print("[email_service] Configuration:")
+    print(f"  provider       : {cfg['provider']}")
+    if cfg['provider'] == 'gmail_smtp':
+        print(f"  smtp_host      : {cfg['smtp_host']}:{cfg['smtp_port']}")
+        print(f"  smtp_user      : {cfg['smtp_user']}")
+        print(f"  smtp_pass      : {'SET (' + str(cfg['smtp_pass_length']) + ' chars)' if cfg['smtp_pass_set'] else 'NOT SET'}")
+        if cfg['smtp_pass_length'] not in (16, 19):  # 19 = with spaces (wrong)
+            print(f"  ⚠️  WARNING: App Password should be exactly 16 chars (no spaces). Got {cfg['smtp_pass_length']}.")
+    elif cfg['provider'] == 'resend':
+        print(f"  resend_key     : {cfg['resend_key_prefix']}")
+    else:
+        print("  ⚠️  NO EMAIL PROVIDER configured. Set SMTP_USER+SMTP_PASS or RESEND_API_KEY.")
+    print(f"  from_email     : {cfg['from_email']}")
+    print(f"  app_base_url   : {cfg['app_base_url']}")
+    print("=" * 60)
+
+
+def send_test_email_sync(to_email: str) -> dict:
+    """
+    Send a plain test email SYNCHRONOUSLY and return a result dict.
+    Used by /api/admin/test-email so errors surface immediately in the API response.
+    """
+    cfg = get_config_status()
+
+    if cfg["provider"] == "none":
+        return {
+            "ok": False,
+            "provider": "none",
+            "error": "No email provider configured. Set SMTP_USER+SMTP_PASS (Gmail) or RESEND_API_KEY (Resend) in Render environment variables.",
+            "config": cfg,
+        }
+
+    subject = "✅ AlignNova — Test Email"
+    plain   = "This is a test email from AlignNova. If you received this, email delivery is working correctly!"
+    html    = f"""<div style="font-family:Arial,sans-serif;max-width:500px;margin:40px auto;padding:32px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;">
+  <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;padding:24px;text-align:center;margin-bottom:24px;">
+    <p style="color:#fff;font-size:24px;margin:0;">⭐ AlignNova</p>
+  </div>
+  <h2 style="color:#1a1a2e;font-size:20px;">✅ Email delivery is working!</h2>
+  <p style="color:#4b5563;font-size:15px;line-height:1.6;">
+    This test email was sent from your AlignNova admin panel.<br/>
+    Provider used: <strong>{cfg['provider']}</strong>
+  </p>
+</div>"""
+
+    try:
+        if cfg["provider"] == "gmail_smtp":
+            print(f"[email] TEST: trying Gmail SMTP → {to_email}")
+            _send_via_smtp(to_email, subject, html, plain)
+            print(f"[email] TEST: ✓ Gmail SMTP success → {to_email}")
+            return {"ok": True, "provider": "gmail_smtp", "config": cfg}
+
+        else:  # resend
+            print(f"[email] TEST: trying Resend → {to_email}")
+            _send_via_resend(to_email, subject, html, plain)
+            print(f"[email] TEST: ✓ Resend success → {to_email}")
+            return {"ok": True, "provider": "resend", "config": cfg}
+
+    except smtplib.SMTPAuthenticationError as e:
+        msg = (
+            f"Gmail authentication failed (SMTPAuthenticationError: {e}). "
+            "Your SMTP_PASS must be a 16-character App Password — NOT your Gmail password. "
+            "Generate one at https://myaccount.google.com/apppasswords and paste WITHOUT spaces."
+        )
+        print(f"[email] TEST: ✗ {msg}")
+        return {"ok": False, "provider": "gmail_smtp", "error": msg, "config": cfg}
+
+    except smtplib.SMTPConnectError as e:
+        msg = f"Could not connect to {SMTP_HOST}:{SMTP_PORT} — SMTPConnectError: {e}"
+        print(f"[email] TEST: ✗ {msg}")
+        return {"ok": False, "provider": "gmail_smtp", "error": msg, "config": cfg}
+
+    except smtplib.SMTPException as e:
+        msg = f"SMTP error: {type(e).__name__}: {e}"
+        print(f"[email] TEST: ✗ {msg}")
+        return {"ok": False, "provider": "gmail_smtp", "error": msg, "config": cfg}
+
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        msg = f"Resend API returned HTTP {e.code}: {body}"
+        print(f"[email] TEST: ✗ {msg}")
+        return {"ok": False, "provider": "resend", "error": msg, "config": cfg}
+
+    except Exception as e:
+        msg = f"{type(e).__name__}: {e}"
+        print(f"[email] TEST: ✗ Unexpected error: {msg}")
+        return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
+
+
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str) -> bool:
     """
     Send the welcome / account-activation email.
@@ -190,32 +307,31 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
     html    = _build_welcome_html(student_name, set_password_url)
     plain   = (
         f"Welcome to AlignNova, {student_name}!\n\n"
-        f"Set your password and access your dashboard here:\n{set_password_url}\n\n"
+        f"Set your password here:\n{set_password_url}\n\n"
         f"Link expires in 7 days.\n— AlignNova Team"
     )
 
     def _send():
         try:
             if SMTP_USER and SMTP_PASS:
-                print(f"[email] Sending via Gmail SMTP to {to_email} ...")
+                print(f"[email] Sending via Gmail SMTP → {to_email}")
                 _send_via_smtp(to_email, subject, html, plain)
-                print(f"[email] ✓ Sent via Gmail SMTP to {to_email}")
+                print(f"[email] ✓ Sent via Gmail SMTP → {to_email}")
             else:
-                print(f"[email] Sending via Resend to {to_email} ...")
+                print(f"[email] Sending via Resend → {to_email}")
                 _send_via_resend(to_email, subject, html, plain)
-                print(f"[email] ✓ Sent via Resend to {to_email}")
-        except smtplib.SMTPAuthenticationError:
+                print(f"[email] ✓ Sent via Resend → {to_email}")
+        except smtplib.SMTPAuthenticationError as e:
             print(
-                "[email] ✗ Gmail SMTP authentication failed!\n"
-                "  → Make sure SMTP_PASS is a 16-char App Password (not your Gmail password).\n"
-                "  → Generate one at: https://myaccount.google.com/apppasswords\n"
-                "  → Remove ALL spaces when pasting the app password."
+                f"[email] ✗ Gmail auth FAILED: {e}\n"
+                "  → SMTP_PASS must be a 16-char App Password (no spaces)\n"
+                "  → Get one at: https://myaccount.google.com/apppasswords"
             )
         except urllib.error.HTTPError as e:
             body = e.read().decode()
             print(f"[email] ✗ Resend API error {e.code}: {body}")
-        except Exception as exc:
-            print(f"[email] ✗ Failed to send to {to_email}: {type(exc).__name__}: {exc}")
+        except Exception as e:
+            print(f"[email] ✗ {type(e).__name__}: {e}")
 
     threading.Thread(target=_send, daemon=True).start()
     return True

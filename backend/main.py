@@ -12,7 +12,7 @@ import hashlib
 import os
 
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
-from backend.email_service import send_welcome_email
+from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status
 from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 
@@ -39,6 +39,8 @@ if os.path.isdir(_dist_assets):
 @app.on_event("startup")
 def on_startup():
     init_db()
+    # Print email config to Render logs for easy debugging
+    print_config()
     # seed demo users for presentation
     try:
         if not get_user("admin"):
@@ -460,6 +462,55 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
     )
 
     return user
+
+
+# ── Admin: Test Email (synchronous — returns exact error) ─────────────────────
+class TestEmailPayload(BaseModel):
+    to_email: str
+
+
+@app.post('/api/admin/test-email')
+def admin_test_email(payload: TestEmailPayload, request: Request):
+    """Send a test email synchronously and return the result + full config (admin only)."""
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+
+    result = send_test_email_sync(payload.to_email)
+    # Always return 200 with the result dict — the "ok" field indicates success
+    return result
+
+
+# ── Admin: Email Config Status (no sending) ──────────────────────────────
+@app.get('/api/admin/email-config')
+def admin_email_config(request: Request):
+    """Return email provider config for display in admin panel (admin only)."""
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    return get_config_status()
 
 
 # ── Admin: Delete Student ─────────────────────────────────────────────────────
