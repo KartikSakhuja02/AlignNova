@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, inspect, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 load_dotenv()
@@ -52,6 +52,17 @@ class Application(Base):
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
+    try:
+        inspector = inspect(engine)
+        if "users" in inspector.get_table_names():
+            columns = [col["name"] for col in inspector.get_columns("users")]
+            if "enrollment_id" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN enrollment_id VARCHAR(255) DEFAULT ''"))
+                    conn.commit()
+                    print("Database migration: Added enrollment_id column to users table.")
+    except Exception as e:
+        print(f"Database migration warning: {e}")
 
 
 def get_user(username: str):
