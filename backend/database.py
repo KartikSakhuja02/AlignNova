@@ -211,6 +211,26 @@ def list_applications(for_user_id: int | None = None):
         return [{"id": r.id, "user_id": r.user_id, "drive_id": r.drive_id, "status": r.status} for r in rows]
 
 
+def list_users(role_filter: str = "student"):
+    with SessionLocal() as db:
+        users = db.query(User).filter(User.role == role_filter).order_by(User.created_at.desc()).all()
+        return [
+            {
+                "id": u.id,
+                "username": u.username,
+                "full_name": u.full_name,
+                "email": u.email,
+                "phone": u.phone,
+                "enrollment_id": u.enrollment_id,
+                "role": u.role,
+                "headline": u.headline,
+                "profile_image": u.profile_image,
+                "created_at": u.created_at.isoformat() if u.created_at else None,
+            }
+            for u in users
+        ]
+
+
 def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None):
     with SessionLocal() as db:
         existing = db.query(User).filter(User.username == username).first()

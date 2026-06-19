@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Stat Data ────────────────────────────────────────────────────────────────
 
 const statsData = [
   {
@@ -48,42 +48,6 @@ const statsData = [
   },
 ];
 
-const feedItems = [
-  {
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDoUdDbkt6QeibMXaAhnvpnfrUdZZCQz4esSnujDY82QhVUl3mqeqSlmiLAt49x-vjItTVqJ20tGgwv54mMX_Gq3L8oe_B8uvVrzaFBxIxrRuFx0d_8HRrtb24IFktnksRqGOtninUyjdD1_Vmm2W0aKiVKwxlpN0VB73EiqMLUcqk6w_AE2_kUZGnm7wft6SidS60akzqciDs9aiIot3Hs8biUdyFSRMDq-UnyLVF6xAWu5ofv_v1Vy1deZVIVCSaJXFqSH2ukg7A',
-    name: 'Aditya Sharma',
-    status: 'Approved',
-    statusClass: 'text-secondary bg-secondary-container/20',
-    role: 'Senior Developer @ Google',
-    cgpa: '8.92',
-    time: '2m ago',
-  },
-  {
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_7B4qPFXMM1ihbVPblBWljlXITmJq3Zz2zHWJtHWB2iinMCd8QiCw3qreKx0UldWXSOkLz9GdU290JYvRhoQvq_EFe5SafE29PrM_OMAr3qWmv0fvo8Ru4GlovlL5Dc8uVy2Pm4VuDwTJY1hZyEV53gFgWgEl-zkQqeJD7I15exzlt5hz8d3iGCmtj_Jcw5hFxTQvFkhsrIHYulaOyGuUynRf3JiZlvixCdl8Mcwuz8h57KUZ46-Q0jBqAFGcZjrFAlC_eKDK0W0',
-    name: 'Priya Verma',
-    status: 'Pending',
-    statusClass: 'text-on-tertiary-fixed-variant bg-tertiary-fixed/30',
-    role: 'Product Analyst @ Zomato',
-    cgpa: '7.84',
-    time: '15m ago',
-  },
-  {
-    img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDXAqM9rYs8KT_vQyW-Ad3ImxomME1PYO-3svaCiq3lZ16-W_lTuuX7PBbMGfXQ9DzVUVJh25UbTEnGN9kIN3Cz930Q3prUp4gV_j7CQ0phS-RbDluFP9fDND_OURdKII-4HTHgd08HRKY1D0RXPWYA5DtIwIbXdc8jGEl9FiUrb-SXliRtjAQYJe0MU6Y52poi-Dmdtc8T16bYkmXTWFElRzSPQmcoJmQXrwgXmEsrT_SeOb-qD9g7h-VgiM2sW-_hU8T3m13-fg8',
-    name: 'Rahul Iyer',
-    status: 'Approved',
-    statusClass: 'text-secondary bg-secondary-container/20',
-    role: 'Backend Intern @ Swiggy',
-    cgpa: '9.10',
-    time: '1h ago',
-  },
-];
-
-const studentsData = [
-  { initials: 'AS', bg: 'bg-primary-container/10', color: 'text-primary', name: 'Ananya Singh', email: 'ananya.s@university.edu', dept: 'Computer Science', status: 'Active', statusColor: 'text-secondary', dotColor: 'bg-secondary', lastLogin: 'Today, 10:45 AM' },
-  { initials: 'MK', bg: 'bg-secondary-container/10', color: 'text-secondary', name: 'Manish Kumar', email: 'manish.k@university.edu', dept: 'Information Technology', status: 'Never', statusColor: 'text-outline', dotColor: 'bg-outline', lastLogin: '—' },
-  { initials: 'RP', bg: 'bg-tertiary-container/10', color: 'text-tertiary', name: 'Rohan Patel', email: 'rohan.p@university.edu', dept: 'Electronics & Comm.', status: 'Active', statusColor: 'text-secondary', dotColor: 'bg-secondary', lastLogin: 'Yesterday, 4:20 PM' },
-];
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatCard({ icon, iconColor, iconBg, trend, label, value, sub, subColor }) {
@@ -108,37 +72,6 @@ function StatCard({ icon, iconColor, iconBg, trend, label, value, sub, subColor 
       <p className="text-on-surface-variant text-label-md">{label}</p>
       <h3 className="text-[48px] font-extrabold text-on-surface leading-tight mt-1">{value}</h3>
       <p className={`text-caption mt-2 ${subColor}`}>{sub}</p>
-    </div>
-  );
-}
-
-function FeedItem({ item }) {
-  return (
-    <div className="p-4 rounded-xl border border-outline-variant/50 hover:bg-surface-container-low transition-colors cursor-pointer">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-full bg-surface-dim overflow-hidden border border-outline-variant flex-shrink-0">
-          <img className="w-full h-full object-cover" src={item.img} alt={item.name} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between items-center">
-            <h4 className="text-label-md font-bold text-on-surface">{item.name}</h4>
-            <span className={`text-caption px-2 py-0.5 rounded font-semibold ${item.statusClass}`}>
-              {item.status}
-            </span>
-          </div>
-          <p className="text-caption text-on-surface-variant truncate">
-            Applied for: {item.role}
-          </p>
-          <div className="flex items-center gap-4 mt-2">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-outline">
-              CGPA: {item.cgpa}
-            </span>
-            <span className="text-[10px] uppercase tracking-wider font-bold text-outline">
-              {item.time}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
@@ -185,10 +118,337 @@ function SuccessModal({ visible, companyName, onClose }) {
   );
 }
 
+// ─── Edit Admin Profile Modal ─────────────────────────────────────────────────
+
+function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    headline: '',
+    profile_image: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (profile && visible) {
+      setForm({
+        full_name: profile.full_name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        headline: profile.headline || '',
+        profile_image: profile.profile_image || '',
+      });
+      setError('');
+    }
+  }, [profile, visible]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 800;
+        let { width, height } = img;
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        setForm((prev) => ({ ...prev, profile_image: compressed }));
+      };
+    };
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || 'Failed to save profile');
+      }
+      const updated = await res.json();
+      onSaved(updated);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>manage_accounts</span>
+            </div>
+            <h2 className="text-white font-bold text-title-lg">Edit Profile</h2>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container">
+                {form.profile_image ? (
+                  <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary-container text-primary text-[32px] font-bold">
+                    {form.full_name ? form.full_name[0].toUpperCase() : 'A'}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>photo_camera</span>
+              </button>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            {form.profile_image && (
+              <button
+                onClick={() => setForm((f) => ({ ...f, profile_image: '' }))}
+                className="text-caption text-error hover:underline"
+              >
+                Remove photo
+              </button>
+            )}
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+              {error}
+            </div>
+          )}
+
+          {/* Fields */}
+          {[
+            { label: 'Full Name', key: 'full_name', type: 'text', placeholder: 'Your name' },
+            { label: 'Email', key: 'email', type: 'email', placeholder: 'your@email.com' },
+            { label: 'Phone', key: 'phone', type: 'tel', placeholder: '+91 xxxxxxxxxx' },
+            { label: 'Title / Designation', key: 'headline', type: 'text', placeholder: 'e.g. Chief Placement Officer' },
+          ].map(({ label, key, type, placeholder }) => (
+            <div key={key} className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">{label}</label>
+              <input
+                type={type}
+                value={form[key]}
+                onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 pb-6 flex items-center justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+          >
+            {saving && (
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Add Student Modal ────────────────────────────────────────────────────────
+
+function AddStudentModal({ visible, token, onClose, onAdded }) {
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    username: '',
+    password: '',
+    enrollment_id: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setForm({ full_name: '', email: '', username: '', password: '', enrollment_id: '' });
+      setError('');
+      setSuccess(false);
+    }
+  }, [visible]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setCreating(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        const msg = d.detail === 'username_taken'
+          ? 'Username already taken. Please choose another.'
+          : d.detail === 'email_taken'
+          ? 'Email already registered.'
+          : d.detail || 'Failed to create student';
+        throw new Error(msg);
+      }
+      const newStudent = await res.json();
+      setSuccess(true);
+      onAdded(newStudent);
+      setTimeout(() => { onClose(); }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-secondary to-secondary/80 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>person_add</span>
+            </div>
+            <h2 className="text-white font-bold text-title-lg">Add New Student</h2>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        {success ? (
+          <div className="p-12 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-secondary-container text-secondary rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '36px' }}>check_circle</span>
+            </div>
+            <h3 className="text-headline-sm font-bold text-on-surface mb-2">Student Added!</h3>
+            <p className="text-body-md text-on-surface-variant">
+              <strong>{form.full_name}</strong> has been added to the system.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleCreate} className="p-6 space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { label: 'Full Name', key: 'full_name', type: 'text', placeholder: 'Student full name', required: true },
+                { label: 'Email Address', key: 'email', type: 'email', placeholder: 'student@example.com', required: true },
+                { label: 'Username', key: 'username', type: 'text', placeholder: 'Unique login username', required: true },
+                { label: 'Temporary Password', key: 'password', type: 'password', placeholder: 'Min 6 characters', required: true },
+                { label: 'Enrollment ID', key: 'enrollment_id', type: 'text', placeholder: 'e.g. CS2024001', required: false },
+              ].map(({ label, key, type, placeholder, required }) => (
+                <div key={key} className={`space-y-1 ${key === 'enrollment_id' ? 'md:col-span-2' : ''}`}>
+                  <label className="text-label-md text-on-surface font-semibold">
+                    {label} {required && <span className="text-error">*</span>}
+                  </label>
+                  <input
+                    type={type}
+                    value={form[key]}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    required={required}
+                    minLength={key === 'password' ? 6 : undefined}
+                    className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <p className="text-caption text-on-surface-variant mt-2">
+              <span className="material-symbols-outlined align-middle" style={{ fontSize: '14px' }}>info</span>
+              {' '}The student can update their profile and change their password after first login.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={creating}
+                className="px-8 py-3 bg-secondary text-on-secondary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+              >
+                {creating && (
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {creating ? 'Creating...' : 'Create Student'}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const { token, logout } = useAuth();
+  const { token, user, setUser, logout } = useAuth();
   const navigate = useNavigate();
   const formRef = useRef(null);
 
@@ -201,6 +461,35 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState('');
 
+  // Students state
+  const [students, setStudents] = useState([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+  const [studentPage, setStudentPage] = useState(1);
+  const STUDENTS_PER_PAGE = 5;
+
+  // Modal states
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+
+  // Fetch real students from backend
+  const fetchStudents = useCallback(async () => {
+    if (!token) return;
+    setLoadingStudents(true);
+    try {
+      const res = await fetch('/api/admin/students', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(data);
+      }
+    } catch { /* ignore */ } finally {
+      setLoadingStudents(false);
+    }
+  }, [token]);
+
+  useEffect(() => { fetchStudents(); }, [fetchStudents]);
+
   const handleFormChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -212,17 +501,10 @@ export default function AdminDashboard() {
     try {
       const res = await fetch('/api/drives', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          company: form.company,
-          role: form.role,
-          type: form.type,
-          eligibility: form.eligibility,
-          package: form.package,
-          drive_date: form.drive_date,
+          company: form.company, role: form.role, type: form.type,
+          eligibility: form.eligibility, package: form.package, drive_date: form.drive_date,
         }),
       });
       if (!res.ok) throw new Error('Failed to launch drive');
@@ -235,15 +517,18 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/signin', { replace: true });
-  };
+  const handleLogout = () => { logout(); navigate('/signin', { replace: true }); };
+  const scrollToForm = () => { formRef.current?.scrollIntoView({ behavior: 'smooth' }); };
 
-  // Scroll to form from sidebar
-  const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(students.length / STUDENTS_PER_PAGE));
+  const pagedStudents = students.slice((studentPage - 1) * STUDENTS_PER_PAGE, studentPage * STUDENTS_PER_PAGE);
+
+  // Admin display info
+  const adminName = user?.full_name || user?.username || 'Admin';
+  const adminTitle = user?.headline || 'Administrator';
+  const adminAvatar = user?.profile_image;
+  const adminInitial = adminName[0]?.toUpperCase() || 'A';
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface">
@@ -257,7 +542,7 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined text-outline" style={{ fontSize: '20px' }}>search</span>
               <input
                 className="bg-transparent border-none focus:ring-0 text-body-md ml-2 w-64 placeholder:text-outline/60 outline-none"
-                placeholder="Search applicants, companies..."
+                placeholder="Search students, companies..."
                 type="text"
               />
             </div>
@@ -267,24 +552,39 @@ export default function AdminDashboard() {
               <span className="material-symbols-outlined">notifications</span>
               <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
             </button>
-            <button className="text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95">
-              <span className="material-symbols-outlined">help</span>
-            </button>
             <div className="h-8 w-px bg-outline-variant mx-1" />
-            <div className="flex items-center gap-3 cursor-pointer">
+
+            {/* Clickable profile area */}
+            <button
+              onClick={() => setShowEditProfile(true)}
+              className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low px-3 py-1.5 rounded-xl transition-colors active:scale-[0.98]"
+              title="Edit Profile"
+            >
               <div className="text-right hidden sm:block">
-                <p className="text-label-md font-bold text-on-surface">Dr. Sarah Jenkins</p>
-                <p className="text-caption text-on-surface-variant">Chief Placement Officer</p>
+                <p className="text-label-md font-bold text-on-surface">{adminName}</p>
+                <p className="text-caption text-on-surface-variant">{adminTitle}</p>
               </div>
-              <img
-                className="w-10 h-10 rounded-full border-2 border-primary-container object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3LfnyVLVG7lIVx0TROiGnkgQC-_h9ZsNlrqFFLdF7DNwH5uXRaZuwbT-UXFQM_TNTRe-1vxFU4GmpBT6uVYRqo6b06YcXaIw8gh8tRCvmjrv-M_Fu_h4HrNeb-Px8C4G-KzbwUJXyBQFBMWZZ4Mtd2XDiWwcwlWLhfLeRIvOoxK4o95SLSPrbgmJD-VLHfVB2vtADyQPEEfD9lzZuDwoQ6zLepHEFS3Gbnya1QS__CMol-TYNzqRSEXUEu0LQ_ep-hUtVF5xV8Js"
-                alt="Admin"
-              />
-            </div>
+              <div className="relative">
+                {adminAvatar ? (
+                  <img
+                    className="w-10 h-10 rounded-full border-2 border-primary-container object-cover"
+                    src={adminAvatar}
+                    alt={adminName}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full border-2 border-primary-container bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
+                    {adminInitial}
+                  </div>
+                )}
+                <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-outline-variant">
+                  <span className="material-symbols-outlined text-primary" style={{ fontSize: '10px' }}>edit</span>
+                </span>
+              </div>
+            </button>
+
             <button
               onClick={handleLogout}
-              className="ml-2 flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors text-label-md"
+              className="ml-1 flex items-center gap-1 text-on-surface-variant hover:text-error transition-colors text-label-md"
               title="Logout"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>logout</span>
@@ -293,6 +593,33 @@ export default function AdminDashboard() {
         </header>
 
         <div className="max-w-[1400px] mx-auto p-p-lg space-y-10">
+
+          {/* ── Welcome Banner ── */}
+          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/10 px-6 py-5 flex items-center justify-between">
+            <div>
+              <p className="text-caption text-primary font-semibold uppercase tracking-wider mb-1">Admin Portal</p>
+              <h1 className="text-headline-lg font-extrabold text-on-surface">
+                Welcome back, {adminName.split(' ')[0]} 👋
+              </h1>
+              <p className="text-body-md text-on-surface-variant mt-1">{adminTitle}</p>
+            </div>
+            <div className="hidden md:flex items-center gap-3">
+              <button
+                onClick={() => setShowAddStudent(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 shadow-sm transition-all"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                Add Student
+              </button>
+              <button
+                onClick={scrollToForm}
+                className="flex items-center gap-2 px-5 py-2.5 border border-primary text-primary rounded-xl text-label-md font-semibold hover:bg-primary/5 transition-colors"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
+                Launch Drive
+              </button>
+            </div>
+          </div>
 
           {/* ── Section 1: Stats ── */}
           <section>
@@ -314,7 +641,10 @@ export default function AdminDashboard() {
                   <div className="w-10 h-10 bg-primary-container text-on-primary rounded-lg flex items-center justify-center">
                     <span className="material-symbols-outlined">campaign</span>
                   </div>
-                  <h2 className="text-headline-md font-bold text-on-surface">Launch New Drive</h2>
+                  <div>
+                    <h2 className="text-headline-md font-bold text-on-surface">Launch Internship Drive</h2>
+                    <p className="text-caption text-on-surface-variant">Drives will be visible to all eligible students</p>
+                  </div>
                 </div>
 
                 {formError && (
@@ -327,7 +657,7 @@ export default function AdminDashboard() {
                 <form onSubmit={handleLaunchDrive} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Company Name</label>
+                      <label className="text-label-md text-on-surface font-semibold">Company Name</label>
                       <input
                         name="company" value={form.company} onChange={handleFormChange}
                         required
@@ -336,7 +666,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Opportunity Type</label>
+                      <label className="text-label-md text-on-surface font-semibold">Opportunity Type</label>
                       <select
                         name="type" value={form.type} onChange={handleFormChange}
                         className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
@@ -344,10 +674,11 @@ export default function AdminDashboard() {
                         <option>Full-Time Graduate</option>
                         <option>Summer Internship</option>
                         <option>6-Month Co-op</option>
+                        <option>Part-Time Internship</option>
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Job Role</label>
+                      <label className="text-label-md text-on-surface font-semibold">Job Role</label>
                       <input
                         name="role" value={form.role} onChange={handleFormChange}
                         required
@@ -356,7 +687,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Min CGPA Requirement</label>
+                      <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
                       <input
                         name="eligibility" value={form.eligibility} onChange={handleFormChange}
                         type="number" step="0.1" min="0" max="10"
@@ -365,7 +696,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Package (LPA)</label>
+                      <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
                         <input
@@ -376,7 +707,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-label-md text-on-surface">Drive Date</label>
+                      <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
                       <input
                         name="drive_date" value={form.drive_date} onChange={handleFormChange}
                         type="date"
@@ -402,32 +733,88 @@ export default function AdminDashboard() {
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
                       )}
-                      {launching ? 'Launching...' : 'Launch Recruitment Drive'}
+                      {launching ? 'Launching...' : 'Launch Drive'}
                     </button>
                   </div>
                 </form>
               </div>
             </section>
 
-            {/* Live Feed */}
+            {/* Quick Stats Panel */}
             <section className="lg:col-span-5">
               <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm h-full flex flex-col">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-lg flex items-center justify-center">
-                      <span className="material-symbols-outlined">pause</span>
+                      <span className="material-symbols-outlined">people</span>
                     </div>
-                    <h2 className="text-headline-md font-bold text-on-surface">Live Feed</h2>
+                    <h2 className="text-headline-md font-bold text-on-surface">Student Overview</h2>
                   </div>
                   <span className="px-3 py-1 bg-secondary-container/20 text-secondary text-caption rounded-full font-bold">
-                    12 Active Now
+                    {students.length} Total
                   </span>
                 </div>
-                <div className="flex-1 space-y-4 overflow-y-auto max-h-[500px] pr-1 custom-scrollbar">
-                  {feedItems.map((item) => <FeedItem key={item.name} item={item} />)}
-                </div>
-                <button className="w-full mt-6 py-2 text-primary text-label-md font-semibold hover:underline decoration-2 underline-offset-4">
-                  View All Applications
+
+                {loadingStudents ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  </div>
+                ) : students.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                    <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+                      <span className="material-symbols-outlined text-outline" style={{ fontSize: '32px' }}>person_off</span>
+                    </div>
+                    <p className="text-body-md font-semibold text-on-surface">No students yet</p>
+                    <p className="text-caption text-on-surface-variant mt-1">Add your first student to get started</p>
+                    <button
+                      onClick={() => setShowAddStudent(true)}
+                      className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                      Add First Student
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex-1 space-y-3 overflow-y-auto max-h-[420px] pr-1 custom-scrollbar">
+                    {students.slice(0, 6).map((s) => {
+                      const initials = s.full_name
+                        ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                        : s.username[0].toUpperCase();
+                      return (
+                        <div key={s.id} className="p-3 rounded-xl border border-outline-variant/50 hover:bg-surface-container-low transition-colors flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-outline-variant">
+                            {s.profile_image ? (
+                              <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
+                                {initials}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-label-md font-bold text-on-surface truncate">{s.full_name || s.username}</p>
+                            <p className="text-caption text-outline truncate">{s.email || s.username}</p>
+                          </div>
+                          {s.enrollment_id && (
+                            <span className="text-[10px] bg-primary-container/20 text-primary px-2 py-0.5 rounded font-semibold flex-shrink-0">
+                              {s.enrollment_id}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setShowAddStudent(true)}
+                  className="w-full mt-6 py-2.5 border border-dashed border-primary/40 text-primary text-label-md font-semibold hover:bg-primary/5 transition-colors rounded-xl flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                  Add New Student
                 </button>
               </div>
             </section>
@@ -438,14 +825,19 @@ export default function AdminDashboard() {
             <div className="p-p-lg border-b border-outline-variant flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-headline-md font-bold text-on-surface">Student Management</h2>
-                <p className="text-body-md text-on-surface-variant">Manage credentials and dashboard access</p>
+                <p className="text-body-md text-on-surface-variant">
+                  {loadingStudents ? 'Loading...' : `${students.length} registered student${students.length !== 1 ? 's' : ''}`}
+                </p>
               </div>
               <div className="flex items-center gap-3">
                 <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
                   Bulk Import
                 </button>
-                <button className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2">
+                <button
+                  onClick={() => setShowAddStudent(true)}
+                  className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
+                >
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                   Add Student
                 </button>
@@ -456,7 +848,7 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container-low">
                   <tr>
-                    {['Student Name', 'Department', 'Login Status', 'Last Login', 'Actions'].map((h, i) => (
+                    {['Student Name', 'Email', 'Enrollment ID', 'Joined', 'Actions'].map((h, i) => (
                       <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 4 ? 'text-right' : ''}`}>
                         {h}
                       </th>
@@ -464,76 +856,147 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {studentsData.map((s) => (
-                    <tr
-                      key={s.email}
-                      className="hover:bg-surface-container-lowest transition-all"
-                      style={{ transition: 'background 0.15s, transform 0.15s' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
-                    >
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-caption ${s.bg} ${s.color}`}>
-                            {s.initials}
-                          </div>
-                          <div>
-                            <p className="text-body-md font-bold text-on-surface">{s.name}</p>
-                            <p className="text-caption text-outline">{s.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5 text-body-md text-on-surface-variant">{s.dept}</td>
-                      <td className="px-6 py-5">
-                        <span className={`flex items-center gap-2 font-bold text-label-md ${s.statusColor}`}>
-                          <span className={`w-2 h-2 rounded-full ${s.dotColor}`} />
-                          {s.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-caption text-outline">{s.lastLogin}</td>
-                      <td className="px-6 py-5 text-right">
-                        <button className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors">
-                          <span className="material-symbols-outlined">edit</span>
-                        </button>
-                        <button className="p-2 hover:bg-error-container/20 rounded-lg text-error transition-colors ml-1">
-                          <span className="material-symbols-outlined">key</span>
-                        </button>
+                  {loadingStudents ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant">
+                        <svg className="animate-spin h-6 w-6 text-primary mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Loading students...
                       </td>
                     </tr>
-                  ))}
+                  ) : pagedStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <span className="material-symbols-outlined text-outline" style={{ fontSize: '40px' }}>person_search</span>
+                          <p className="text-body-md text-on-surface-variant font-semibold">No students found</p>
+                          <button
+                            onClick={() => setShowAddStudent(true)}
+                            className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                          >
+                            Add First Student
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    pagedStudents.map((s) => {
+                      const initials = s.full_name
+                        ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                        : s.username[0].toUpperCase();
+                      const joinedDate = s.created_at
+                        ? new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : '—';
+                      return (
+                        <tr
+                          key={s.id}
+                          className="hover:bg-surface-container-lowest transition-all"
+                          style={{ transition: 'background 0.15s, transform 0.15s' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
+                        >
+                          <td className="px-6 py-5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant flex-shrink-0">
+                                {s.profile_image ? (
+                                  <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-caption">
+                                    {initials}
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <p className="text-body-md font-bold text-on-surface">{s.full_name || s.username}</p>
+                                <p className="text-caption text-outline">@{s.username}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{s.email || '—'}</td>
+                          <td className="px-6 py-5">
+                            {s.enrollment_id ? (
+                              <span className="px-2 py-1 bg-primary-container/20 text-primary text-caption font-semibold rounded-lg">
+                                {s.enrollment_id}
+                              </span>
+                            ) : (
+                              <span className="text-outline text-caption">Not set</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-5 text-caption text-outline">{joinedDate}</td>
+                          <td className="px-6 py-5 text-right">
+                            <button className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors" title="Edit student">
+                              <span className="material-symbols-outlined">edit</span>
+                            </button>
+                            <button className="p-2 hover:bg-error-container/20 rounded-lg text-error transition-colors ml-1" title="Reset password">
+                              <span className="material-symbols-outlined">key</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
 
+            {/* Pagination */}
             <div className="p-6 bg-surface-container-low/50 flex items-center justify-between border-t border-outline-variant">
-              <p className="text-caption text-on-surface-variant">Showing 3 of 2,410 students</p>
-              <div className="flex items-center gap-2">
-                <button disabled className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50">
-                  <span className="material-symbols-outlined">chevron_left</span>
-                </button>
-                {[1, 2, 3].map((n) => (
+              <p className="text-caption text-on-surface-variant">
+                Showing {pagedStudents.length} of {students.length} student{students.length !== 1 ? 's' : ''}
+              </p>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
                   <button
-                    key={n}
-                    className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === 1 ? 'bg-primary text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
+                    disabled={studentPage === 1}
+                    onClick={() => setStudentPage((p) => p - 1)}
+                    className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
                   >
-                    {n}
+                    <span className="material-symbols-outlined">chevron_left</span>
                   </button>
-                ))}
-                <button className="p-2 border border-outline-variant rounded-lg bg-white text-outline">
-                  <span className="material-symbols-outlined">chevron_right</span>
-                </button>
-              </div>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setStudentPage(n)}
+                      className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === studentPage ? 'bg-primary text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                  <button
+                    disabled={studentPage === totalPages}
+                    onClick={() => setStudentPage((p) => p + 1)}
+                    className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
         </div>
       </main>
 
-      {/* Success Modal */}
+      {/* Modals */}
       <SuccessModal
         visible={showModal}
         companyName={form.company}
         onClose={() => setShowModal(false)}
+      />
+      <EditProfileModal
+        visible={showEditProfile}
+        profile={user || {}}
+        token={token}
+        onClose={() => setShowEditProfile(false)}
+        onSaved={(updated) => setUser(updated)}
+      />
+      <AddStudentModal
+        visible={showAddStudent}
+        token={token}
+        onClose={() => setShowAddStudent(false)}
+        onAdded={(newStudent) => setStudents((prev) => [newStudent, ...prev])}
       />
     </div>
   );

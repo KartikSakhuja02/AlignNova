@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import os
 
-from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications
+from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users
 from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 
@@ -377,6 +377,100 @@ def update_app_status(app_id: int, payload: dict, request: Request):
         db.commit()
         db.refresh(app_entry)
         return {"id": app_entry.id, "status": app_entry.status}
+
+
+# ── Admin: List Students ─────────────────────────────────────────────────────
+@app.get('/api/admin/students')
+def admin_list_students(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    return list_users()
+
+
+# ── Admin: Create Student ─────────────────────────────────────────────────────
+class CreateStudentPayload(BaseModel):
+    full_name: str
+    email: str
+    username: str
+    password: str
+    department: Optional[str] = None
+    enrollment_id: Optional[str] = None
+
+
+@app.post('/api/admin/students')
+def admin_create_student(payload: CreateStudentPayload, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    # Check for duplicates
+    if get_user(payload.username):
+        raise HTTPException(status_code=400, detail='username_taken')
+    if payload.email and get_user_by_email(payload.email):
+        raise HTTPException(status_code=400, detail='email_taken')
+    hashed = hash_password(payload.password)
+    try:
+        user = create_user(
+            payload.username, hashed, role='student',
+            full_name=payload.full_name, email=payload.email,
+            enrollment_id=payload.enrollment_id
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail='username_taken')
+    return user
+
+
+# ── Admin: Update Own Profile ─────────────────────────────────────────────────
+@app.post('/api/admin/profile')
+def admin_update_profile(request: Request, payload: dict):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+    updated = update_profile(
+        username,
+        full_name=payload.get('full_name'),
+        email=payload.get('email'),
+        phone=payload.get('phone'),
+        headline=payload.get('headline'),
+        profile_image=payload.get('profile_image')
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    return updated
 
 
 # ── SPA catch-all ────────────────────────────────────────────────────────────
