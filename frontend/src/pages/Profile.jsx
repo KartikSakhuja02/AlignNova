@@ -74,6 +74,7 @@ function EditModal({ profile, onClose, onSave }) {
     full_name: profile.full_name || '',
     email: profile.email || '',
     phone: profile.phone || '',
+    enrollment_id: profile.enrollment_id || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -101,6 +102,7 @@ function EditModal({ profile, onClose, onSave }) {
             { label: 'Full Name', name: 'full_name', type: 'text' },
             { label: 'Email Address', name: 'email', type: 'email' },
             { label: 'Phone Number', name: 'phone', type: 'tel' },
+            { label: 'Enrollment ID', name: 'enrollment_id', type: 'text' },
           ].map(({ label, name, type }) => (
             <div key={name}>
               <label className="block text-label-md text-on-surface-variant mb-1">{label}</label>
@@ -138,9 +140,9 @@ function EditModal({ profile, onClose, onSave }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Profile() {
-  const { token } = useAuth();
+  const { token, setUser } = useAuth();
 
-  const [profile, setProfile] = useState({ full_name: '', email: '', phone: '' });
+  const [profile, setProfile] = useState({ full_name: '', email: '', phone: '', enrollment_id: '' });
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
@@ -186,6 +188,7 @@ export default function Profile() {
       if (res.ok) {
         const updated = await res.json();
         setProfile(updated);
+        setUser(updated);
         setSaveMsg('Profile updated!');
         setTimeout(() => setSaveMsg(''), 3000);
       }
@@ -390,6 +393,10 @@ export default function Profile() {
               Computer Science &amp; Data Analytics @ Stanford University
             </p>
             <div className="flex flex-wrap gap-6 text-outline">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>badge</span>
+                <span className="text-label-md">Enrollment ID: {profile.enrollment_id || 'Not Set'}</span>
+              </div>
               {profile.email && (
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>mail</span>

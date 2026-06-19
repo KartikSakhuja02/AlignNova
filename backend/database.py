@@ -25,6 +25,7 @@ class User(Base):
     full_name = Column(String, nullable=True)
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
+    enrollment_id = Column(String, nullable=True, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -65,6 +66,7 @@ def get_user(username: str):
             "full_name": user.full_name,
             "email": user.email,
             "phone": user.phone,
+            "enrollment_id": user.enrollment_id,
             "id": user.id,
         }
 
@@ -81,11 +83,12 @@ def get_user_by_email(email: str):
             "full_name": user.full_name,
             "email": user.email,
             "phone": user.phone,
+            "enrollment_id": user.enrollment_id,
             "id": user.id,
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -96,6 +99,8 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.email = email
         if phone is not None:
             user.phone = phone
+        if enrollment_id is not None:
+            user.enrollment_id = enrollment_id
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -143,12 +148,12 @@ def list_applications(for_user_id: int | None = None):
         return [{"id": r.id, "user_id": r.user_id, "drive_id": r.drive_id, "status": r.status} for r in rows]
 
 
-def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None):
+def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None):
     with SessionLocal() as db:
         existing = db.query(User).filter(User.username == username).first()
         if existing:
             raise ValueError("user_exists")
-        user = User(username=username, hashed_password=hashed_password, role=role, full_name=full_name, email=email, phone=phone)
+        user = User(username=username, hashed_password=hashed_password, role=role, full_name=full_name, email=email, phone=phone, enrollment_id=enrollment_id)
         db.add(user)
         db.commit()
         db.refresh(user)

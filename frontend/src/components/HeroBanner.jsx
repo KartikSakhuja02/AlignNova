@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const stats = [
   {
@@ -28,6 +29,9 @@ const stats = [
 ];
 
 export default function HeroBanner() {
+  const { user } = useAuth();
+  const firstName = user?.full_name ? user.full_name.trim().split(' ')[0] : (user?.username || 'Student');
+
   return (
     <section className="relative overflow-hidden rounded-[2rem] bg-primary-container p-p-xl text-on-primary">
       {/* Decorative blob */}
@@ -35,7 +39,7 @@ export default function HeroBanner() {
 
       <div className="relative z-10 max-w-2xl">
         <h2 className="text-display-lg font-extrabold mb-4 text-white leading-tight">
-          Welcome back, Alex!
+          Welcome back, {firstName}!
         </h2>
         <p className="text-body-lg text-on-primary-container mb-8 max-w-lg">
           You have 2 upcoming interviews this week. We've found 5 new internships matching your

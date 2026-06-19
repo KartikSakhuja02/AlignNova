@@ -6,7 +6,7 @@ export default function TopBar() {
   const headerRef = useRef(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -66,8 +66,8 @@ export default function TopBar() {
         <div ref={dropdownRef} className="relative flex items-center gap-3 cursor-pointer select-none">
           <div onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-3">
             <div className="text-right">
-              <p className="text-label-md text-on-surface font-bold">Alex Rivers</p>
-              <p className="text-[10px] text-on-surface-variant">Student ID: #8829</p>
+              <p className="text-label-md text-on-surface font-bold">{user?.full_name || user?.username || 'Student'}</p>
+              <p className="text-[10px] text-on-surface-variant">{user?.enrollment_id ? `Enrollment ID: ${user.enrollment_id}` : 'Enrollment ID: Not Set'}</p>
             </div>
             <img
               alt="User Profile"

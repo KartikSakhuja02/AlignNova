@@ -7,3 +7,4 @@ class UserPublic(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
+    enrollment_id: Optional[str] = None
