@@ -462,6 +462,38 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
     return user
 
 
+# ── Admin: Delete Student ─────────────────────────────────────────────────────
+@app.delete('/api/admin/students/{user_id}')
+def admin_delete_student(user_id: int, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+
+    from backend.database import SessionLocal, User, Application
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code=404, detail='user_not_found')
+        if user.role == 'admin':
+            raise HTTPException(status_code=403, detail='cannot_delete_admin')
+        # Delete their applications first (FK safety)
+        db.query(Application).filter(Application.user_id == user_id).delete()
+        db.delete(user)
+        db.commit()
+    return {'deleted': True, 'user_id': user_id}
+
+
 # ── Set Password (token-based, for newly invited students) ───────────────────
 class SetPasswordPayload(BaseModel):
     token: str

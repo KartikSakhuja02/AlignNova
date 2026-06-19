@@ -445,6 +445,63 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
   );
 }
 
+// ─── Confirm Delete Modal ─────────────────────────────────────────────────────
+
+function ConfirmDeleteModal({ student, onConfirm, onCancel, deleting }) {
+  if (!student) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        {/* Red header strip */}
+        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
+          </div>
+          <h2 className="text-white font-bold text-title-md">Delete Student</h2>
+        </div>
+        <div className="p-6">
+          <p className="text-body-md text-on-surface mb-1">
+            Are you sure you want to delete
+          </p>
+          <p className="text-title-md font-extrabold text-on-surface mb-3">
+            {student.full_name || student.username}
+          </p>
+          <div className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 mb-6">
+            <p className="text-caption text-error font-semibold flex items-center gap-1.5">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>warning</span>
+              This will permanently delete the student and all their applications. This cannot be undone.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              disabled={deleting}
+              className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={deleting}
+              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {deleting ? (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
+              )}
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -470,6 +527,8 @@ export default function AdminDashboard() {
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Fetch real students from backend
   const fetchStudents = useCallback(async () => {
@@ -519,6 +578,28 @@ export default function AdminDashboard() {
 
   const handleLogout = () => { logout(); navigate('/signin', { replace: true }); };
   const scrollToForm = () => { formRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+
+  const handleDeleteStudent = async () => {
+    if (!studentToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/students/${studentToDelete.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to delete student');
+      setStudents((prev) => prev.filter((s) => s.id !== studentToDelete.id));
+      // Go back a page if the current page becomes empty
+      const remaining = students.length - 1;
+      const newTotalPages = Math.max(1, Math.ceil(remaining / STUDENTS_PER_PAGE));
+      if (studentPage > newTotalPages) setStudentPage(newTotalPages);
+      setStudentToDelete(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(students.length / STUDENTS_PER_PAGE));
@@ -932,6 +1013,13 @@ export default function AdminDashboard() {
                             <button className="p-2 hover:bg-error-container/20 rounded-lg text-error transition-colors ml-1" title="Reset password">
                               <span className="material-symbols-outlined">key</span>
                             </button>
+                            <button
+                              onClick={() => setStudentToDelete(s)}
+                              className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
+                              title="Delete student"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                            </button>
                           </td>
                         </tr>
                       );
@@ -997,6 +1085,12 @@ export default function AdminDashboard() {
         token={token}
         onClose={() => setShowAddStudent(false)}
         onAdded={(newStudent) => setStudents((prev) => [newStudent, ...prev])}
+      />
+      <ConfirmDeleteModal
+        student={studentToDelete}
+        onConfirm={handleDeleteStudent}
+        onCancel={() => setStudentToDelete(null)}
+        deleting={deleting}
       />
     </div>
   );
