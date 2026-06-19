@@ -34,6 +34,7 @@ class User(Base):
     education = Column(String, nullable=True, default="[]")
     experience = Column(String, nullable=True, default="[]")
     profile_image = Column(String, nullable=True, default="")
+    must_change_password = Column(String, nullable=True, default="0")  # "1" = must change on next login
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -73,7 +74,8 @@ def init_db() -> None:
                 "bio": "TEXT DEFAULT ''",
                 "education": "TEXT DEFAULT '[]'",
                 "experience": "TEXT DEFAULT '[]'",
-                "profile_image": "TEXT DEFAULT ''"
+                "profile_image": "TEXT DEFAULT ''",
+                "must_change_password": "VARCHAR(4) DEFAULT '0'"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -106,6 +108,7 @@ def get_user(username: str):
             "education": user.education,
             "experience": user.experience,
             "profile_image": user.profile_image,
+            "must_change_password": user.must_change_password or "0",
             "id": user.id,
         }
 
@@ -170,6 +173,19 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
         return get_user(username)
 
 
+def update_password(username: str, new_hashed_password: str) -> bool:
+    """Update a user's password and clear the must_change_password flag."""
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            return False
+        user.hashed_password = new_hashed_password
+        user.must_change_password = "0"
+        db.add(user)
+        db.commit()
+        return True
+
+
 def create_drive(company: str, role: str, type: str | None = None, eligibility: str | None = None, package: str | None = None, drive_date: str | None = None):
     with SessionLocal() as db:
         drive = Drive(company=company, role=role, type=type, eligibility=eligibility, package=package, drive_date=drive_date)
@@ -231,12 +247,16 @@ def list_users(role_filter: str = "student"):
         ]
 
 
-def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None):
+def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, must_change_password: str = "0"):
     with SessionLocal() as db:
         existing = db.query(User).filter(User.username == username).first()
         if existing:
             raise ValueError("user_exists")
-        user = User(username=username, hashed_password=hashed_password, role=role, full_name=full_name, email=email, phone=phone, enrollment_id=enrollment_id)
+        user = User(
+            username=username, hashed_password=hashed_password, role=role,
+            full_name=full_name, email=email, phone=phone,
+            enrollment_id=enrollment_id, must_change_password=must_change_password
+        )
         db.add(user)
         db.commit()
         db.refresh(user)

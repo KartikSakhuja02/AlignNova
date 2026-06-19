@@ -15,6 +15,7 @@ import Settings from './pages/Settings';
 import Premium from './pages/Premium';
 import DriveApplication from './pages/DriveApplication';
 import AdminDashboard from './pages/AdminDashboard';
+import SetPassword from './pages/SetPassword';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -76,6 +77,9 @@ export default function App() {
           <Route element={<RequireGuest />}>
             <Route path="/signin" element={<SignIn />} />
           </Route>
+
+          {/* Public: Set Password (invitation link from email) */}
+          <Route path="/set-password" element={<SetPassword />} />
 
           {/* Admin routes */}
           <Route element={<RequireAdmin />}>

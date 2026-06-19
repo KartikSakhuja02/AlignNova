@@ -11,7 +11,8 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import os
 
-from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users
+from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
+from backend.email_service import send_welcome_email
 from backend.models import UserPublic
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 
@@ -56,6 +57,15 @@ def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_M
     expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
     to_encode.update({"exp": expire, "sub": data.get("sub"), "role": data.get("role")})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_set_password_token(username: str) -> str:
+    """Generate a single-use JWT for the set-password flow (7-day expiry)."""
+    expire = datetime.now(timezone.utc) + timedelta(days=7)
+    return jwt.encode(
+        {"sub": username, "purpose": "set_password", "exp": expire},
+        SECRET_KEY, algorithm=ALGORITHM
+    )
 
 
 def decode_token(token: str) -> dict:
@@ -435,11 +445,64 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
         user = create_user(
             payload.username, hashed, role='student',
             full_name=payload.full_name, email=payload.email,
-            enrollment_id=payload.enrollment_id
+            enrollment_id=payload.enrollment_id,
+            must_change_password="1"
         )
     except ValueError:
         raise HTTPException(status_code=400, detail='username_taken')
+
+    # Generate a set-password token and send the welcome email (non-blocking)
+    sp_token = create_set_password_token(payload.username)
+    send_welcome_email(
+        to_email=payload.email,
+        student_name=payload.full_name or payload.username,
+        set_password_token=sp_token
+    )
+
     return user
+
+
+# ── Set Password (token-based, for newly invited students) ───────────────────
+class SetPasswordPayload(BaseModel):
+    token: str
+    new_password: str
+
+
+@app.post('/api/set-password')
+def set_password(payload: SetPasswordPayload):
+    """Validate the set-password JWT and update the user's password."""
+    try:
+        data = decode_token(payload.token)
+    except JWTError:
+        raise HTTPException(status_code=400, detail='invalid_or_expired_token')
+
+    if data.get('purpose') != 'set_password':
+        raise HTTPException(status_code=400, detail='invalid_token_purpose')
+
+    username = data.get('sub')
+    if not username:
+        raise HTTPException(status_code=400, detail='invalid_token')
+
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=422, detail='password_too_short')
+
+    new_hashed = hash_password(payload.new_password)
+    ok = update_password(username, new_hashed)
+    if not ok:
+        raise HTTPException(status_code=500, detail='update_failed')
+
+    # Return a fresh login token so the frontend can auto-login
+    access_token = create_access_token({'sub': username, 'role': user.get('role', 'student')})
+    return {
+        'access_token': access_token,
+        'token_type': 'bearer',
+        'role': user.get('role', 'student'),
+        'message': 'password_set'
+    }
 
 
 # ── Admin: Update Own Profile ─────────────────────────────────────────────────
