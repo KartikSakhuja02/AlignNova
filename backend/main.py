@@ -86,7 +86,8 @@ def get_current_user_from_token(token: str) -> UserPublic:
         headline=user.get("headline", ""),
         bio=user.get("bio", ""),
         education=user.get("education", "[]"),
-        experience=user.get("experience", "[]")
+        experience=user.get("experience", "[]"),
+        profile_image=user.get("profile_image", "")
     )
 
 
@@ -126,7 +127,8 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
         headline=user.get('headline', ""),
         bio=user.get('bio', ""),
         education=user.get('education', "[]"),
-        experience=user.get('experience', "[]")
+        experience=user.get('experience', "[]"),
+        profile_image=user.get('profile_image', "")
     )
 
 
@@ -234,7 +236,8 @@ def post_profile(request: Request, payload: dict):
         headline=payload.get('headline'),
         bio=payload.get('bio'),
         education=payload.get('education'),
-        experience=payload.get('experience')
+        experience=payload.get('experience'),
+        profile_image=payload.get('profile_image')
     )
     if not updated:
         raise HTTPException(status_code=404, detail='user_not_found')

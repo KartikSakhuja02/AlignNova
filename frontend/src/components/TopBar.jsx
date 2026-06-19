@@ -72,7 +72,7 @@ export default function TopBar() {
             <img
               alt="User Profile"
               className="w-10 h-10 rounded-full border-2 border-primary-fixed shadow-sm object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_ZLAJginhm5aZ9DEg7Tltbu55Hb8bhUGt7xAiGjZF_V3CmtLhl9a68HvqFf0UUG0F0z03m_nDZvxvQWbA9hjuZJ061d3jtTOsg9bh1ujhy6d8pcpJVzQxas5yvuFRw15ULsVn7j_J2NX_MimcNuJ6onMPMLx_PJOj8IQEQlX5T89zW8Zn8d4FUVluZkCTCPtOAfD7k5mUl3m3U6xR1poEHvD42-M5ImtT_Lgze8hXHRUITVwXzbmsABD6hG92PRnrP8elDEXD0_g"
+              src={user?.profile_image || "https://lh3.googleusercontent.com/aida-public/AB6AXuA_ZLAJginhm5aZ9DEg7Tltbu55Hb8bhUGt7xAiGjZF_V3CmtLhl9a68HvqFf0UUG0F0z03m_nDZvxvQWbA9hjuZJ061d3jtTOsg9bh1ujhy6d8pcpJVzQxas5yvuFRw15ULsVn7j_J2NX_MimcNuJ6onMPMLx_PJOj8IQEQlX5T89zW8Zn8d4FUVluZkCTCPtOAfD7k5mUl3m3U6xR1poEHvD42-M5ImtT_Lgze8hXHRUITVwXzbmsABD6hG92PRnrP8elDEXD0_g"}
             />
             <span className={`material-symbols-outlined text-on-surface-variant text-sm transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}>
               expand_more

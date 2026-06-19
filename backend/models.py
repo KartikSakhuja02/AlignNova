@@ -15,3 +15,4 @@ class UserPublic(BaseModel):
     bio: Optional[str] = ""
     education: Optional[str] = "[]"
     experience: Optional[str] = "[]"
+    profile_image: Optional[str] = ""

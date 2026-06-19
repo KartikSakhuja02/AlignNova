@@ -33,6 +33,7 @@ class User(Base):
     bio = Column(String, nullable=True, default="")
     education = Column(String, nullable=True, default="[]")
     experience = Column(String, nullable=True, default="[]")
+    profile_image = Column(String, nullable=True, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -71,7 +72,8 @@ def init_db() -> None:
                 "headline": "VARCHAR(255) DEFAULT ''",
                 "bio": "TEXT DEFAULT ''",
                 "education": "TEXT DEFAULT '[]'",
-                "experience": "TEXT DEFAULT '[]'"
+                "experience": "TEXT DEFAULT '[]'",
+                "profile_image": "TEXT DEFAULT ''"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -103,6 +105,7 @@ def get_user(username: str):
             "bio": user.bio,
             "education": user.education,
             "experience": user.experience,
+            "profile_image": user.profile_image,
             "id": user.id,
         }
 
@@ -127,11 +130,12 @@ def get_user_by_email(email: str):
             "bio": user.bio,
             "education": user.education,
             "experience": user.experience,
+            "profile_image": user.profile_image,
             "id": user.id,
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -158,6 +162,8 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.education = education
         if experience is not None:
             user.experience = experience
+        if profile_image is not None:
+            user.profile_image = profile_image
         db.add(user)
         db.commit()
         db.refresh(user)

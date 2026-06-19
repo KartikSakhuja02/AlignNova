@@ -47,8 +47,21 @@ function EditProfileForm({ profile, onCancel, onSave }) {
     email: profile.email || '',
     phone: profile.phone || '',
     enrollment_id: profile.enrollment_id || '',
+    profile_image: profile.profile_image || '',
   });
   const [saving, setSaving] = useState(false);
+
+  const fileInputRef = React.useRef(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm((prev) => ({ ...prev, profile_image: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -153,13 +166,28 @@ function EditProfileForm({ profile, onCancel, onSave }) {
               <div className="flex flex-col items-center">
                 <div className="relative group">
                   <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-surface-container-high shadow-xl mb-6 flex items-center justify-center bg-gradient-to-br from-primary to-primary-container">
-                    <span className="text-5xl font-extrabold text-white">{initials}</span>
+                    {form.profile_image ? (
+                      <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-5xl font-extrabold text-white">{initials}</span>
+                    )}
                   </div>
-                  <button type="button" className="absolute bottom-6 right-2 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current.click()}
+                    className="absolute bottom-6 right-2 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all"
+                  >
                     <span className="material-symbols-outlined text-sm">photo_camera</span>
                   </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
                 </div>
-                <p className="text-caption text-on-surface-variant text-center max-w-[200px]">Dynamic initials placeholder. Photo upload feature coming soon.</p>
+                <p className="text-caption text-on-surface-variant text-center max-w-[200px]">Click the camera icon to upload a professional headshot.</p>
               </div>
             </section>
 
@@ -463,6 +491,7 @@ export default function Profile() {
     bio: '',
     education: [],
     experience: [],
+    profile_image: '',
   });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -668,9 +697,13 @@ export default function Profile() {
 
           {/* Avatar */}
           <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-surface-container-low shadow-sm flex-shrink-0 bg-primary/10 flex items-center justify-center">
-            <div className="w-full h-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
-              <span className="text-4xl font-extrabold text-white">{initials}</span>
-            </div>
+            {profile.profile_image ? (
+              <img src={profile.profile_image} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+                <span className="text-4xl font-extrabold text-white">{initials}</span>
+              </div>
+            )}
           </div>
 
           {/* Info */}
