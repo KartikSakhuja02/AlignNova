@@ -73,7 +73,21 @@ def get_current_user_from_token(token: str) -> UserPublic:
     user = get_user(username)
     if not user:
         raise HTTPException(status_code=401, detail="user_not_found")
-    return UserPublic(username=user["username"], role=user.get("role", "student"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"), enrollment_id=user.get("enrollment_id"))
+    return UserPublic(
+        username=user["username"],
+        role=user.get("role", "student"),
+        full_name=user.get("full_name"),
+        email=user.get("email"),
+        phone=user.get("phone"),
+        enrollment_id=user.get("enrollment_id"),
+        location=user.get("location", ""),
+        linkedin_url=user.get("linkedin_url", ""),
+        website_url=user.get("website_url", ""),
+        headline=user.get("headline", ""),
+        bio=user.get("bio", ""),
+        education=user.get("education", "[]"),
+        experience=user.get("experience", "[]")
+    )
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
@@ -99,7 +113,21 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
     user = get_user(username)
     if not user:
         return None
-    return UserPublic(username=user['username'], role=user.get('role', 'student'), full_name=user.get('full_name'), email=user.get('email'), phone=user.get('phone'), enrollment_id=user.get('enrollment_id'))
+    return UserPublic(
+        username=user['username'],
+        role=user.get('role', 'student'),
+        full_name=user.get('full_name'),
+        email=user.get('email'),
+        phone=user.get('phone'),
+        enrollment_id=user.get('enrollment_id'),
+        location=user.get('location', ""),
+        linkedin_url=user.get('linkedin_url', ""),
+        website_url=user.get('website_url', ""),
+        headline=user.get('headline', ""),
+        bio=user.get('bio', ""),
+        education=user.get('education', "[]"),
+        experience=user.get('experience', "[]")
+    )
 
 
 def hash_password(password: str) -> str:
@@ -194,7 +222,20 @@ def post_profile(request: Request, payload: dict):
         username = payload_token.get('sub')
     except JWTError:
         raise HTTPException(status_code=401, detail='invalid_token')
-    updated = update_profile(username, full_name=payload.get('full_name'), email=payload.get('email'), phone=payload.get('phone'), enrollment_id=payload.get('enrollment_id'))
+    updated = update_profile(
+        username,
+        full_name=payload.get('full_name'),
+        email=payload.get('email'),
+        phone=payload.get('phone'),
+        enrollment_id=payload.get('enrollment_id'),
+        location=payload.get('location'),
+        linkedin_url=payload.get('linkedin_url'),
+        website_url=payload.get('website_url'),
+        headline=payload.get('headline'),
+        bio=payload.get('bio'),
+        education=payload.get('education'),
+        experience=payload.get('experience')
+    )
     if not updated:
         raise HTTPException(status_code=404, detail='user_not_found')
     return updated

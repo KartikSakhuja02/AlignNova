@@ -26,6 +26,13 @@ class User(Base):
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     enrollment_id = Column(String, nullable=True, default="")
+    location = Column(String, nullable=True, default="")
+    linkedin_url = Column(String, nullable=True, default="")
+    website_url = Column(String, nullable=True, default="")
+    headline = Column(String, nullable=True, default="")
+    bio = Column(String, nullable=True, default="")
+    education = Column(String, nullable=True, default="[]")
+    experience = Column(String, nullable=True, default="[]")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -56,11 +63,22 @@ def init_db() -> None:
         inspector = inspect(engine)
         if "users" in inspector.get_table_names():
             columns = [col["name"] for col in inspector.get_columns("users")]
-            if "enrollment_id" not in columns:
-                with engine.connect() as conn:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN enrollment_id VARCHAR(255) DEFAULT ''"))
-                    conn.commit()
-                    print("Database migration: Added enrollment_id column to users table.")
+            new_cols = {
+                "enrollment_id": "VARCHAR(255) DEFAULT ''",
+                "location": "VARCHAR(255) DEFAULT ''",
+                "linkedin_url": "VARCHAR(255) DEFAULT ''",
+                "website_url": "VARCHAR(255) DEFAULT ''",
+                "headline": "VARCHAR(255) DEFAULT ''",
+                "bio": "TEXT DEFAULT ''",
+                "education": "TEXT DEFAULT '[]'",
+                "experience": "TEXT DEFAULT '[]'"
+            }
+            for col_name, col_type in new_cols.items():
+                if col_name not in columns:
+                    with engine.connect() as conn:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                        print(f"Database migration: Added {col_name} column to users table.")
     except Exception as e:
         print(f"Database migration warning: {e}")
 
@@ -78,6 +96,13 @@ def get_user(username: str):
             "email": user.email,
             "phone": user.phone,
             "enrollment_id": user.enrollment_id,
+            "location": user.location,
+            "linkedin_url": user.linkedin_url,
+            "website_url": user.website_url,
+            "headline": user.headline,
+            "bio": user.bio,
+            "education": user.education,
+            "experience": user.experience,
             "id": user.id,
         }
 
@@ -95,11 +120,18 @@ def get_user_by_email(email: str):
             "email": user.email,
             "phone": user.phone,
             "enrollment_id": user.enrollment_id,
+            "location": user.location,
+            "linkedin_url": user.linkedin_url,
+            "website_url": user.website_url,
+            "headline": user.headline,
+            "bio": user.bio,
+            "education": user.education,
+            "experience": user.experience,
             "id": user.id,
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -112,6 +144,20 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.phone = phone
         if enrollment_id is not None:
             user.enrollment_id = enrollment_id
+        if location is not None:
+            user.location = location
+        if linkedin_url is not None:
+            user.linkedin_url = linkedin_url
+        if website_url is not None:
+            user.website_url = website_url
+        if headline is not None:
+            user.headline = headline
+        if bio is not None:
+            user.bio = bio
+        if education is not None:
+            user.education = education
+        if experience is not None:
+            user.experience = experience
         db.add(user)
         db.commit()
         db.refresh(user)

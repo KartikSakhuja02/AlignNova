@@ -8,3 +8,10 @@ class UserPublic(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     enrollment_id: Optional[str] = None
+    location: Optional[str] = ""
+    linkedin_url: Optional[str] = ""
+    website_url: Optional[str] = ""
+    headline: Optional[str] = ""
+    bio: Optional[str] = ""
+    education: Optional[str] = "[]"
+    experience: Optional[str] = "[]"
