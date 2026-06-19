@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 import Sidebar from './components/Sidebar';
@@ -43,12 +43,16 @@ function RequireGuest() {
 // ─── Student Layout ───────────────────────────────────────────────────────────
 
 function StudentLayout() {
+  const location = useLocation();
+
   return (
     <div className="text-on-background">
       <Sidebar />
       <main className="ml-64 min-h-screen">
         <TopBar />
-        <Outlet />
+        <div key={location.pathname} className="animate-fadeIn">
+          <Outlet />
+        </div>
         <footer className="p-8 border-t border-outline-variant text-center opacity-40">
           <p className="text-caption">
             © 2024 Alignova Placement Portal. Professional Excellence Redefined.
