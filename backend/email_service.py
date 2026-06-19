@@ -1,17 +1,19 @@
 import os
-import smtplib
+import json
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import urllib.request
+import urllib.error
 
+# ─── Resend Configuration ─────────────────────────────────────────────────────
+# Set RESEND_API_KEY in your Render environment variables.
+# Sign up free at https://resend.com → API Keys → Create API Key
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 
-# ─── SMTP Configuration (set via environment variables) ───────────────────────
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")          # e.g. yourapp@gmail.com
-SMTP_PASS = os.getenv("SMTP_PASS", "")          # App password
-FROM_EMAIL = os.getenv("FROM_EMAIL", SMTP_USER)
+# The "From" address. Free Resend accounts can use: onboarding@resend.dev
+# Once you verify your own domain, update this to something@yourdomain.com
+FROM_EMAIL = os.getenv("FROM_EMAIL", "onboarding@resend.dev")
 FROM_NAME  = os.getenv("FROM_NAME",  "AlignNova Portal")
+
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:5173")
 
 
@@ -32,7 +34,6 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
     .header {{ background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%); padding: 48px 40px 40px; text-align: center; position: relative; overflow: hidden; }}
     .header::before {{ content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%); }}
     .logo-badge {{ display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 50px; padding: 8px 20px; margin-bottom: 28px; backdrop-filter: blur(10px); }}
-    .logo-icon {{ width: 28px; height: 28px; background: #ffffff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }}
     .logo-text {{ color: #ffffff; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }}
     .header h1 {{ color: #ffffff; font-size: 32px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }}
     .header p {{ color: rgba(255,255,255,0.80); font-size: 16px; line-height: 1.6; }}
@@ -44,7 +45,7 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
     .highlight-box p {{ font-size: 14px; color: #4338ca; font-weight: 500; line-height: 1.6; }}
     .highlight-box strong {{ color: #3730a3; }}
     .cta-section {{ text-align: center; margin-bottom: 36px; }}
-    .cta-button {{ display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #ffffff !important; text-decoration: none; font-size: 16px; font-weight: 700; padding: 16px 48px; border-radius: 50px; box-shadow: 0 8px 24px rgba(79,70,229,0.35); transition: all 0.2s; letter-spacing: 0.3px; }}
+    .cta-button {{ display: inline-block; background: linear-gradient(135deg, #4f46e5, #7c3aed); color: #ffffff !important; text-decoration: none; font-size: 16px; font-weight: 700; padding: 16px 48px; border-radius: 50px; box-shadow: 0 8px 24px rgba(79,70,229,0.35); letter-spacing: 0.3px; }}
     .cta-subtext {{ margin-top: 14px; font-size: 13px; color: #9ca3af; }}
     .steps {{ margin-bottom: 36px; }}
     .steps h3 {{ font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px; }}
@@ -62,18 +63,15 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
 </head>
 <body>
   <div class="wrapper">
-    <!-- Header -->
     <div class="header">
       <div class="logo-badge">
-        <span class="logo-icon">⭐</span>
-        <span class="logo-text">AlignNova</span>
+        <span class="logo-text">⭐ AlignNova</span>
       </div>
       <h1>You're In,<br/>{first_name}! 🎉</h1>
       <p>Your placement portal account is ready and waiting.</p>
       <div class="confetti-row">✨ 🚀 🎓</div>
     </div>
 
-    <!-- Body -->
     <div class="body">
       <p class="greeting">Welcome to AlignNova Placement Portal</p>
       <p class="message">
@@ -113,16 +111,15 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
       <div class="divider"></div>
 
       <p class="link-fallback">
-        If the button above doesn't work, copy and paste this link into your browser:<br/>
+        If the button doesn't work, copy and paste this link into your browser:<br/>
         <a href="{set_password_url}">{set_password_url}</a>
       </p>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
       <p>
-        This email was sent by <strong>AlignNova Placement Portal</strong>.<br/>
-        If you didn't expect this, please ignore this email or contact your placement coordinator.<br/><br/>
+        Sent by <strong>AlignNova Placement Portal</strong>.<br/>
+        If you didn't expect this, please contact your placement coordinator.<br/><br/>
         © 2024 AlignNova. All rights reserved.
       </p>
     </div>
@@ -133,47 +130,57 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
 
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str) -> bool:
     """
-    Send a welcome email to a newly created student.
-    Returns True on success, False on failure (errors are printed but not raised
-    so that student creation is never blocked by email failures).
+    Send a welcome email via Resend API.
+    Runs in a background thread so it never blocks the API response.
+    Returns True immediately (fire-and-forget).
+
+    Required env vars:
+        RESEND_API_KEY  - from https://resend.com (starts with re_...)
+        APP_BASE_URL    - e.g. https://your-app.onrender.com
+        FROM_EMAIL      - e.g. onboarding@resend.dev (free) or you@yourdomain.com
     """
-    if not SMTP_USER or not SMTP_PASS:
-        print("[email_service] SMTP_USER/SMTP_PASS not configured — skipping welcome email.")
+    if not RESEND_API_KEY:
+        print("[email_service] RESEND_API_KEY not set — skipping welcome email.")
         return False
 
     set_password_url = f"{APP_BASE_URL}/set-password?token={set_password_token}"
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "🎓 Welcome to AlignNova — Activate Your Account"
-    msg["From"]    = f"{FROM_NAME} <{FROM_EMAIL}>"
-    msg["To"]      = to_email
-
-    # Plain-text fallback
-    plain = (
+    html_body = _build_welcome_html(student_name, set_password_url)
+    plain_body = (
         f"Welcome to AlignNova, {student_name}!\n\n"
         f"Your placement portal account has been created. "
-        f"Click the link below to set your password and access your dashboard:\n\n"
+        f"Click the link below to set your password:\n\n"
         f"{set_password_url}\n\n"
-        f"This link expires in 7 days.\n\n"
-        f"— AlignNova Team"
+        f"This link expires in 7 days.\n\n— AlignNova Team"
     )
-    msg.attach(MIMEText(plain, "plain"))
-    msg.attach(MIMEText(_build_welcome_html(student_name, set_password_url), "html"))
+
+    payload = json.dumps({
+        "from": f"{FROM_NAME} <{FROM_EMAIL}>",
+        "to": [to_email],
+        "subject": "🎓 Welcome to AlignNova — Activate Your Account",
+        "html": html_body,
+        "text": plain_body,
+    }).encode("utf-8")
 
     def _send():
         try:
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-                server.ehlo()
-                server.starttls()
-                server.login(SMTP_USER, SMTP_PASS)
-                server.sendmail(FROM_EMAIL, [to_email], msg.as_string())
-            print(f"[email_service] Welcome email sent to {to_email}")
-            return True
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {RESEND_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                result = json.loads(resp.read())
+                print(f"[email_service] Welcome email sent to {to_email} | id={result.get('id')}")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()
+            print(f"[email_service] Resend API error {e.code}: {body}")
         except Exception as exc:
             print(f"[email_service] Failed to send email to {to_email}: {exc}")
-            return False
 
-    # Fire-and-forget in a background thread so the API doesn't block
     thread = threading.Thread(target=_send, daemon=True)
     thread.start()
     return True
