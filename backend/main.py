@@ -1,20 +1,20 @@
 
 from fastapi import FastAPI, Request, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
-from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from pydantic import BaseModel
+from datetime import datetime, timedelta, timezone
 import hashlib
 import os
 
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications
 from backend.models import UserPublic
-from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
+
 
 load_dotenv()
 
@@ -27,8 +27,12 @@ main = app
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-# React build output (produced by: cd frontend && npm run build)
 FRONTEND_DIST = os.path.join(BASE_DIR, "frontend_dist")
+
+# Serve React static assets (JS/CSS/images) — only if the build exists
+_dist_assets = os.path.join(FRONTEND_DIST, "assets")
+if os.path.isdir(_dist_assets):
+    app.mount("/assets", StaticFiles(directory=_dist_assets), name="assets")
 
 
 @app.on_event("startup")
@@ -46,14 +50,33 @@ def on_startup():
     except Exception:
         pass
 
-# Serve React static assets (JS/CSS/images) — only if the build exists
-_dist_assets = os.path.join(FRONTEND_DIST, "assets")
-if os.path.isdir(_dist_assets):
-    app.mount("/assets", StaticFiles(directory=_dist_assets), name="assets")
+
+def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
+    to_encode.update({"exp": expire, "sub": data.get("sub"), "role": data.get("role")})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict:
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def get_current_user_from_token(token: str) -> UserPublic:
+    try:
+        payload = decode_token(token)
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="invalid_token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="invalid_token")
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=401, detail="user_not_found")
+    return UserPublic(username=user["username"], role=user.get("role", "patient"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"))
 
 
 def _get_token_from_request(request: Request) -> Optional[str]:
-    # Prefer Authorization header, fall back to cookie named access_token
     auth = request.headers.get('Authorization')
     if auth:
         parts = auth.split()
@@ -89,28 +112,8 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
-    to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=expires_minutes)
-    to_encode.update({"exp": expire, "sub": data.get("sub"), "role": data.get("role")})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def decode_token(token: str) -> dict:
-    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-
-
-class SignupData(BaseModel):
-    username: str
-    password: str
-    role: Optional[str] = "patient"
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-
-
 @app.post("/api/signup")
-def signup(data: SignupData):
+def signup(data: UserPublic):
     existing = get_user(data.username)
     if existing:
         raise HTTPException(status_code=400, detail="username_taken")
@@ -135,7 +138,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 
 @app.post('/api/signup')
-def signup(data: SignupData):
+def signup(data: UserPublic):
     existing = get_user(data.username)
     if existing:
         raise HTTPException(status_code=400, detail='username_taken')
@@ -148,20 +151,6 @@ def signup(data: SignupData):
         raise HTTPException(status_code=400, detail='username_taken')
     token = create_access_token({'sub': user['username'], 'role': user.get('role')})
     return {'access_token': token, 'token_type': 'bearer', 'role': user.get('role')}
-
-
-def get_current_user_from_token(token: str) -> UserPublic:
-    try:
-        payload = decode_token(token)
-        username = payload.get("sub")
-        if not username:
-            raise HTTPException(status_code=401, detail="invalid_token")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="invalid_token")
-    user = get_user(username)
-    if not user:
-        raise HTTPException(status_code=401, detail="user_not_found")
-    return UserPublic(username=user["username"], role=user.get("role", "patient"), full_name=user.get("full_name"), email=user.get("email"), phone=user.get("phone"))
 
 
 @app.get("/api/me")
@@ -355,4 +344,5 @@ def spa_catchall(full_path: str):
         return FileResponse(index)
     # Fallback if the frontend hasn't been built yet
     return JSONResponse({'detail': 'Frontend not built. Run: cd frontend && npm run build'}, status_code=503)
+
 
