@@ -179,6 +179,16 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                   >
                     <span className="material-symbols-outlined text-sm">photo_camera</span>
                   </button>
+                  {form.profile_image && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, profile_image: '' }))}
+                      className="absolute bottom-6 left-2 bg-error text-on-error p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all"
+                      title="Remove Photo"
+                    >
+                      <span className="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                  )}
                   <input
                     type="file"
                     ref={fileInputRef}
