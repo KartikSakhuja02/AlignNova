@@ -98,7 +98,10 @@ def get_current_user_from_token(token: str) -> UserPublic:
         profile_image=user.get("profile_image", ""),
         resume_name=user.get("resume_name", ""),
         resume_url=user.get("resume_url", ""),
-        is_eligible=user.get("is_eligible", 0)
+        is_eligible=user.get("is_eligible", 0),
+        skills=user.get("skills", "[]"),
+        languages=user.get("languages", "[]"),
+        projects=user.get("projects", "[]")
     )
 
 
@@ -142,7 +145,10 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
         profile_image=user.get('profile_image', ""),
         resume_name=user.get('resume_name', ""),
         resume_url=user.get('resume_url', ""),
-        is_eligible=user.get('is_eligible', 0)
+        is_eligible=user.get('is_eligible', 0),
+        skills=user.get('skills', "[]"),
+        languages=user.get('languages', "[]"),
+        projects=user.get('projects', "[]")
     )
 
 
@@ -254,7 +260,10 @@ def post_profile(request: Request, payload: dict):
         profile_image=payload.get('profile_image'),
         resume_name=payload.get('resume_name'),
         resume_url=payload.get('resume_url'),
-        is_eligible=payload.get('is_eligible')
+        is_eligible=payload.get('is_eligible'),
+        skills=payload.get('skills'),
+        languages=payload.get('languages'),
+        projects=payload.get('projects')
     )
     if not updated:
         raise HTTPException(status_code=404, detail='user_not_found')

@@ -38,6 +38,9 @@ class User(Base):
     resume_name = Column(String, nullable=True, default="")
     resume_url = Column(String, nullable=True, default="")
     is_eligible = Column(Integer, nullable=True, default=0)
+    skills = Column(String, nullable=True, default="[]")
+    languages = Column(String, nullable=True, default="[]")
+    projects = Column(String, nullable=True, default="[]")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -81,7 +84,10 @@ def init_db() -> None:
                 "must_change_password": "VARCHAR(4) DEFAULT '0'",
                 "resume_name": "VARCHAR(255) DEFAULT ''",
                 "resume_url": "VARCHAR(255) DEFAULT ''",
-                "is_eligible": "INTEGER DEFAULT 0"
+                "is_eligible": "INTEGER DEFAULT 0",
+                "skills": "TEXT DEFAULT '[]'",
+                "languages": "TEXT DEFAULT '[]'",
+                "projects": "TEXT DEFAULT '[]'"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -118,6 +124,9 @@ def get_user(username: str):
             "resume_name": user.resume_name or "",
             "resume_url": user.resume_url or "",
             "is_eligible": user.is_eligible or 0,
+            "skills": user.skills or "[]",
+            "languages": user.languages or "[]",
+            "projects": user.projects or "[]",
             "id": user.id,
         }
 
@@ -146,11 +155,14 @@ def get_user_by_email(email: str):
             "resume_name": user.resume_name or "",
             "resume_url": user.resume_url or "",
             "is_eligible": user.is_eligible or 0,
+            "skills": user.skills or "[]",
+            "languages": user.languages or "[]",
+            "projects": user.projects or "[]",
             "id": user.id,
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -185,6 +197,12 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.resume_url = resume_url
         if is_eligible is not None:
             user.is_eligible = is_eligible
+        if skills is not None:
+            user.skills = skills
+        if languages is not None:
+            user.languages = languages
+        if projects is not None:
+            user.projects = projects
         
         # Automatically compute eligibility based on updated fields
         if user.full_name and user.email and user.resume_name:
