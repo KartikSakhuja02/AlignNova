@@ -43,84 +43,123 @@ FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 # ── HTML template ─────────────────────────────────────────────────────────────
 
 def _build_welcome_html(student_name: str, set_password_url: str) -> str:
-    first_name = (student_name or "Student").split()[0]
+    logo_url = f"{APP_BASE_URL}/logo.png"
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome to AlignNova</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    * {{ margin:0; padding:0; box-sizing:border-box; }}
-    body {{ font-family:'Inter',Arial,sans-serif; background:#f0f4f8; color:#1a1a2e; }}
-    .wrapper {{ max-width:600px; margin:40px auto; background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.12); }}
-    .header {{ background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 50%,#2563eb 100%); padding:48px 40px 40px; text-align:center; }}
-    .logo-badge {{ display:inline-flex; align-items:center; gap:10px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); border-radius:50px; padding:8px 20px; margin-bottom:28px; }}
-    .logo-text {{ color:#fff; font-size:15px; font-weight:700; letter-spacing:.5px; }}
-    .header h1 {{ color:#fff; font-size:32px; font-weight:800; line-height:1.2; margin-bottom:12px; }}
-    .header p {{ color:rgba(255,255,255,.80); font-size:16px; line-height:1.6; }}
-    .confetti {{ text-align:center; font-size:28px; margin:24px 0 0; letter-spacing:6px; }}
-    .body {{ padding:40px; }}
-    .greeting {{ font-size:22px; font-weight:700; color:#1a1a2e; margin-bottom:16px; }}
-    .message {{ font-size:15px; color:#4b5563; line-height:1.7; margin-bottom:24px; }}
-    .highlight-box {{ background:linear-gradient(135deg,#f0f4ff 0%,#faf0ff 100%); border:1px solid #e0e7ff; border-radius:14px; padding:20px 24px; margin-bottom:32px; }}
-    .highlight-box p {{ font-size:14px; color:#4338ca; font-weight:500; line-height:1.6; }}
-    .cta-section {{ text-align:center; margin-bottom:36px; }}
-    .cta-button {{ display:inline-block; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff !important; text-decoration:none; font-size:16px; font-weight:700; padding:16px 48px; border-radius:50px; box-shadow:0 8px 24px rgba(79,70,229,.35); letter-spacing:.3px; }}
-    .cta-subtext {{ margin-top:14px; font-size:13px; color:#9ca3af; }}
-    .steps {{ margin-bottom:36px; }}
-    .steps h3 {{ font-size:16px; font-weight:700; color:#1a1a2e; margin-bottom:16px; }}
-    .step {{ display:flex; align-items:flex-start; gap:14px; margin-bottom:14px; }}
-    .step-num {{ width:28px; height:28px; background:linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-radius:50%; font-size:13px; font-weight:700; text-align:center; line-height:28px; flex-shrink:0; }}
-    .step-text {{ font-size:14px; color:#374151; line-height:1.5; }}
-    .divider {{ height:1px; background:#f3f4f6; margin:28px 0; }}
-    .link-fallback {{ font-size:13px; color:#6b7280; line-height:1.6; word-break:break-all; }}
-    .link-fallback a {{ color:#4f46e5; }}
-    .footer {{ background:#f9fafb; border-top:1px solid #f3f4f6; padding:28px 40px; text-align:center; }}
-    .footer p {{ font-size:13px; color:#9ca3af; line-height:1.6; }}
-  </style>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Welcome to Alignnova</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 </head>
-<body>
-  <div class="wrapper">
-    <div class="header">
-      <div class="logo-badge"><span class="logo-text">⭐ AlignNova</span></div>
-      <h1>You're In,<br/>{first_name}! 🎉</h1>
-      <p>Your placement portal account is ready.</p>
-      <div class="confetti">✨ 🚀 🎓</div>
+<body style="background-color: #F8FAFC; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111C2D; margin: 0; padding: 32px 16px; min-height: 100vh;">
+  <!-- Main Email Container -->
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(199, 196, 216, 0.3); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
+    
+    <!-- Hero Section: Logo & Branding -->
+    <div style="background: linear-gradient(135deg, #3525cd 0%, #4f46e5 100%); padding: 32px 24px; text-align: center;">
+      <table role="presentation" style="margin: 0 auto; border-collapse: collapse;">
+        <tr>
+          <td style="vertical-align: middle;">
+            <img alt="Alignova Logo" src="{logo_url}" style="height: 40px; width: auto; vertical-align: middle; border-radius: 8px;" />
+          </td>
+          <td style="vertical-align: middle; padding-left: 12px;">
+            <span style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; font-family: 'Plus Jakarta Sans', sans-serif;">Alignova</span>
+          </td>
+        </tr>
+      </table>
     </div>
-    <div class="body">
-      <p class="greeting">Welcome to AlignNova Placement Portal</p>
-      <p class="message">
-        Hi <strong>{student_name}</strong>, your placement coordinator has created an account for you
-        on <strong>AlignNova</strong> — your gateway to internships, recruitment drives, and career
-        opportunities.
+
+    <!-- Body Content -->
+    <div style="padding: 40px 32px;">
+      <h1 style="font-size: 26px; font-weight: 700; color: #111C2D; margin: 0 0 20px 0; line-height: 1.3; font-family: 'Plus Jakarta Sans', sans-serif;">
+        Welcome to the Career Network, <span style="color: #3525cd; font-weight: 800;">{student_name}</span>!
+      </h1>
+      <p style="font-size: 16px; color: #464555; line-height: 1.6; margin: 0 0 28px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+        Your executive account is now fully provisioned. You have been selected to join the Alignova placement ecosystem, where high-performance students meet industry-leading recruiters.
       </p>
-      <div class="highlight-box">
-        <p>🔐 <strong>One last step:</strong> Click the button below to set your personal password
-        and activate your account. The link is valid for <strong>7 days</strong>.</p>
+
+      <!-- Action Button wrapper table for email client compatibility -->
+      <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 32px 0;">
+        <tr>
+          <td align="center">
+            <a href="{set_password_url}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 14px; font-weight: 600; padding: 14px 36px; text-decoration: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15); font-family: 'Plus Jakarta Sans', sans-serif;">
+              Join Now &nbsp;&rarr;
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Fallback Link -->
+      <div style="margin-top: 24px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <p style="font-size: 12px; color: #777587; margin: 0 0 4px 0;">If the button doesn't work, copy and paste this link in your browser:</p>
+        <a href="{set_password_url}" style="font-size: 12px; color: #3525cd; word-break: break-all; text-decoration: underline;">{set_password_url}</a>
       </div>
-      <div class="cta-section">
-        <a href="{set_password_url}" class="cta-button">Join Now &rarr;</a>
-        <p class="cta-subtext">🔒 Secure link &nbsp;·&nbsp; Expires in 7 days</p>
+
+      <!-- Steps Section -->
+      <div style="margin-top: 36px; padding-top: 36px; border-top: 1px solid rgba(199, 196, 216, 0.3);">
+        <h2 style="font-size: 18px; font-weight: 700; color: #111C2D; margin: 0 0 24px 0; font-family: 'Plus Jakarta Sans', sans-serif;">What happens next?</h2>
+        
+        <!-- Step 1 -->
+        <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="width: 40px; vertical-align: top; padding-right: 16px;">
+              <div style="background: linear-gradient(135deg, #4f46e5 0%, #3525cd 100%); width: 36px; height: 36px; border-radius: 18px; color: #ffffff; font-weight: bold; font-size: 14px; text-align: center; line-height: 36px; font-family: 'Plus Jakarta Sans', sans-serif;">1</div>
+            </td>
+            <td style="vertical-align: top;">
+              <h3 style="font-size: 14px; font-weight: 700; color: #111C2D; margin: 0 0 4px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Set your password</h3>
+              <p style="font-size: 14px; color: #464555; margin: 0; line-height: 1.5; font-family: 'Plus Jakarta Sans', sans-serif;">Secure your account by configuring your corporate credentials and MFA settings.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Step 2 -->
+        <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <tr>
+            <td style="width: 40px; vertical-align: top; padding-right: 16px;">
+              <div style="background: linear-gradient(135deg, #4f46e5 0%, #3525cd 100%); width: 36px; height: 36px; border-radius: 18px; color: #ffffff; font-weight: bold; font-size: 14px; text-align: center; line-height: 36px; font-family: 'Plus Jakarta Sans', sans-serif;">2</div>
+            </td>
+            <td style="vertical-align: top;">
+              <h3 style="font-size: 14px; font-weight: 700; color: #111C2D; margin: 0 0 4px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Complete your profile</h3>
+              <p style="font-size: 14px; color: #464555; margin: 0; line-height: 1.5; font-family: 'Plus Jakarta Sans', sans-serif;">Upload your professional portfolio and academic transcripts for recruiter review.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Step 3 -->
+        <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <tr>
+            <td style="width: 40px; vertical-align: top; padding-right: 16px;">
+              <div style="background: linear-gradient(135deg, #4f46e5 0%, #3525cd 100%); width: 36px; height: 36px; border-radius: 18px; color: #ffffff; font-weight: bold; font-size: 14px; text-align: center; line-height: 36px; font-family: 'Plus Jakarta Sans', sans-serif;">3</div>
+            </td>
+            <td style="vertical-align: top;">
+              <h3 style="font-size: 14px; font-weight: 700; color: #111C2D; margin: 0 0 4px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Apply to drives</h3>
+              <p style="font-size: 14px; color: #464555; margin: 0; line-height: 1.5; font-family: 'Plus Jakarta Sans', sans-serif;">Browse available executive placement drives and submit your applications directly.</p>
+            </td>
+          </tr>
+        </table>
+
       </div>
-      <div class="steps">
-        <h3>What happens next?</h3>
-        <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Set your password</strong> — Choose a strong, personal password.</div></div>
-        <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Explore your dashboard</strong> — View internship drives, track applications, complete your profile.</div></div>
-        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Apply to drives</strong> — Browse opportunities and apply with one click.</div></div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f0f3ff; padding: 32px 24px; text-align: center; border-top: 1px solid rgba(199, 196, 216, 0.2);">
+      <div style="margin-bottom: 16px;">
+        <a href="#" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">Support</a>
+        <a href="#" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">Privacy Policy</a>
+        <a href="#" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">Preference Center</a>
       </div>
-      <div class="divider"></div>
-      <p class="link-fallback">
-        Button not working? Copy and paste this link:<br/>
-        <a href="{set_password_url}">{set_password_url}</a>
+      <p style="font-size: 12px; color: #464555; margin: 0 0 8px 0; line-height: 1.6; font-family: 'Plus Jakarta Sans', sans-serif;">
+        Sent by Alignova Placement Portal • Executive precision in career placement.
       </p>
+      <p style="font-size: 12px; color: #777587; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+        © 2024 Alignova International. All rights reserved.
+      </p>
+      <div style="margin-top: 24px; opacity: 0.4;">
+        <img alt="Alignova Logo" src="{logo_url}" style="height: 24px; width: auto; filter: grayscale(100%);" />
+      </div>
     </div>
-    <div class="footer">
-      <p>Sent by <strong>AlignNova Placement Portal</strong>.<br/>
-      If you didn't expect this, contact your placement coordinator.<br/><br/>
-      © 2024 AlignNova. All rights reserved.</p>
-    </div>
+
   </div>
 </body>
 </html>"""

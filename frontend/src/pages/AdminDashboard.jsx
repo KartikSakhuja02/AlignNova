@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
+import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -527,6 +528,7 @@ export default function AdminDashboard() {
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -910,7 +912,14 @@ export default function AdminDashboard() {
                   {loadingStudents ? 'Loading...' : `${students.length} registered student${students.length !== 1 ? 's' : ''}`}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  onClick={() => setShowEmailPreview(true)}
+                  className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
+                  Preview Welcome Email
+                </button>
                 <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
                   Bulk Import
@@ -1091,6 +1100,10 @@ export default function AdminDashboard() {
         onConfirm={handleDeleteStudent}
         onCancel={() => setStudentToDelete(null)}
         deleting={deleting}
+      />
+      <OnboardingEmailPreview
+        visible={showEmailPreview}
+        onClose={() => setShowEmailPreview(false)}
       />
     </div>
   );
