@@ -620,9 +620,15 @@ def admin_update_profile(request: Request, payload: dict):
 
 
 # ── SPA catch-all ────────────────────────────────────────────────────────────
-# All non-API routes return the React index.html so client-side routing works.
+# All non-API routes return the React index.html (or serve matching files from frontend_dist) so client-side routing works.
 @app.get('/{full_path:path}')
 def spa_catchall(full_path: str):
+    # If the file exists in frontend_dist (e.g. logo.png or favicon.svg), serve it directly
+    if full_path:
+        file_path = os.path.join(FRONTEND_DIST, full_path)
+        if os.path.isfile(file_path) and os.path.basename(file_path) != 'index.html':
+            return FileResponse(file_path)
+
     index = os.path.join(FRONTEND_DIST, 'index.html')
     if os.path.isfile(index):
         return FileResponse(index)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 // Password strength calculator
 function getStrength(password) {
@@ -145,7 +146,7 @@ export default function SetPassword() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl px-5 py-3">
-            <img src="/logo.png" alt="AlignNova Logo" className="h-8 w-auto object-contain rounded-md" />
+            <img src={logo} alt="AlignNova Logo" className="h-8 w-auto object-contain rounded-md" />
             <span className="text-white font-bold text-lg tracking-tight">AlignNova</span>
           </div>
         </div>

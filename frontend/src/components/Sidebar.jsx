@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 const navLinks = [
   { icon: 'dashboard', label: 'Dashboard', path: '/', fill: true },
@@ -24,7 +25,7 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface flex flex-col py-p-md z-50 sidebar-transition">
       {/* Logo */}
       <div className="px-6 mb-8 flex flex-col items-center">
-        <img src="/logo.png" alt="AlignNova Logo" className="h-16 w-auto object-contain" />
+        <img src={logo} alt="AlignNova Logo" className="h-16 w-auto object-contain" />
         <p className="text-caption text-on-surface-variant font-bold tracking-wider uppercase mt-2">Placement Portal</p>
       </div>
 

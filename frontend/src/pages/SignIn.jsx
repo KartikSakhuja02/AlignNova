@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ export default function SignIn() {
       >
         {/* Branding Header */}
         <div className="text-center mb-p-xl">
-          <img src="/logo.png" alt="AlignNova Logo" className="h-32 mx-auto mb-p-md object-contain" />
+          <img src={logo} alt="AlignNova Logo" className="h-32 mx-auto mb-p-md object-contain" />
           <p className="font-body-md text-body-md text-on-surface-variant mt-2">Elevating high-stakes career placement.</p>
         </div>
 
