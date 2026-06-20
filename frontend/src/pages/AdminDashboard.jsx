@@ -519,11 +519,11 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState('');
 
-  // Students state
   const [students, setStudents] = useState([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
+  const [studentSearch, setStudentSearch] = useState('');
   const [studentPage, setStudentPage] = useState(1);
-  const STUDENTS_PER_PAGE = 5;
+  const STUDENTS_PER_PAGE = 8;
 
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -603,9 +603,19 @@ export default function AdminDashboard() {
     }
   };
 
-  // Pagination
-  const totalPages = Math.max(1, Math.ceil(students.length / STUDENTS_PER_PAGE));
-  const pagedStudents = students.slice((studentPage - 1) * STUDENTS_PER_PAGE, studentPage * STUDENTS_PER_PAGE);
+  // Search + Pagination
+  const filteredStudents = students.filter((s) => {
+    const q = studentSearch.toLowerCase();
+    if (!q) return true;
+    return (
+      (s.full_name || '').toLowerCase().includes(q) ||
+      (s.username || '').toLowerCase().includes(q) ||
+      (s.email || '').toLowerCase().includes(q) ||
+      (s.enrollment_id || '').toLowerCase().includes(q)
+    );
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE));
+  const pagedStudents = filteredStudents.slice((studentPage - 1) * STUDENTS_PER_PAGE, studentPage * STUDENTS_PER_PAGE);
 
   // Admin display info
   const adminName = user?.full_name || user?.username || 'Admin';
@@ -905,32 +915,53 @@ export default function AdminDashboard() {
 
           {/* ── Section 4: Student Management Table ── */}
           <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-            <div className="p-p-lg border-b border-outline-variant flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-headline-md font-bold text-on-surface">Student Management</h2>
-                <p className="text-body-md text-on-surface-variant">
-                  {loadingStudents ? 'Loading...' : `${students.length} registered student${students.length !== 1 ? 's' : ''}`}
-                </p>
+            <div className="p-p-lg border-b border-outline-variant">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-headline-md font-bold text-on-surface">Student Management</h2>
+                  <p className="text-body-md text-on-surface-variant">
+                    {loadingStudents ? 'Loading...' : `${filteredStudents.length} of ${students.length} student${students.length !== 1 ? 's' : ''}`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => setShowEmailPreview(true)}
+                    className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
+                    Preview Welcome Email
+                  </button>
+                  <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
+                    Bulk Import
+                  </button>
+                  <button
+                    onClick={() => setShowAddStudent(true)}
+                    className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                    Add Student
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  onClick={() => setShowEmailPreview(true)}
-                  className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
-                  Preview Welcome Email
-                </button>
-                <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
-                  Bulk Import
-                </button>
-                <button
-                  onClick={() => setShowAddStudent(true)}
-                  className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-                  Add Student
-                </button>
+              {/* Search Bar */}
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" style={{ fontSize: '20px' }}>search</span>
+                <input
+                  type="text"
+                  value={studentSearch}
+                  onChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
+                  placeholder="Search by name, email, username or enrollment ID…"
+                  className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface placeholder:text-outline/60"
+                />
+                {studentSearch && (
+                  <button
+                    onClick={() => { setStudentSearch(''); setStudentPage(1); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -938,8 +969,8 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container-low">
                   <tr>
-                    {['Student Name', 'Email', 'Enrollment ID', 'Joined', 'Actions'].map((h, i) => (
-                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 4 ? 'text-right' : ''}`}>
+                    {['Student Name', 'Email', 'Enrollment ID', 'Account Status', 'Joined', 'Actions'].map((h, i) => (
+                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 5 ? 'text-right' : ''}`}>
                         {h}
                       </th>
                     ))}
@@ -948,7 +979,7 @@ export default function AdminDashboard() {
                 <tbody className="divide-y divide-outline-variant">
                   {loadingStudents ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-on-surface-variant">
+                      <td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant">
                         <svg className="animate-spin h-6 w-6 text-primary mx-auto mb-2" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -958,16 +989,20 @@ export default function AdminDashboard() {
                     </tr>
                   ) : pagedStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
+                      <td colSpan={6} className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <span className="material-symbols-outlined text-outline" style={{ fontSize: '40px' }}>person_search</span>
-                          <p className="text-body-md text-on-surface-variant font-semibold">No students found</p>
-                          <button
-                            onClick={() => setShowAddStudent(true)}
-                            className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
-                          >
-                            Add First Student
-                          </button>
+                          <p className="text-body-md text-on-surface-variant font-semibold">
+                            {studentSearch ? `No students match "${studentSearch}"` : 'No students found'}
+                          </p>
+                          {!studentSearch && (
+                            <button
+                              onClick={() => setShowAddStudent(true)}
+                              className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                            >
+                              Add First Student
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -979,6 +1014,42 @@ export default function AdminDashboard() {
                       const joinedDate = s.created_at
                         ? new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                         : '—';
+                      // Determine account status
+                      const isEligible = s.is_eligible === 1;
+                      const isPendingSetup = s.must_change_password === '1';
+                      const hasResume = !!s.resume_name;
+                      const hasEmail = !!s.email;
+                      const hasName = !!s.full_name;
+                      const isProfileDone = hasEmail && hasName;
+
+                      let statusLabel, statusBg, statusText, statusIcon;
+                      if (isEligible) {
+                        statusLabel = 'Eligible';
+                        statusBg = 'bg-emerald-50 border-emerald-200';
+                        statusText = 'text-emerald-700';
+                        statusIcon = 'verified';
+                      } else if (isPendingSetup) {
+                        statusLabel = 'Pending Setup';
+                        statusBg = 'bg-amber-50 border-amber-200';
+                        statusText = 'text-amber-700';
+                        statusIcon = 'schedule';
+                      } else if (!isProfileDone) {
+                        statusLabel = 'Profile Incomplete';
+                        statusBg = 'bg-slate-50 border-slate-200';
+                        statusText = 'text-slate-600';
+                        statusIcon = 'person_alert';
+                      } else if (!hasResume) {
+                        statusLabel = 'Resume Missing';
+                        statusBg = 'bg-orange-50 border-orange-200';
+                        statusText = 'text-orange-700';
+                        statusIcon = 'description';
+                      } else {
+                        statusLabel = 'Incomplete';
+                        statusBg = 'bg-slate-50 border-slate-200';
+                        statusText = 'text-slate-500';
+                        statusIcon = 'help_outline';
+                      }
+
                       return (
                         <tr
                           key={s.id}
@@ -1014,6 +1085,13 @@ export default function AdminDashboard() {
                               <span className="text-outline text-caption">Not set</span>
                             )}
                           </td>
+                          {/* Account Status Column */}
+                          <td className="px-6 py-5">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-label-md font-semibold ${statusBg} ${statusText}`}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>{statusIcon}</span>
+                              {statusLabel}
+                            </span>
+                          </td>
                           <td className="px-6 py-5 text-caption text-outline">{joinedDate}</td>
                           <td className="px-6 py-5 text-right">
                             <button className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors" title="Edit student">
@@ -1041,7 +1119,8 @@ export default function AdminDashboard() {
             {/* Pagination */}
             <div className="p-6 bg-surface-container-low/50 flex items-center justify-between border-t border-outline-variant">
               <p className="text-caption text-on-surface-variant">
-                Showing {pagedStudents.length} of {students.length} student{students.length !== 1 ? 's' : ''}
+                Showing {pagedStudents.length} of {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
+                {studentSearch && ` matching "${studentSearch}"`}
               </p>
               {totalPages > 1 && (
                 <div className="flex items-center gap-2">

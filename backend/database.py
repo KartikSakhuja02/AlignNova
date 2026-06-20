@@ -285,6 +285,9 @@ def list_users(role_filter: str = "student"):
                 "headline": u.headline,
                 "profile_image": u.profile_image,
                 "created_at": u.created_at.isoformat() if u.created_at else None,
+                "is_eligible": u.is_eligible or 0,
+                "must_change_password": u.must_change_password or "0",
+                "resume_name": u.resume_name or "",
             }
             for u in users
         ]
