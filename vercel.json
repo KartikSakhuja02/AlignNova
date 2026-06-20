@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/send-email.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/send-email",
+      "dest": "api/send-email.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "api/send-email.py"
+    }
+  ]
+}
