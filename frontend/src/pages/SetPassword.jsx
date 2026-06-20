@@ -64,7 +64,7 @@ export default function SetPassword() {
       
       // Redirect after 2s
       setTimeout(() => {
-        navigate(data.role === 'admin' ? '/admin' : '/', { replace: true });
+        navigate(data.role === 'admin' ? '/admin' : '/profile?tutorial=true', { replace: true });
       }, 2000);
     } catch (err) {
       setError(err.message || 'Failed to set password. Please try again.');

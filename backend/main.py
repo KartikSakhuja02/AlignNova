@@ -106,7 +106,10 @@ def get_current_user_from_token(token: str) -> UserPublic:
         bio=user.get("bio", ""),
         education=user.get("education", "[]"),
         experience=user.get("experience", "[]"),
-        profile_image=user.get("profile_image", "")
+        profile_image=user.get("profile_image", ""),
+        resume_name=user.get("resume_name", ""),
+        resume_url=user.get("resume_url", ""),
+        is_eligible=user.get("is_eligible", 0)
     )
 
 
@@ -147,7 +150,10 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
         bio=user.get('bio', ""),
         education=user.get('education', "[]"),
         experience=user.get('experience', "[]"),
-        profile_image=user.get('profile_image', "")
+        profile_image=user.get('profile_image', ""),
+        resume_name=user.get('resume_name', ""),
+        resume_url=user.get('resume_url', ""),
+        is_eligible=user.get('is_eligible', 0)
     )
 
 
@@ -256,11 +262,69 @@ def post_profile(request: Request, payload: dict):
         bio=payload.get('bio'),
         education=payload.get('education'),
         experience=payload.get('experience'),
-        profile_image=payload.get('profile_image')
+        profile_image=payload.get('profile_image'),
+        resume_name=payload.get('resume_name'),
+        resume_url=payload.get('resume_url'),
+        is_eligible=payload.get('is_eligible')
     )
     if not updated:
         raise HTTPException(status_code=404, detail='user_not_found')
     return updated
+
+
+from fastapi import UploadFile, File
+import shutil
+
+@app.post('/api/profile/resume')
+async def upload_resume(request: Request, file: UploadFile = File(...)):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    
+    # Check that file is PDF
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail='only_pdf_allowed')
+    
+    # Save the file
+    uploads_dir = os.path.join(BASE_DIR, 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    # Use a unique name to avoid collisions
+    filename = f"{user['id']}_{file.filename}"
+    file_path = os.path.join(uploads_dir, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    resume_url = f"/api/uploads/{filename}"
+    
+    # Update profile in db
+    updated = update_profile(
+        username,
+        resume_name=file.filename,
+        resume_url=resume_url
+    )
+    return updated
+
+
+@app.get('/api/uploads/{filename}')
+def get_uploaded_file(filename: str):
+    uploads_dir = os.path.join(BASE_DIR, 'uploads')
+    file_path = os.path.join(uploads_dir, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail='file_not_found')
+    return FileResponse(file_path, media_type='application/pdf')
 
 
 @app.post('/api/drives')

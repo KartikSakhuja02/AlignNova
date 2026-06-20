@@ -39,8 +39,8 @@ const getBadgeText = (type) => {
 };
 
 const getBadgeClass = (type) => {
-  return type?.toLowerCase().includes('internship') 
-    ? 'bg-secondary-container text-on-secondary-container' 
+  return type?.toLowerCase().includes('internship')
+    ? 'bg-secondary-container text-on-secondary-container'
     : 'bg-primary-container text-on-primary-container';
 };
 
@@ -124,11 +124,10 @@ function DriveCard({ drive }) {
         </button>
         <button
           onClick={() => setBookmarked((b) => !b)}
-          className={`px-4 py-3 border rounded-xl transition-all ${
-            bookmarked
+          className={`px-4 py-3 border rounded-xl transition-all ${bookmarked
               ? 'border-primary bg-primary/10 text-primary'
               : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
-          }`}
+            }`}
           aria-label="Bookmark"
         >
           <span
@@ -153,7 +152,7 @@ function EmptyCard() {
       </div>
       <h4 className="text-headline-md font-bold text-on-surface">More Drives Incoming</h4>
       <p className="text-body-md text-on-surface-variant mt-2">
-        Nvidia, Apple, and Netflix drives are being finalized. Stay tuned.
+        Stay tuned for the newest internship drives.
       </p>
       <button className="mt-6 text-primary text-label-md font-semibold hover:underline">
         Get Notified
@@ -239,10 +238,10 @@ export default function Drives() {
     salary: formatSalary(d.package, d.company),
     deadline: d.drive_date
       ? new Date(d.drive_date).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        })
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
       : 'TBD',
     type: d.type || 'Full-time',
   }));
@@ -276,11 +275,10 @@ export default function Drives() {
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-label-md font-semibold transition-colors ${
-                  activeFilter === f
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-label-md font-semibold transition-colors ${activeFilter === f
                     ? 'bg-primary text-on-primary shadow-sm'
                     : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
-                }`}
+                  }`}
               >
                 {f === 'All' && (
                   <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>apps</span>

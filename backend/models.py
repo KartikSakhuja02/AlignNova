@@ -16,3 +16,6 @@ class UserPublic(BaseModel):
     education: Optional[str] = "[]"
     experience: Optional[str] = "[]"
     profile_image: Optional[str] = ""
+    resume_name: Optional[str] = ""
+    resume_url: Optional[str] = ""
+    is_eligible: Optional[int] = 0

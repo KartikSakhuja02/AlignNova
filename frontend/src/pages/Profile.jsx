@@ -532,6 +532,9 @@ export default function Profile() {
     education: [],
     experience: [],
     profile_image: '',
+    resume_name: '',
+    resume_url: '',
+    is_eligible: 0,
   });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -628,6 +631,65 @@ export default function Profile() {
       }
     } catch (_) {}
     setIsEditing(false);
+  };
+
+  const [tutorialStep, setTutorialStep] = useState(0);
+
+  useEffect(() => {
+    if (window.location.search.includes('tutorial=true')) {
+      setTutorialStep(1);
+      const url = new URL(window.location);
+      url.searchParams.delete('tutorial');
+      window.history.replaceState({}, '', url);
+    }
+  }, []);
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Only PDF files are allowed.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/profile/resume', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        let parsedEducation = [];
+        try {
+          parsedEducation = typeof data.education === 'string' ? JSON.parse(data.education) : (data.education || []);
+        } catch (_) {}
+        let parsedExperience = [];
+        try {
+          parsedExperience = typeof data.experience === 'string' ? JSON.parse(data.experience) : (data.experience || []);
+        } catch (_) {}
+
+        const finalProfile = {
+          ...data,
+          education: parsedEducation,
+          experience: parsedExperience,
+        };
+        setProfile(finalProfile);
+        setUser(finalProfile);
+        alert('Resume uploaded successfully! Your placement eligibility has been computed.');
+      } else {
+        const errData = await res.json();
+        alert(`Upload failed: ${errData.detail || 'Please try again.'}`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred during file upload.');
+    }
   };
 
   // Derived display values
@@ -731,6 +793,29 @@ export default function Profile() {
       )}
 
       <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
+        {/* Eligibility Status Banner */}
+        {profile.is_eligible ? (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
+            <span className="material-symbols-outlined text-emerald-600 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            <div>
+              <h4 className="font-bold text-body-lg text-emerald-900">Placement Eligibility Active</h4>
+              <p className="text-body-md text-emerald-800/90 mt-1">
+                Your account is fully activated. You are eligible to apply to all placement and internship drives. Keep your profile updated for recruiters!
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
+            <span className="material-symbols-outlined text-amber-600 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+            <div>
+              <h4 className="font-bold text-body-lg text-amber-900">Account Not Activated</h4>
+              <p className="text-body-md text-amber-800/90 mt-1">
+                You are currently **ineligible** to apply for placement drives. To activate your account and become eligible, please update your profile details (Full Name, Email) and upload your **PDF Resume** in the resume section.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ── 1. Header Profile Card ── */}
         <section className="bg-white border border-slate-100 rounded-2xl p-p-lg flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none" />
@@ -926,15 +1011,46 @@ export default function Profile() {
             {/* Resume */}
             <section className="bg-primary text-on-primary rounded-2xl p-p-lg shadow-sm">
               <h3 className="text-headline-md font-bold mb-3">Official Resume</h3>
-              <p className="opacity-80 mb-6 text-body-md">Last updated: Oct 24, 2023. Version 4.2 (ATS Optimised)</p>
-              <div className="space-y-3">
-                <button className="w-full bg-white text-primary py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">
-                  <span className="material-symbols-outlined">download</span> Download PDF
-                </button>
-                <button className="w-full border border-white/20 py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
-                  <span className="material-symbols-outlined">upload</span> Update Resume
-                </button>
-              </div>
+              {profile.resume_name ? (
+                <>
+                  <p className="opacity-80 mb-6 text-body-md truncate" title={profile.resume_name}>
+                    File: {profile.resume_name} (PDF)
+                  </p>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => profile.resume_url && window.open(profile.resume_url, '_blank')}
+                      className="w-full bg-white text-primary py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined">download</span> View / Download PDF
+                    </button>
+                    <button
+                      onClick={() => document.getElementById('resume-file-input').click()}
+                      className="w-full border border-white/20 py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-white/10 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined">upload</span> Update Resume
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="opacity-80 mb-6 text-body-md">
+                    No resume uploaded yet. Upload a PDF resume to activate your profile.
+                  </p>
+                  <button
+                    onClick={() => document.getElementById('resume-file-input').click()}
+                    className="w-full bg-white text-primary py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined">upload</span> Upload PDF Resume
+                  </button>
+                </>
+              )}
+              <input
+                id="resume-file-input"
+                type="file"
+                accept=".pdf"
+                onChange={handleResumeUpload}
+                className="hidden"
+              />
             </section>
 
             {/* Languages */}
@@ -981,6 +1097,65 @@ export default function Profile() {
           </section>
         </div>
       </div>
+      {/* ── Onboarding / Tutorial Modals ── */}
+      {tutorialStep === 1 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-slate-100 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-primary-container/20 text-primary rounded-2xl flex items-center justify-center mb-6">
+              <span className="material-symbols-outlined text-primary" style={{ fontSize: '32px' }}>person_search</span>
+            </div>
+            <h3 className="text-headline-md font-bold text-on-surface mb-2">Step 1: Activate Your Profile</h3>
+            <p className="text-body-md text-on-surface-variant mb-8 leading-relaxed">
+              Welcome to AlignNova! To begin applying for placement drives, you must first activate your profile. 
+              Start by clicking **Edit Profile** on this page to complete your **Full Name**, **University Email**, and a professional **Headline** to let recruiters know who you are.
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setTutorialStep(0)}
+                className="flex-1 py-3 border border-outline-variant text-on-surface-variant font-bold rounded-xl text-label-md hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Skip
+              </button>
+              <button
+                onClick={() => setTutorialStep(2)}
+                className="flex-1 py-3 bg-primary text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer"
+              >
+                Next: Resume
+              </button>
+            </div>
+            {/* Dots */}
+            <div className="flex gap-2 mt-6">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              <span className="w-2 h-2 rounded-full bg-outline-variant" />
+            </div>
+          </div>
+        </div>
+      )}
+      {tutorialStep === 2 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-slate-100 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-secondary-container/20 text-secondary rounded-2xl flex items-center justify-center mb-6">
+              <span className="material-symbols-outlined text-secondary" style={{ fontSize: '32px' }}>upload_file</span>
+            </div>
+            <h3 className="text-headline-md font-bold text-on-surface mb-2">Step 2: Upload Your Resume</h3>
+            <p className="text-body-md text-on-surface-variant mb-8 leading-relaxed">
+              The final step to trigger placement activation is uploading your resume. 
+              Recruiters require a verified **PDF Resume** in order to shortlist candidates. Upload your document in the **Official Resume** section on the right side to get instantly activated!
+            </p>
+            <button
+              onClick={() => setTutorialStep(0)}
+              className="w-full py-3.5 bg-primary text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer"
+            >
+              Get Started
+            </button>
+            {/* Dots */}
+            <div className="flex gap-2 mt-6">
+              <span className="w-2 h-2 rounded-full bg-outline-variant" />
+              <span className="w-2 h-2 rounded-full bg-secondary" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

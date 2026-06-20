@@ -196,8 +196,8 @@ export default function DriveApplication() {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (!token) {
-      setErrorMsg('You must be signed in to apply.');
+    if (user && !user.is_eligible) {
+      setErrorMsg('Your account is not fully activated yet. Please complete your profile details and upload your PDF resume in your profile to become eligible.');
       setSubmitStatus('error');
       return;
     }
@@ -493,102 +493,139 @@ export default function DriveApplication() {
                 Personalize your application details to stand out to recruiters.
               </p>
 
-              <form onSubmit={handleFormSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {user && !user.is_eligible ? (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-6 text-center space-y-4">
+                  <span className="material-symbols-outlined text-amber-600 text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+                  <h4 className="font-bold text-body-lg text-amber-900">Placement Eligibility Required</h4>
+                  <p className="text-body-md text-amber-800/90 max-w-md mx-auto">
+                    You have not fully activated your account. You must complete your profile details (Full Name, Email) and upload your official resume PDF before you can apply to placement drives.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/profile')}
+                    className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer"
+                  >
+                    Go to Profile to Activate
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleFormSubmit} className="space-y-6">
+                  {errorMsg && (
+                    <div className="bg-error/10 text-error p-4 rounded-xl text-label-md font-semibold">
+                      {errorMsg}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
+                        Full Name
+                      </label>
+                      <input
+                        required
+                        name="fullName"
+                        value={form.fullName}
+                        onChange={handleInputChange}
+                        disabled={submitStatus !== 'idle'}
+                        placeholder="Alex Rivera"
+                        type="text"
+                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
+                        University Email
+                      </label>
+                      <input
+                        required
+                        name="email"
+                        value={form.email}
+                        onChange={handleInputChange}
+                        disabled={submitStatus !== 'idle'}
+                        placeholder="alex.rivera@university.edu"
+                        type="email"
+                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Resume Upload Drag Drop Block */}
                   <div className="space-y-2">
                     <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
-                      Full Name
+                      Resume (PDF)
                     </label>
-                    <input
-                      required
-                      name="fullName"
-                      value={form.fullName}
-                      onChange={handleInputChange}
-                      disabled={submitStatus !== 'idle'}
-                      placeholder="Alex Rivera"
-                      type="text"
-                      className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
-                    />
+                    {user?.resume_name ? (
+                      <div className="border-2 border-solid border-emerald-200 bg-emerald-50/30 rounded-2xl p-6 text-center">
+                        <span className="material-symbols-outlined text-4xl text-emerald-600 mb-2">
+                          task_alt
+                        </span>
+                        <p className="font-semibold text-body-md text-emerald-800">
+                          Verified Resume Attached: {user.resume_name}
+                        </p>
+                        <p className="text-caption text-emerald-600 mt-1">Recruiters will receive your official profile resume.</p>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => navigate('/profile')}
+                        className="border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-slate-50/50 group select-none"
+                      >
+                        <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-2">
+                          upload_file
+                        </span>
+                        <p className="font-semibold text-body-md text-on-surface-variant group-hover:text-primary transition-colors">
+                          Upload your resume in your Profile to apply
+                        </p>
+                        <p className="text-caption text-outline mt-1">PDF format is required</p>
+                      </div>
+                    )}
                   </div>
+
+                  {/* SOP Essay Block */}
                   <div className="space-y-2">
                     <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
-                      University Email
+                      Statement of Purpose
                     </label>
-                    <input
+                    <textarea
                       required
-                      name="email"
-                      value={form.email}
+                      name="sop"
+                      value={form.sop}
                       onChange={handleInputChange}
                       disabled={submitStatus !== 'idle'}
-                      placeholder="alex.rivera@university.edu"
-                      type="email"
-                      className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
+                      placeholder="Tell us what excites you about this role and how you align with our mission..."
+                      rows="5"
+                      className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant font-body-md"
                     />
                   </div>
-                </div>
 
-                {/* Resume Upload Drag Drop Block */}
-                <div className="space-y-2">
-                  <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
-                    Resume (PDF)
-                  </label>
-                  <div className="border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-slate-50/50 group select-none">
-                    <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-2">
-                      upload_file
-                    </span>
-                    <p className="font-semibold text-body-md text-on-surface-variant group-hover:text-primary transition-colors">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-caption text-outline mt-1">Max file size: 5MB (PDF only)</p>
-                  </div>
-                </div>
-
-                {/* SOP Essay Block */}
-                <div className="space-y-2">
-                  <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
-                    Statement of Purpose
-                  </label>
-                  <textarea
-                    required
-                    name="sop"
-                    value={form.sop}
-                    onChange={handleInputChange}
-                    disabled={submitStatus !== 'idle'}
-                    placeholder="Tell us what excites you about this role and how you align with our mission..."
-                    rows="5"
-                    className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant font-body-md"
-                  />
-                </div>
-
-                {/* Confirm and Submit Actions */}
-                {submitStatus === 'submitting' ? (
-                  <button
-                    disabled
-                    className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-primary/80 text-white rounded-2xl font-bold text-label-md transition-all cursor-wait relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
-                    <div className="spinner"></div>
-                    <span>Processing Application...</span>
-                  </button>
-                ) : submitStatus === 'success' ? (
-                  <button
-                    disabled
-                    className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary text-white rounded-2xl font-bold text-label-md transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-                      check_circle
-                    </span>
-                    <span>Application Submitted Successfully!</span>
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-95 transition-all shadow-md hover:shadow-lg shadow-primary/10 cursor-pointer"
-                  >
-                    Confirm & Submit Application
-                  </button>
-                )}
-              </form>
+                  {/* Confirm and Submit Actions */}
+                  {submitStatus === 'submitting' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-primary/80 text-white rounded-2xl font-bold text-label-md transition-all cursor-wait relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                      <div className="spinner"></div>
+                      <span>Processing Application...</span>
+                    </button>
+                  ) : submitStatus === 'success' ? (
+                    <button
+                      disabled
+                      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary text-white rounded-2xl font-bold text-label-md transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                        check_circle
+                      </span>
+                      <span>Application Submitted Successfully!</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-95 transition-all shadow-md hover:shadow-lg shadow-primary/10 cursor-pointer"
+                    >
+                      Confirm & Submit Application
+                    </button>
+                  )}
+                </form>
+              )}
             </div>
           </div>
 
