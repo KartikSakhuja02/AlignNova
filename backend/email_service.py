@@ -1,11 +1,16 @@
 """
 AlignNova Email Service
 =======================
-Supports Resend API (recommended, free) for sending emails.
+Supports two HTTP API providers (port 443 — fully allowed on Render free tier):
+1. Brevo (recommended if you don't own a domain):
+    BREVO_API_KEY = xkeysib_xxxxxxxxxxxx   (from brevo.com SMTP & API section)
+    FROM_EMAIL    = noreply.alignnova@gmail.com (verify it as a sender in Brevo)
 
-Required env vars:
+2. Resend:
     RESEND_API_KEY = re_xxxxxxxxxxxx       (from resend.com)
     FROM_EMAIL     = onboarding@resend.dev (or verified domain email)
+
+Required env vars:
     FROM_NAME      = AlignNova Portal
     APP_BASE_URL   = https://your-app.onrender.com
 """
@@ -16,13 +21,15 @@ import threading
 import urllib.request
 import urllib.error
 
-# ── Resend Configuration ──────────────────────────────────────────────────────
+# ── Provider Configuration ───────────────────────────────────────────────────
+BREVO_API_KEY  = os.getenv("BREVO_API_KEY", "").strip()
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
 FROM_NAME      = os.getenv("FROM_NAME", "AlignNova Portal")
 APP_BASE_URL   = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
 
-# Default sender for Resend free plan:
-FROM_EMAIL     = os.getenv("FROM_EMAIL", "onboarding@resend.dev").strip()
+# If using Brevo, the user must set FROM_EMAIL. If using Resend, it defaults to onboarding@resend.dev.
+_default_from = "onboarding@resend.dev"
+FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 
 
 # ── HTML template ─────────────────────────────────────────────────────────────
@@ -111,7 +118,40 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
 </html>"""
 
 
-# ── Sender implementation ─────────────────────────────────────────────────────
+# ── Sender implementations ────────────────────────────────────────────────────
+
+def _send_via_brevo(to_email: str, subject: str, html: str, plain: str, recipient_name: str = "") -> None:
+    """Send via Brevo HTTP API (over HTTPS port 443). Raises on failure."""
+    to_obj = {"email": to_email}
+    if recipient_name:
+        to_obj["name"] = recipient_name
+
+    payload = json.dumps({
+        "sender": {
+            "name": FROM_NAME,
+            "email": FROM_EMAIL
+        },
+        "to": [to_obj],
+        "subject": subject,
+        "htmlContent": html,
+        "textContent": plain
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=payload,
+        headers={
+            "accept":        "application/json",
+            "api-key":       BREVO_API_KEY,
+            "content-type":  "application/json",
+            "User-Agent":    "AlignNova-App/1.0",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        result = json.loads(resp.read())
+        print(f"[email] Brevo messageId={result.get('messageId')}")
+
 
 def _send_via_resend(to_email: str, subject: str, html: str, plain: str) -> None:
     """Send via Resend HTTP API. Raises on failure."""
@@ -141,10 +181,18 @@ def _send_via_resend(to_email: str, subject: str, html: str, plain: str) -> None
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def get_config_status() -> dict:
-    """Return current email config (passwords/keys are masked)."""
-    provider = "resend" if RESEND_API_KEY else "none"
+    """Return current email config (keys are masked)."""
+    if BREVO_API_KEY:
+        provider = "brevo"
+    elif RESEND_API_KEY:
+        provider = "resend"
+    else:
+        provider = "none"
+
     return {
         "provider": provider,
+        "brevo_api_key_set": bool(BREVO_API_KEY),
+        "brevo_key_prefix": BREVO_API_KEY[:8] + "..." if BREVO_API_KEY else "(not set)",
         "resend_api_key_set": bool(RESEND_API_KEY),
         "resend_key_prefix": RESEND_API_KEY[:8] + "..." if RESEND_API_KEY else "(not set)",
         "from_email": FROM_EMAIL,
@@ -159,10 +207,12 @@ def print_config():
     print("=" * 60)
     print("[email_service] Configuration:")
     print(f"  provider       : {cfg['provider']}")
-    if cfg['provider'] == 'resend':
+    if cfg['provider'] == 'brevo':
+        print(f"  brevo_key      : {cfg['brevo_key_prefix']}")
+    elif cfg['provider'] == 'resend':
         print(f"  resend_key     : {cfg['resend_key_prefix']}")
     else:
-        print("  ⚠️  NO EMAIL PROVIDER configured. Set RESEND_API_KEY in Render environment variables.")
+        print("  ⚠️  NO EMAIL PROVIDER configured. Set BREVO_API_KEY or RESEND_API_KEY in Render environment variables.")
     print(f"  from_email     : {cfg['from_email']}")
     print(f"  app_base_url   : {cfg['app_base_url']}")
     print("=" * 60)
@@ -176,7 +226,7 @@ def send_test_email_sync(to_email: str) -> dict:
         return {
             "ok": False,
             "provider": "none",
-            "error": "No email provider configured. Set RESEND_API_KEY (Resend) in Render environment variables.",
+            "error": "No email provider configured. Set BREVO_API_KEY or RESEND_API_KEY in Render environment variables.",
             "config": cfg,
         }
 
@@ -194,30 +244,36 @@ def send_test_email_sync(to_email: str) -> dict:
 </div>"""
 
     try:
-        print(f"[email] TEST: trying Resend → {to_email}")
-        _send_via_resend(to_email, subject, html, plain)
-        print(f"[email] TEST: ✓ Resend success → {to_email}")
-        return {"ok": True, "provider": "resend", "config": cfg}
+        if cfg["provider"] == "brevo":
+            print(f"[email] TEST: trying Brevo → {to_email}")
+            _send_via_brevo(to_email, subject, html, plain)
+            print(f"[email] TEST: ✓ Brevo success → {to_email}")
+            return {"ok": True, "provider": "brevo", "config": cfg}
+        else:
+            print(f"[email] TEST: trying Resend → {to_email}")
+            _send_via_resend(to_email, subject, html, plain)
+            print(f"[email] TEST: ✓ Resend success → {to_email}")
+            return {"ok": True, "provider": "resend", "config": cfg}
 
     except urllib.error.HTTPError as e:
         body = e.read().decode()
-        msg = f"Resend API returned HTTP {e.code}: {body}"
+        msg = f"{cfg['provider'].capitalize()} API returned HTTP {e.code}: {body}"
         print(f"[email] TEST: ✗ {msg}")
-        return {"ok": False, "provider": "resend", "error": msg, "config": cfg}
+        return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
 
     except Exception as e:
         msg = f"{type(e).__name__}: {e}"
         print(f"[email] TEST: ✗ Unexpected error: {msg}")
-        return {"ok": False, "provider": "resend", "error": msg, "config": cfg}
+        return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
 
 
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str) -> bool:
     """
-    Send the welcome / account-activation email via Resend API.
+    Send the welcome / account-activation email via Brevo or Resend API.
     Runs in a background thread — never blocks the API response.
     """
-    if not RESEND_API_KEY:
-        print("[email] RESEND_API_KEY not set — skipping welcome email.")
+    if not BREVO_API_KEY and not RESEND_API_KEY:
+        print("[email] Neither BREVO_API_KEY nor RESEND_API_KEY set — skipping welcome email.")
         return False
 
     set_password_url = f"{APP_BASE_URL}/set-password?token={set_password_token}"
@@ -231,12 +287,17 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
 
     def _send():
         try:
-            print(f"[email] Sending via Resend to {to_email} ...")
-            _send_via_resend(to_email, subject, html, plain)
-            print(f"[email] ✓ Sent via Resend to {to_email}")
+            if BREVO_API_KEY:
+                print(f"[email] Sending via Brevo to {to_email} ...")
+                _send_via_brevo(to_email, subject, html, plain, student_name)
+                print(f"[email] ✓ Sent via Brevo to {to_email}")
+            else:
+                print(f"[email] Sending via Resend to {to_email} ...")
+                _send_via_resend(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent via Resend to {to_email}")
         except urllib.error.HTTPError as e:
             body = e.read().decode()
-            print(f"[email] ✗ Resend API error {e.code}: {body}")
+            print(f"[email] ✗ API error {e.code}: {body}")
         except Exception as exc:
             print(f"[email] ✗ Failed to send to {to_email}: {type(exc).__name__}: {exc}")
 
