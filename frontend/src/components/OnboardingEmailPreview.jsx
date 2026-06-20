@@ -80,6 +80,32 @@ export default function OnboardingEmailPreview({ visible, onClose }) {
                 </a>
               </div>
 
+              {/* Fallback Link */}
+              <div className="mt-6 text-center">
+                <p className="text-[12px] text-on-surface-variant/70 mb-1">If the button doesn't work, copy and paste this link in your browser:</p>
+                <a 
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="text-[12px] text-primary underline break-all font-medium"
+                >
+                  http://localhost:5173/set-password?token=mock_token_xyz
+                </a>
+              </div>
+
+              {/* Request New Link Option if Expired */}
+              <div className="bg-slate-50 border border-primary/10 rounded-xl p-5 text-center mt-7">
+                <p className="text-[13px] text-on-surface-variant mb-3 leading-relaxed">
+                  Note: This activation link is valid for 7 days. If you couldn't set your password in time, you can request a new link.
+                </p>
+                <a 
+                  className="inline-flex items-center justify-center px-6 py-2.5 bg-transparent border border-primary text-primary font-label-md text-[13px] font-bold rounded-xl hover:bg-primary/5 active:scale-95 transition-all duration-200" 
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  Request New Activation Link
+                </a>
+              </div>
+
               {/* Steps Section */}
               <div className="mt-8 pt-8 border-t border-slate-100">
                 <h2 className="font-headline-md text-[18px] text-on-surface mb-6">What happens next?</h2>

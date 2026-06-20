@@ -42,7 +42,7 @@ FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 
 # ── HTML template ─────────────────────────────────────────────────────────────
 
-def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url: str, logo_blue_url: str) -> str:
+def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url: str, logo_blue_url: str, request_activation_url: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -93,6 +93,16 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url
       <div style="margin-top: 24px; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif;">
         <p style="font-size: 12px; color: #777587; margin: 0 0 4px 0;">If the button doesn't work, copy and paste this link in your browser:</p>
         <a href="{set_password_url}" style="font-size: 12px; color: #3525cd; word-break: break-all; text-decoration: underline;">{set_password_url}</a>
+      </div>
+
+      <!-- Request New Link Option if Expired -->
+      <div style="background-color: #f0f3ff; border: 1px solid rgba(79, 70, 229, 0.15); border-radius: 12px; padding: 20px; text-align: center; margin-top: 28px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        <p style="font-size: 13px; color: #464555; margin: 0 0 12px 0; line-height: 1.5;">
+          Note: This activation link is valid for 7 days. If you couldn't set your password in time, you can request a new link.
+        </p>
+        <a href="{request_activation_url}" style="display: inline-block; background-color: transparent; border: 1.5px solid #4f46e5; color: #4f46e5; font-size: 13px; font-weight: 600; padding: 10px 24px; text-decoration: none; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif;">
+          Request New Activation Link
+        </a>
       </div>
 
       <!-- Steps Section -->
@@ -366,11 +376,13 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
     set_password_url = f"{active_base_url}/set-password?token={set_password_token}"
     logo_white_url = f"{active_base_url}/logo_white.png"
     logo_blue_url = f"{active_base_url}/logo.png"
+    request_activation_url = f"{active_base_url}/request-activation"
     subject = "🎓 Welcome to AlignNova — Activate Your Account"
-    html    = _build_welcome_html(student_name, set_password_url, logo_white_url, logo_blue_url)
+    html    = _build_welcome_html(student_name, set_password_url, logo_white_url, logo_blue_url, request_activation_url)
     plain   = (
         f"Welcome to AlignNova, {student_name}!\n\n"
         f"Set your password and access your dashboard here:\n{set_password_url}\n\n"
+        f"If the link has expired, request a new one here:\n{request_activation_url}\n\n"
         f"Link expires in 7 days.\n— AlignNova Team"
     )
 
