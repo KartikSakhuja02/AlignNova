@@ -151,7 +151,7 @@ export default function RequestActivation() {
         {/* System Footer */}
         <footer className="text-center space-y-4">
           <p className="font-caption text-caption text-on-surface-variant opacity-70">
-            © 2024 AlignNova Platform. All rights reserved. 
+            © 2026 AlignNova Platform. All rights reserved. 
           </p>
           <div className="flex justify-center gap-x-6">
             <a className="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>

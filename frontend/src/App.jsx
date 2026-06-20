@@ -58,7 +58,7 @@ function StudentLayout() {
         </div>
         <footer className="p-8 border-t border-outline-variant text-center opacity-40">
           <p className="text-caption">
-            © 2024 Alignova Placement Portal. Professional Excellence Redefined.
+            © 2026 Alignova Placement Portal. Professional Excellence Redefined.
           </p>
         </footer>
       </main>

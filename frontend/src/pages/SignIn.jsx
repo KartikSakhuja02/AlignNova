@@ -234,7 +234,7 @@ export default function SignIn() {
       {/* Footer Identity */}
       <footer className="fixed bottom-8 w-full text-center px-p-md pointer-events-none opacity-40">
         <div className="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="font-label-md text-caption">© 2024 AlignNova Placement Technologies</p>
+          <p className="font-label-md text-caption">© 2026 AlignNova Placement Technologies</p>
           <div className="flex gap-6 mt-2 md:mt-0">
             <span className="font-label-md text-caption">Privacy Architecture</span>
             <span className="font-label-md text-caption">System Status</span>
