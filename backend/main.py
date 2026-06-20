@@ -47,11 +47,6 @@ def on_startup():
             create_user("admin", hash_password("adminpass"), role="admin", full_name="Administrator", email="admin@demo.local")
     except Exception:
         pass
-    try:
-        if not get_user("alice"):
-            create_user("alice", hash_password("alicepass"), role="student", full_name="Alice Demo", email="alice@demo.local")
-    except Exception:
-        pass
 
 
 def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
