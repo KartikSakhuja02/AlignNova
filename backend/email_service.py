@@ -3,7 +3,7 @@ AlignNova Email Service
 =======================
 Supports two HTTP API providers (port 443 — fully allowed on Render free tier):
 1. Brevo (recommended if you don't own a domain):
-    BREVO_API_KEY = xkeysib_xxxxxxxxxxxx   (from brevo.com SMTP & API section)
+    BREVO_API_KEY =   (from brevo.com SMTP & API section)
     FROM_EMAIL    = noreply.alignnova@gmail.com (verify it as a sender in Brevo)
 
 2. Resend:
@@ -79,7 +79,7 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
       <div class="logo-badge"><span class="logo-text">⭐ AlignNova</span></div>
       <h1>You're In,<br/>{first_name}! 🎉</h1>
       <p>Your placement portal account is ready.</p>
-      <div class="confetti">✨ 🚀 🎓</div>
+      <div class="confetti">🎓</div>
     </div>
     <div class="body">
       <p class="greeting">Welcome to AlignNova Placement Portal</p>
