@@ -127,7 +127,7 @@ export default function SignIn() {
                   disabled={isLoading}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="alex.chen@university.edu"
+                  placeholder=""
                   className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
                     ${isLoading 
                       ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 
@@ -158,7 +158,7 @@ export default function SignIn() {
                   disabled={isLoading}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder=""
                   className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
                     ${isLoading 
                       ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 

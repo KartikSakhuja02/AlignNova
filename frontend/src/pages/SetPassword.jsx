@@ -190,7 +190,7 @@ export default function SetPassword() {
                   type={showPw ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimum 6 characters"
+                  placeholder=""
                   required
                   className="w-full bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/30 pl-11 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400/50 transition-all"
                 />
@@ -237,7 +237,7 @@ export default function SetPassword() {
                   type={showConfirm ? 'text' : 'password'}
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  placeholder="Re-enter your password"
+                  placeholder=""
                   required
                   className={`w-full bg-white/10 border rounded-xl text-white placeholder-white/30 pl-11 pr-12 py-3.5 text-sm focus:outline-none focus:ring-2 transition-all ${
                     mismatch
