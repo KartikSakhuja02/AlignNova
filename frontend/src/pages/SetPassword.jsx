@@ -100,12 +100,21 @@ export default function SetPassword() {
           <p className="text-on-surface-variant text-body-md leading-relaxed mb-8">
             This invitation link is invalid or has expired. Please contact your placement coordinator to resend it.
           </p>
-          <button
-            onClick={() => navigate('/signin')}
-            className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:scale-[1.01] active:scale-[0.98] transition-all shadow-sm"
-          >
-            Go to Sign In
-          </button>
+          <div className="space-y-4">
+            <button
+              onClick={() => navigate('/request-activation')}
+              className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:scale-[1.01] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 group"
+            >
+              <span className="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+              Request New Link
+            </button>
+            <button
+              onClick={() => navigate('/signin')}
+              className="w-full py-3.5 border border-outline-variant text-on-surface-variant font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Back to Sign In
+            </button>
+          </div>
         </div>
       </div>
     );

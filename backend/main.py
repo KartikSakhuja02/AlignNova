@@ -595,6 +595,35 @@ def set_password(payload: SetPasswordPayload):
     }
 
 
+# ── Request Activation / Forgot Password (resends setup links) ────────────────
+class RequestActivationPayload(BaseModel):
+    email: str
+
+
+@app.post('/api/request-activation')
+def request_activation(payload: RequestActivationPayload, request: Request):
+    """Locate the user by email, generate a new token, and resend the welcome activation email."""
+    user = get_user_by_email(payload.email)
+    if not user:
+        raise HTTPException(status_code=404, detail='email_not_found')
+
+    sp_token = create_set_password_token(user['username'])
+
+    # Retrieve base URL respecting proxy headers if present (e.g. Render/Vercel)
+    proto = request.headers.get("x-forwarded-proto", "http")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    base_url = f"{proto}://{host}" if host else str(request.base_url).rstrip("/")
+
+    send_welcome_email(
+        to_email=user['email'],
+        student_name=user.get('full_name') or user['username'],
+        set_password_token=sp_token,
+        base_url=base_url
+    )
+    return {'ok': True, 'message': 'activation_link_sent'}
+
+
+
 # ── Admin: Update Own Profile ─────────────────────────────────────────────────
 @app.post('/api/admin/profile')
 def admin_update_profile(request: Request, payload: dict):

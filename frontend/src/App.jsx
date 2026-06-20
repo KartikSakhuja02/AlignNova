@@ -16,6 +16,7 @@ import Premium from './pages/Premium';
 import DriveApplication from './pages/DriveApplication';
 import AdminDashboard from './pages/AdminDashboard';
 import SetPassword from './pages/SetPassword';
+import RequestActivation from './pages/RequestActivation';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -80,6 +81,9 @@ export default function App() {
 
           {/* Public: Set Password (invitation link from email) */}
           <Route path="/set-password" element={<SetPassword />} />
+
+          {/* Public: Request Activation Link / Forgot Password */}
+          <Route path="/request-activation" element={<RequestActivation />} />
 
           {/* Admin routes */}
           <Route element={<RequireAdmin />}>

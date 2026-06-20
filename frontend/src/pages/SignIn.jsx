@@ -143,9 +143,13 @@ export default function SignIn() {
                 <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider" htmlFor="password">
                   Password
                 </label>
-                <a className="font-label-md text-label-md text-primary hover:underline cursor-not-allowed opacity-50" href="#">
+                <button
+                  type="button"
+                  onClick={() => navigate('/request-activation')}
+                  className="font-label-md text-label-md text-primary hover:underline outline-none"
+                >
                   Forgot?
-                </a>
+                </button>
               </div>
               <div className="relative group">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
