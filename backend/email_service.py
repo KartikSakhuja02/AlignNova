@@ -1,18 +1,22 @@
 """
 AlignNova Email Service
 =======================
-Supports two HTTP API providers (port 443 — fully allowed on Render free tier):
-1. Brevo (recommended if you don't own a domain):
-    BREVO_API_KEY =   (from brevo.com SMTP & API section)
-    FROM_EMAIL    = noreply.alignnova@gmail.com (verify it as a sender in Brevo)
+Supports three providers (port 443 — fully allowed on Render free tier):
+1. Vercel Serverless SMTP Proxy:
+    EMAIL_PROXY_URL    = https://your-vercel-project.vercel.app/api/send-email
+    EMAIL_PROXY_SECRET = your_shared_secret
 
-2. Resend:
-    RESEND_API_KEY = re_xxxxxxxxxxxx       (from resend.com)
-    FROM_EMAIL     = onboarding@resend.dev (or verified domain email)
+2. Brevo:
+    BREVO_API_KEY      = xkeysib_xxxxxxxxxxxx
+    FROM_EMAIL         = noreply.alignnova@gmail.com
+
+3. Resend:
+    RESEND_API_KEY     = re_xxxxxxxxxxxx
+    FROM_EMAIL         = onboarding@resend.dev
 
 Required env vars:
-    FROM_NAME      = AlignNova Portal
-    APP_BASE_URL   = https://your-app.onrender.com
+    FROM_NAME          = AlignNova Portal
+    APP_BASE_URL       = https://your-app.onrender.com
 """
 
 import os
@@ -22,12 +26,16 @@ import urllib.request
 import urllib.error
 
 # ── Provider Configuration ───────────────────────────────────────────────────
-BREVO_API_KEY  = os.getenv("BREVO_API_KEY", "").strip()
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
-FROM_NAME      = os.getenv("FROM_NAME", "AlignNova Portal")
-APP_BASE_URL   = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
+EMAIL_PROXY_URL    = os.getenv("EMAIL_PROXY_URL", "").strip()
+EMAIL_PROXY_SECRET = os.getenv("EMAIL_PROXY_SECRET", "").strip()
 
-# If using Brevo, the user must set FROM_EMAIL. If using Resend, it defaults to onboarding@resend.dev.
+BREVO_API_KEY      = os.getenv("BREVO_API_KEY", "").strip()
+RESEND_API_KEY     = os.getenv("RESEND_API_KEY", "").strip()
+
+FROM_NAME          = os.getenv("FROM_NAME", "AlignNova Portal")
+APP_BASE_URL       = os.getenv("APP_BASE_URL", "http://localhost:5173").rstrip("/")
+
+# If using Brevo/Proxy, the user sets FROM_EMAIL. If using Resend, it defaults to onboarding@resend.dev.
 _default_from = "onboarding@resend.dev"
 FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 
@@ -79,7 +87,7 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
       <div class="logo-badge"><span class="logo-text">⭐ AlignNova</span></div>
       <h1>You're In,<br/>{first_name}! 🎉</h1>
       <p>Your placement portal account is ready.</p>
-      <div class="confetti">🎓</div>
+      <div class="confetti">✨ 🚀 🎓</div>
     </div>
     <div class="body">
       <p class="greeting">Welcome to AlignNova Placement Portal</p>
@@ -119,6 +127,34 @@ def _build_welcome_html(student_name: str, set_password_url: str) -> str:
 
 
 # ── Sender implementations ────────────────────────────────────────────────────
+
+def _send_via_proxy(to_email: str, subject: str, html: str, plain: str) -> None:
+    """Send via Vercel Serverless SMTP Proxy HTTP API. Raises on failure."""
+    payload = json.dumps({
+        "to_email": to_email,
+        "subject": subject,
+        "html": html,
+        "plain": plain,
+        "from_email": FROM_EMAIL,
+        "from_name": FROM_NAME
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        EMAIL_PROXY_URL,
+        data=payload,
+        headers={
+            "Content-Type": "application/json",
+            "X-Proxy-Secret": EMAIL_PROXY_SECRET,
+            "User-Agent": "AlignNova-App/1.0",
+        },
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        result = json.loads(resp.read())
+        if not result.get("ok"):
+            raise Exception(result.get("error", "Unknown proxy error"))
+        print(f"[email] Proxy success")
+
 
 def _send_via_brevo(to_email: str, subject: str, html: str, plain: str, recipient_name: str = "") -> None:
     """Send via Brevo HTTP API (over HTTPS port 443). Raises on failure."""
@@ -181,8 +217,10 @@ def _send_via_resend(to_email: str, subject: str, html: str, plain: str) -> None
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def get_config_status() -> dict:
-    """Return current email config (keys are masked)."""
-    if BREVO_API_KEY:
+    """Return current email config (keys/secrets are masked)."""
+    if EMAIL_PROXY_URL:
+        provider = "vercel_proxy"
+    elif BREVO_API_KEY:
         provider = "brevo"
     elif RESEND_API_KEY:
         provider = "resend"
@@ -191,6 +229,8 @@ def get_config_status() -> dict:
 
     return {
         "provider": provider,
+        "email_proxy_url": EMAIL_PROXY_URL,
+        "email_proxy_secret_set": bool(EMAIL_PROXY_SECRET),
         "brevo_api_key_set": bool(BREVO_API_KEY),
         "brevo_key_prefix": BREVO_API_KEY[:8] + "..." if BREVO_API_KEY else "(not set)",
         "resend_api_key_set": bool(RESEND_API_KEY),
@@ -207,12 +247,15 @@ def print_config():
     print("=" * 60)
     print("[email_service] Configuration:")
     print(f"  provider       : {cfg['provider']}")
-    if cfg['provider'] == 'brevo':
+    if cfg['provider'] == 'vercel_proxy':
+        print(f"  proxy_url      : {cfg['email_proxy_url']}")
+        print(f"  proxy_secret   : {'SET' if cfg['email_proxy_secret_set'] else 'NOT SET (unsecured)'}")
+    elif cfg['provider'] == 'brevo':
         print(f"  brevo_key      : {cfg['brevo_key_prefix']}")
     elif cfg['provider'] == 'resend':
         print(f"  resend_key     : {cfg['resend_key_prefix']}")
     else:
-        print("  ⚠️  NO EMAIL PROVIDER configured. Set BREVO_API_KEY or RESEND_API_KEY in Render environment variables.")
+        print("  ⚠️  NO EMAIL PROVIDER configured. Set EMAIL_PROXY_URL, BREVO_API_KEY, or RESEND_API_KEY.")
     print(f"  from_email     : {cfg['from_email']}")
     print(f"  app_base_url   : {cfg['app_base_url']}")
     print("=" * 60)
@@ -226,7 +269,7 @@ def send_test_email_sync(to_email: str) -> dict:
         return {
             "ok": False,
             "provider": "none",
-            "error": "No email provider configured. Set BREVO_API_KEY or RESEND_API_KEY in Render environment variables.",
+            "error": "No email provider configured. Set EMAIL_PROXY_URL, BREVO_API_KEY, or RESEND_API_KEY in Render environment variables.",
             "config": cfg,
         }
 
@@ -244,7 +287,12 @@ def send_test_email_sync(to_email: str) -> dict:
 </div>"""
 
     try:
-        if cfg["provider"] == "brevo":
+        if cfg["provider"] == "vercel_proxy":
+            print(f"[email] TEST: trying Vercel Proxy → {to_email}")
+            _send_via_proxy(to_email, subject, html, plain)
+            print(f"[email] TEST: ✓ Vercel Proxy success → {to_email}")
+            return {"ok": True, "provider": "vercel_proxy", "config": cfg}
+        elif cfg["provider"] == "brevo":
             print(f"[email] TEST: trying Brevo → {to_email}")
             _send_via_brevo(to_email, subject, html, plain)
             print(f"[email] TEST: ✓ Brevo success → {to_email}")
@@ -269,11 +317,11 @@ def send_test_email_sync(to_email: str) -> dict:
 
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str) -> bool:
     """
-    Send the welcome / account-activation email via Brevo or Resend API.
+    Send the welcome / account-activation email.
     Runs in a background thread — never blocks the API response.
     """
-    if not BREVO_API_KEY and not RESEND_API_KEY:
-        print("[email] Neither BREVO_API_KEY nor RESEND_API_KEY set — skipping welcome email.")
+    if not EMAIL_PROXY_URL and not BREVO_API_KEY and not RESEND_API_KEY:
+        print("[email] No provider configured — skipping welcome email.")
         return False
 
     set_password_url = f"{APP_BASE_URL}/set-password?token={set_password_token}"
@@ -287,7 +335,11 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
 
     def _send():
         try:
-            if BREVO_API_KEY:
+            if EMAIL_PROXY_URL:
+                print(f"[email] Sending via Vercel Proxy to {to_email} ...")
+                _send_via_proxy(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent via Vercel Proxy to {to_email}")
+            elif BREVO_API_KEY:
                 print(f"[email] Sending via Brevo to {to_email} ...")
                 _send_via_brevo(to_email, subject, html, plain, student_name)
                 print(f"[email] ✓ Sent via Brevo to {to_email}")
