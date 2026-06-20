@@ -12,21 +12,6 @@ export default function SignIn() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Mouse-tracking background shift
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      const x = e.clientX / window.innerWidth;
-      const y = e.clientY / window.innerHeight;
-      setMousePos({
-        x: (x - 0.5) * 10,
-        y: (y - 0.5) * 10,
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   // Redirect if already signed in
   useEffect(() => {
@@ -92,10 +77,7 @@ export default function SignIn() {
       </div>
 
       {/* Main Container */}
-      <main
-        className="relative z-10 w-full max-w-[480px] px-p-md fade-in transition-transform duration-75"
-        style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px)` }}
-      >
+      <main className="relative z-10 w-full max-w-[480px] px-p-md fade-in">
         {/* Branding Header */}
         <div className="text-center mb-p-xl">
           <img src={logo} alt="AlignNova Logo" className="h-32 mx-auto mb-p-md object-contain" />
