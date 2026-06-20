@@ -72,7 +72,7 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url
     <!-- Body Content -->
     <div style="padding: 40px 32px;">
       <h1 style="font-size: 26px; font-weight: 700; color: #111C2D; margin: 0 0 20px 0; line-height: 1.3; font-family: 'Plus Jakarta Sans', sans-serif;">
-        Welcome to the Career Network, <span style="color: #3525cd; font-weight: 800;">{student_name}</span>!
+        Welcome to AlignNova, <span style="color: #3525cd; font-weight: 800;">{student_name}</span>!
       </h1>
       <p style="font-size: 16px; color: #464555; line-height: 1.6; margin: 0 0 28px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
         Your executive account is now fully provisioned. You have been selected to join the Alignova placement ecosystem, where high-performance students meet industry-leading recruiters.

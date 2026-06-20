@@ -62,7 +62,7 @@ export default function OnboardingEmailPreview({ visible, onClose }) {
             {/* Body Content */}
             <div className="p-8">
               <h1 className="font-headline-lg text-[24px] text-on-surface mb-6">
-                Welcome to the Career Network, <span className="text-primary font-bold">{studentName || 'Student'}</span>!
+                Welcome to AlignNova, <span className="text-primary font-bold">{studentName || 'Student'}</span>!
               </h1>
               <p className="font-body-md text-on-surface-variant mb-6 leading-relaxed">
                 Your executive account is now fully provisioned. You have been selected to join the Alignova placement ecosystem, where high-performance students meet industry-leading recruiters.
