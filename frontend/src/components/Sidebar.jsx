@@ -23,9 +23,9 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface flex flex-col py-p-md z-50 sidebar-transition">
       {/* Logo */}
-      <div className="px-6 mb-10">
-        <h1 className="text-headline-md font-bold text-primary">AlignNova</h1>
-        <p className="text-label-md text-on-surface-variant">Placement Portal</p>
+      <div className="px-6 mb-8 flex flex-col items-center">
+        <img src="/logo.png" alt="AlignNova Logo" className="h-16 w-auto object-contain" />
+        <p className="text-caption text-on-surface-variant font-bold tracking-wider uppercase mt-2">Placement Portal</p>
       </div>
 
       {/* Nav Links */}

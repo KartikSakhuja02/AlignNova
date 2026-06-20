@@ -145,14 +145,7 @@ export default function SetPassword() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl px-5 py-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-xl flex items-center justify-center">
-              <span
-                className="material-symbols-outlined text-white"
-                style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}
-              >
-                stars
-              </span>
-            </div>
+            <img src="/logo.png" alt="AlignNova Logo" className="h-8 w-auto object-contain rounded-md" />
             <span className="text-white font-bold text-lg tracking-tight">AlignNova</span>
           </div>
         </div>

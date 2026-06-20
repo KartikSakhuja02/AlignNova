@@ -23,21 +23,9 @@ export default function AdminSidebar({ onPostDrive }) {
   return (
     <aside className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant py-p-md z-50">
       {/* Brand */}
-      <div className="px-6 mb-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              stars
-            </span>
-          </div>
-          <div>
-            <h1 className="text-headline-md font-bold text-primary">AlignNova</h1>
-            <p className="text-caption text-on-surface-variant">Admin Portal</p>
-          </div>
-        </div>
+      <div className="px-6 mb-8 flex flex-col items-center">
+        <img src="/logo.png" alt="AlignNova Logo" className="h-16 w-auto object-contain" />
+        <p className="text-caption text-on-surface-variant font-bold tracking-wider uppercase mt-2">Admin Portal</p>
       </div>
 
       {/* Nav */}

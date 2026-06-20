@@ -97,12 +97,7 @@ export default function SignIn() {
       >
         {/* Branding Header */}
         <div className="text-center mb-p-xl">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-p-md shadow-lg shadow-primary/20">
-            <span className="material-symbols-outlined text-on-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-              bolt
-            </span>
-          </div>
-          <h1 className="font-display-lg text-display-lg text-primary tracking-tight">AlignNova</h1>
+          <img src="/logo.png" alt="AlignNova Logo" className="h-32 mx-auto mb-p-md object-contain" />
           <p className="font-body-md text-body-md text-on-surface-variant mt-2">Elevating high-stakes career placement.</p>
         </div>
 
