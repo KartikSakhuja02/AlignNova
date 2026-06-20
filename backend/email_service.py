@@ -42,7 +42,7 @@ FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 
 # ── HTML template ─────────────────────────────────────────────────────────────
 
-def _build_welcome_html(student_name: str, set_password_url: str, logo_url: str) -> str:
+def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url: str, logo_blue_url: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +60,7 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_url: str)
       <table role="presentation" style="margin: 0 auto; border-collapse: collapse;">
         <tr>
           <td style="vertical-align: middle;">
-            <img alt="Alignova Logo" src="{logo_url}" style="height: 40px; width: auto; vertical-align: middle; border-radius: 8px;" />
+            <img alt="Alignova Logo" src="{logo_white_url}" style="height: 40px; width: auto; vertical-align: middle; border-radius: 8px;" />
           </td>
           <td style="vertical-align: middle; padding-left: 12px;">
             <span style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; font-family: 'Plus Jakarta Sans', sans-serif;">Alignova</span>
@@ -155,7 +155,7 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_url: str)
         © 2024 Alignova International. All rights reserved.
       </p>
       <div style="margin-top: 24px; opacity: 0.4;">
-        <img alt="Alignova Logo" src="{logo_url}" style="height: 24px; width: auto; filter: grayscale(100%);" />
+        <img alt="Alignova Logo" src="{logo_blue_url}" style="height: 24px; width: auto; filter: grayscale(100%);" />
       </div>
     </div>
 
@@ -364,9 +364,10 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
 
     active_base_url = (base_url or APP_BASE_URL).rstrip("/")
     set_password_url = f"{active_base_url}/set-password?token={set_password_token}"
-    logo_url = f"{active_base_url}/logo.png"
+    logo_white_url = f"{active_base_url}/logo_white.png"
+    logo_blue_url = f"{active_base_url}/logo.png"
     subject = "🎓 Welcome to AlignNova — Activate Your Account"
-    html    = _build_welcome_html(student_name, set_password_url, logo_url)
+    html    = _build_welcome_html(student_name, set_password_url, logo_white_url, logo_blue_url)
     plain   = (
         f"Welcome to AlignNova, {student_name}!\n\n"
         f"Set your password and access your dashboard here:\n{set_password_url}\n\n"
