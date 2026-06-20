@@ -6,6 +6,13 @@ from email.mime.multipart import MIMEMultipart
 import os
 
 class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Gracefully handle GET requests (e.g. browser visits)
+        self._send_response(200, {
+            "status": "active",
+            "message": "AlignNova Email Proxy is running. Send POST requests to send emails."
+        })
+
     def do_POST(self):
         # 1. Parse request body
         try:
@@ -15,6 +22,10 @@ class handler(BaseHTTPRequestHandler):
                 return
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
+            
+            if not isinstance(data, dict):
+                self._send_response(400, {"error": "Request body must be a JSON object"})
+                return
         except Exception as e:
             self._send_response(400, {"error": f"Invalid JSON body: {str(e)}"})
             return
