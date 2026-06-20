@@ -65,7 +65,7 @@ export default function OnboardingEmailPreview({ visible, onClose }) {
                 Welcome to AlignNova, <span className="text-primary font-bold">{studentName || 'Student'}</span>!
               </h1>
               <p className="font-body-md text-on-surface-variant mb-6 leading-relaxed">
-                Your executive account is now fully provisioned. You have been selected to join the Alignova placement ecosystem, where high-performance students meet industry-leading recruiters.
+                Your executive account is now fully provisioned. Your placement coordinator has assigned your account on AlignNova, the placement management portal.
               </p>
 
               {/* Action Button */}
@@ -159,7 +159,7 @@ export default function OnboardingEmailPreview({ visible, onClose }) {
                 Sent by Alignova Placement Portal • Executive precision in career placement.
               </p>
               <p className="text-[11px] text-outline">
-                © 2024 Alignova International. All rights reserved.
+                © 2026 Alignova International. All rights reserved.
               </p>
               <div className="mt-4 pt-4 border-t border-slate-200/50 flex justify-center opacity-30">
                 <img 

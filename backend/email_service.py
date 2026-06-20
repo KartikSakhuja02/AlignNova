@@ -75,7 +75,7 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url
         Welcome to AlignNova, <span style="color: #3525cd; font-weight: 800;">{student_name}</span>!
       </h1>
       <p style="font-size: 16px; color: #464555; line-height: 1.6; margin: 0 0 28px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
-        Your executive account is now fully provisioned. You have been selected to join the Alignova placement ecosystem, where high-performance students meet industry-leading recruiters.
+        Your executive account is now fully provisioned. Your placement coordinator has assigned your account on AlignNova, the placement management portal.
       </p>
 
       <!-- Action Button wrapper table for email client compatibility -->
@@ -162,7 +162,7 @@ def _build_welcome_html(student_name: str, set_password_url: str, logo_white_url
         Sent by Alignova Placement Portal • Executive precision in career placement.
       </p>
       <p style="font-size: 12px; color: #777587; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">
-        © 2024 Alignova International. All rights reserved.
+        © 2026 Alignova International. All rights reserved.
       </p>
       <div style="margin-top: 24px; opacity: 0.4;">
         <img alt="Alignova Logo" src="{logo_blue_url}" style="height: 24px; width: auto; filter: grayscale(100%);" />
