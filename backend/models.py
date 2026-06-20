@@ -21,4 +21,19 @@ class UserPublic(BaseModel):
     is_eligible: Optional[int] = 0
     skills: Optional[str] = "[]"
     languages: Optional[str] = "[]"
-    projects: Optional[str] = "[]"
+    projects: Optional[str] = "[]"
+
+class CreateStudentPayload(BaseModel):
+    full_name: str
+    email: str
+    username: str
+    password: str
+    department: Optional[str] = None
+    enrollment_id: Optional[str] = None
+
+class SetPasswordPayload(BaseModel):
+    token: str
+    new_password: str
+
+class RequestActivationPayload(BaseModel):
+    email: str
