@@ -1,39 +1,85 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const stats = [
-  {
-    label: 'Applications Submitted',
-    value: '04',
-    badge: (
-      <span className="text-xs text-emerald-300 font-bold mb-1 flex items-center gap-1">
-        <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_upward</span>
-        25%
-      </span>
-    ),
-  },
-  {
-    label: 'Active Interviews',
-    value: '02',
-    badge: (
-      <span className="text-xs text-white font-bold mb-1 px-2 py-0.5 bg-white/20 border border-white/30 rounded-full">
-        Coming up
-      </span>
-    ),
-  },
-  {
-    label: 'Offers Received',
-    value: '01',
-    badge: <span className="text-xs text-white/90 font-semibold mb-1">Stripe Inc.</span>,
-  },
-];
-
 export default function HeroBanner() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const firstName = user?.full_name ? user.full_name.trim().split(' ')[0] : (user?.username || 'Student');
 
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/applications', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to load applications');
+      })
+      .then((data) => {
+        setApplications(data);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const totalApplied = applications.length;
+  const interviewsCount = applications.filter((a) =>
+    ['interviewing', 'interview'].includes(a.status?.toLowerCase())
+  ).length;
+  const offersCount = applications.filter((a) =>
+    ['selected', 'approved', 'offer', 'hired'].includes(a.status?.toLowerCase())
+  ).length;
+
+  const welcomeText = interviewsCount > 0
+    ? `You have ${interviewsCount} upcoming interview${interviewsCount !== 1 ? 's' : ''} scheduled. Keep up the great work!`
+    : 'Explore the newest placement and internship drives published by your placement coordinator and track all your applications in real-time.';
+
+  const stats = [
+    {
+      label: 'Applications Submitted',
+      value: totalApplied.toString().padStart(2, '0'),
+      badge: (
+        <span className="text-xs text-emerald-300 font-bold mb-1 flex items-center gap-1">
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_upward</span>
+          Live Sync
+        </span>
+      ),
+    },
+    {
+      label: 'Active Interviews',
+      value: interviewsCount.toString().padStart(2, '0'),
+      badge: interviewsCount > 0 ? (
+        <span className="text-xs text-white font-bold mb-1 px-2 py-0.5 bg-white/20 border border-white/30 rounded-full animate-pulse">
+          Scheduled
+        </span>
+      ) : (
+        <span className="text-xs text-white/70 font-semibold mb-1">
+          None scheduled
+        </span>
+      ),
+    },
+    {
+      label: 'Offers Received',
+      value: offersCount.toString().padStart(2, '0'),
+      badge: offersCount > 0 ? (
+        <span className="text-xs text-emerald-300 font-bold mb-1 flex items-center gap-1">
+          <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>emoji_events</span>
+          Congrats!
+        </span>
+      ) : (
+        <span className="text-xs text-white/70 font-semibold mb-1">
+          Keep applying!
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <section className="relative overflow-hidden rounded-[2rem] bg-primary-container p-p-xl text-on-primary">
+    <section className="relative overflow-hidden rounded-[2rem] bg-primary-container p-p-xl text-on-primary shadow-sm">
       {/* Decorative blob */}
       <div className="absolute top-0 right-0 w-1/3 h-full opacity-10 pointer-events-none" />
 
@@ -42,8 +88,7 @@ export default function HeroBanner() {
           Welcome back, {firstName}!
         </h2>
         <p className="text-body-lg text-on-primary-container mb-8 max-w-lg">
-          You have 2 upcoming interviews this week. We've found 5 new internships matching your
-          profile in Product Design and Engineering.
+          {welcomeText}
         </p>
 
         {/* Stat Cards */}

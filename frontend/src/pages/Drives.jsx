@@ -3,83 +3,62 @@ import { useNavigate } from 'react-router-dom';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const drives = [
-  {
-    id: 1,
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuClOcfRkWYRRdnezHy2s5r2cYS6eXJBcY_lET5a7G6LehKSZsbqy11rFgPAGY2_RG8apHttXWn4Xquy50K5kATqs3y9ptBcHqEFFf5tP8YAHpthRNkLnAB4b1P4fbvig9KjpEGhmwmHnEP9Dlt7AV7_nmkxC_XhWLNxJalz2249SzrTxC4Vjh_Speofp9iyW87o3vRkN7tKuG-rKo9_geuSUgXvGfPhuGcgdZv06xxp9KJcejAYmk9Mxi1Lk-lRaQxID93WyaQmcZk',
-    logoAlt: 'Google Logo',
-    logoBg: 'bg-surface-container-low',
-    logoBorder: 'border-outline-variant',
-    badge: 'Applications Open',
-    badgeClass: 'bg-secondary-container text-on-secondary-container',
-    title: 'Software Engineer Intern',
-    company: 'Google',
-    location: 'Mountain View, CA (Remote Friendly)',
-    salary: '$8,500 - $10,500 / Month',
-    deadline: 'Oct 15, 2023',
-    type: 'Internship',
-  },
-  {
-    id: 2,
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvvIDD6_zQQ6Kgn2tsYHLu3g8aojCKBP0EZn2QqABdSUAQcENkumn8iaJD9tLuiEml83QCnYeCpc5C8-7FJL_MrQfC3Mo6lptPb_tH899b7v2ttkw9k9rqgk8iHDZbKynbMUzBTFeRrBNC8hBikXmJ2yM2YphSQwSbevds6_lFNN4aCkXge6EKjzuzMsITnDq8Yiq8P3XAWah92c5cNavDt_QGSqUd7Tg-283mxK8Wfl-57zKXLdKZmkDfcQG3LHcJoDxTRZhWGI4',
-    logoAlt: 'Stripe Logo',
-    logoBg: 'bg-[#635BFF]/10',
-    logoBorder: 'border-[#635BFF]/20',
-    badge: 'High Demand',
-    badgeClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant',
-    title: 'Product Design Intern',
-    company: 'Stripe',
-    location: 'San Francisco, CA',
-    salary: '$7,800 - $9,200 / Month',
-    deadline: 'Sep 30, 2023',
-    type: 'Internship',
-  },
-  {
-    id: 3,
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJSf9m_RDTo7egDvDqWmvv5fhx-nyDafJFol41wleuii6QPbVoVmkUAyDiPLigrrVaRNy27CJndfoLfJOQ0xNC4cf0OEu7zyC8Yjahq1XcFOLsn76EUE-8YBlytb57TIIzkfr_YLdXLn0Eg72n4patbldvN6YBtRsQaGN8zcA83DpNN5HXBmFbb_8wb52Llcqb81nF3xxTGTnxPLBTzjYxO7oZntlcH7cr6txWbOCQjHDS5k93pEkByLM82UlzEwXmjW1gy9kF09o',
-    logoAlt: 'Meta Logo',
-    logoBg: 'bg-[#0668E1]/10',
-    logoBorder: 'border-[#0668E1]/20',
-    badge: 'University Grad',
-    badgeClass: 'bg-surface-container-highest text-primary',
-    title: 'Data Scientist (New Grad)',
-    company: 'Meta',
-    location: 'London, UK (Relocation Offered)',
-    salary: '£85,000 / Per Annum',
-    deadline: 'Nov 05, 2023',
-    type: 'Full-time',
-  },
-  {
-    id: 4,
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAl5kFgTRHWBieneCyd40apKBqyGDdIKFokX33rqoRKi_8j43Mcx4m4HuvJO6NZqKnMT9nddiXqm5_bFGgtm9bk9pWlSf2572RlNRiTAWS_Py_HNOUhbcIxObYy6YBRT4fg3DaUsgbeEH4VboQ9UgWi0oxDRdljFlPt5j_i-udRoA-y2apWoa5eZ9eeNZumyr8f9atB0rO2jp7tnq1WdHf1DUu4wgNfHAlLryvZZ6LP7bZNPFB6KYWLCXxsrXoOZtCCAbogR7nfCTU',
-    logoAlt: 'Amazon Logo',
-    logoBg: 'bg-[#FF9900]/10',
-    logoBorder: 'border-[#FF9900]/20',
-    badge: 'Closing Soon',
-    badgeClass: 'bg-error-container text-on-error-container',
-    title: 'Cloud Support Engineer',
-    company: 'Amazon Web Services',
-    location: 'Seattle, WA',
-    salary: '$115,000 / Per Annum',
-    deadline: 'Oct 02, 2023',
-    type: 'Full-time',
-  },
-  {
-    id: 5,
-    logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAlArAEVo7czm_pf0a3pKC18-FBBdLe9LZL-agFlxgL_0IGuMaNcnOmMtkBjKRykaPugQ-pFBOi9zZ_VFag_Hnt46lhBj7lvdGe1gBIGOSnH15twcmQ2PJ4Z9dJsq0AthOe1sxio_OqDeDnEAq95p-t1fBrf9q8_L9MGF5fhX0oNOklkE_wkQ4HOiyIi8wg0GiRtgsxaAeN-ADVE-NgRlTiOt5RBoe4U4Veqq0ea8bE1d-tMoB6pR56leKoYwhuaoX-yO3_8EJOflY',
-    logoAlt: 'Microsoft Logo',
-    logoBg: 'bg-surface-container-low',
-    logoBorder: 'border-outline-variant',
-    badge: 'Applications Open',
-    badgeClass: 'bg-secondary-container text-on-secondary-container',
-    title: 'Security Analyst Intern',
-    company: 'Microsoft',
-    location: 'Redmond, WA',
-    salary: '$7,000 - $8,500 / Month',
-    deadline: 'Nov 20, 2023',
-    type: 'Internship',
-  },
-];
+const getCompanyLogo = (company) => {
+  const name = company?.toLowerCase() || '';
+  if (name.includes('google')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfHpajwGKBn2unI1eH1FKj6S5qwldgxjH1X-ODaUtDasXctpPritjFepnpKL-FCXAEQ6GwfA3FE8AwsJbHgVs2sePuzPJwyhDCskQyVDaDUlJJzhs3SbtLYRPgccQu0FdF2QTRgouR4B7SsVHdozq6eh7CnPX3wiP-lJQSIEoeUXKwuN8DqM0ouH6yUNXlGjoyzNlp3QViLKPZjmBro6VLtBQgwklmU0zB-WTVaMFhv4c-3smHxQ3f07U0Vb-gMVh1H_bWm2GgwJE';
+  if (name.includes('stripe')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuCZEFlssyk9kz6WpaSNAq-uJJlJHRWmIfnpvGQOrGyjsIvQ28DXduUK5WsC0HBS7ufThW9qk6wRJuNu2eD7jqvgaiy6OwEChbEtae46FNXV1akQm6xGRUaqS_8_tGwtj4qjVfDCGvBKP8jG-IjktrxefMnJOWR_-_7WbwAEdbLIoSJyhq8kB7lAhFp3weF42eoGdcRmTItgo5qJdMS9Qvszqp7Zr4qoXobXygvYK5-Ir2gByYD7YH-8nQAd1Lm3rExmkT5RjV9MDxU';
+  if (name.includes('figma')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuA8MI9NNI7cXZYzkIGsJtzxB-pTl3BgMcYt7GRe8n08njxpYIjUmjXijsTxdKf60NgstGUc0lPILTBXZtcRIEBEYrrCuXeeEimxwXglFEQx6Y6KlPj-iLvqzyV4w5iHqeo0Db3oO1PMh7QIRNtlvLTCI2yPwfI0VBT5A9OGg4dYh6oNfUtdY1pI8sMbg6B3KhecU0NSH7Fe5V-NRDnci7czCB99TR65FzoK2dlRNM35o9Jr3KJ4ULFXEuPkG0QR_9dltL70H4NYt0o';
+  if (name.includes('meta') || name.includes('facebook')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJSf9m_RDTo7egDvDqWmvv5fhx-nyDafJFol41wleuii6QPbVoVmkUAyDiPLigrrVaRNy27CJndfoLfJOQ0xNC4cf0OEu7zyC8Yjahq1XcFOLsn76EUE-8YBlytb57TIIzkfr_YLdXLn0Eg72n4patbldvN6YBtRsQaGN8zcA83DpNN5HXBmFbb_8wb52Llcqb81nF3xxTGTnxPLBTzjYxO7oZntlcH7cr6txWbOCQjHDS5k93pEkByLM82UlzEwXmjW1gy9kF09o';
+  if (name.includes('amazon')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAl5kFgTRHWBieneCyd40apKBqyGDdIKFokX33rqoRKi_8j43Mcx4m4HuvJO6NZqKnMT9nddiXqm5_bFGgtm9bk9pWlSf2572RlNRiTAWS_Py_HNOUhbcIxObYy6YBRT4fg3DaUsgbeEH4VboQ9UgWi0oxDRdljFlPt5j_i-udRoA-y2apWoa5eZ9eeNZumyr8f9atB0rO2jp7tnq1WdHf1DUu4wgNfHAlLryvZZ6LP7bZNPFB6KYWLCXxsrXoOZtCCAbogR7nfCTU';
+  if (name.includes('microsoft')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAlArAEVo7czm_pf0a3pKC18-FBBdLe9LZL-agFlxgL_0IGuMaNcnOmMtkBjKRykaPugQ-pFBOi9zZ_VFag_Hnt46lhBj7lvdGe1gBIGOSnH15twcmQ2PJ4Z9dJsq0AthOe1sxio_OqDeDnEAq95p-t1fBrf9q8_L9MGF5fhX0oNOklkE_wkQ4HOiyIi8wg0GiRtgsxaAeN-ADVE-NgRlTiOt5RBoe4U4Veqq0ea8bE1d-tMoB6pR56leKoYwhuaoX-yO3_8EJOflY';
+  return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=200&auto=format&fit=crop';
+};
+
+const formatSalary = (pkg, company) => {
+  if (pkg) {
+    if (!isNaN(pkg)) return `₹${pkg} LPA`;
+    return pkg;
+  }
+  const name = company?.toLowerCase() || '';
+  if (name.includes('google')) return '$8,500/mo';
+  if (name.includes('stripe')) return '$7,800/mo';
+  if (name.includes('figma')) return '$9,200/mo';
+  return 'TBD';
+};
+
+const getLocation = (company) => {
+  const name = company?.toLowerCase() || '';
+  if (name.includes('google')) return 'Mountain View, CA';
+  if (name.includes('stripe')) return 'San Francisco, CA';
+  if (name.includes('figma')) return 'Remote';
+  return 'Bengaluru, India';
+};
+
+const getBadgeText = (type) => {
+  return type?.toLowerCase().includes('internship') ? 'Internship Open' : 'Applications Open';
+};
+
+const getBadgeClass = (type) => {
+  return type?.toLowerCase().includes('internship') 
+    ? 'bg-secondary-container text-on-secondary-container' 
+    : 'bg-primary-container text-on-primary-container';
+};
+
+const getLogoBg = (company) => {
+  const name = company?.toLowerCase() || '';
+  if (name.includes('stripe')) return 'bg-[#635BFF]/10';
+  if (name.includes('meta')) return 'bg-[#0668E1]/10';
+  if (name.includes('amazon')) return 'bg-[#FF9900]/10';
+  return 'bg-surface-container-low';
+};
+
+const getLogoBorder = (company) => {
+  const name = company?.toLowerCase() || '';
+  if (name.includes('stripe')) return 'border-[#635BFF]/20';
+  if (name.includes('meta')) return 'border-[#0668E1]/20';
+  if (name.includes('amazon')) return 'border-[#FF9900]/20';
+  return 'border-outline-variant';
+};
 
 // ─── DriveCard ────────────────────────────────────────────────────────────────
 
@@ -230,9 +209,54 @@ const FILTERS = ['All', 'Internship', 'Full-time'];
 
 export default function Drives() {
   const [activeFilter, setActiveFilter] = useState('All');
+  const [dbDrives, setDbDrives] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered =
-    activeFilter === 'All' ? drives : drives.filter((d) => d.type === activeFilter);
+  React.useEffect(() => {
+    fetch('/api/drives')
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch drives');
+      })
+      .then((data) => {
+        setDbDrives(data);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const mappedDrives = dbDrives.map((d) => ({
+    id: d.id,
+    logo: getCompanyLogo(d.company),
+    logoAlt: `${d.company} Logo`,
+    logoBg: getLogoBg(d.company),
+    logoBorder: getLogoBorder(d.company),
+    badge: getBadgeText(d.type),
+    badgeClass: getBadgeClass(d.type),
+    title: d.role,
+    company: d.company,
+    location: getLocation(d.company),
+    salary: formatSalary(d.package, d.company),
+    deadline: d.drive_date
+      ? new Date(d.drive_date).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : 'TBD',
+    type: d.type || 'Full-time',
+  }));
+
+  const filtered = mappedDrives.filter((d) => {
+    if (activeFilter === 'All') return true;
+    if (activeFilter === 'Internship') {
+      return d.type.toLowerCase().includes('intern') || d.type.toLowerCase().includes('co-op');
+    }
+    if (activeFilter === 'Full-time') {
+      return !d.type.toLowerCase().includes('intern') && !d.type.toLowerCase().includes('co-op');
+    }
+    return true;
+  });
 
   return (
     <div className="px-p-lg pt-8 pb-p-xl max-w-[1280px] mx-auto">
@@ -275,13 +299,22 @@ export default function Drives() {
       </section>
 
       {/* Drive Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        {filtered.map((drive) => (
-          <DriveCard key={drive.id} drive={drive} />
-        ))}
-        {/* Empty / upcoming slot — always shown */}
-        <EmptyCard />
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+          {filtered.map((drive) => (
+            <DriveCard key={drive.id} drive={drive} />
+          ))}
+          {/* Empty / upcoming slot — always shown */}
+          <EmptyCard />
+        </div>
+      )}
 
       {/* Featured Section */}
       <FeaturedSection />

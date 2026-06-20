@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const DRIVE_DETAILS = {
   1: {
@@ -152,29 +153,189 @@ const DRIVE_DETAILS = {
 export default function DriveApplication() {
   const { driveId } = useParams();
   const navigate = useNavigate();
+  const { token, user } = useAuth();
 
-  // Fallback to Google if parameter is missing or invalid
-  const details = DRIVE_DETAILS[driveId] || DRIVE_DETAILS[1];
-
+  const [drive, setDrive] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     fullName: '',
     email: '',
     sop: '',
   });
+  const [submitStatus, setSubmitStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const [submitStatus, setSubmitStatus] = useState('idle'); // 'idle' | 'submitting' | 'success'
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        fullName: user.full_name || '',
+        email: user.email || '',
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetch(`/api/drives/${driveId}`)
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Drive not found');
+      })
+      .then((data) => {
+        setDrive(data);
+      })
+      .catch((err) => {
+        console.error(err);
+      })
+      .finally(() => setLoading(false));
+  }, [driveId]);
 
   const handleInputChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      setErrorMsg('You must be signed in to apply.');
+      setSubmitStatus('error');
+      return;
+    }
     setSubmitStatus('submitting');
-    setTimeout(() => {
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          drive_id: driveId,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to submit application. Please try again.');
+      }
+
       setSubmitStatus('success');
-    }, 1500);
+    } catch (err) {
+      setErrorMsg(err.message);
+      setSubmitStatus('error');
+    }
   };
+
+  const getCompanyLogo = (company) => {
+    const name = company?.toLowerCase() || '';
+    if (name.includes('google')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYzgDV2COw0g8kEqpitWhpX6DW_NXf7tugV1qwVhTkJrvlgS_gNzucdw3vmRp65DnmSo_titItbBekU6cAE1UFG9HZg1fBqBocu9cetphGlP4WL7KRu9OqKCcIl_8gmnVhaHUV22vONAy3dIy6Pibd3RWcohIuJ6bB1-B98KOquZO_9DqO3BEmuO82YwmztGs9MW3vOuOhWri9ePHFh3_ZKRcHfVQl_wpu07NxSLOCuGfU0qf2FJ-M';
+    if (name.includes('stripe')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvvIDD6_zQQ6Kgn2tsYHLu3g8aojCKBP0EZn2QqABdSUAQcENkumn8iaJD9tLuiEml83QCnYeCpc5C8-7FJL_MrQfC3Mo6lptPb_tH899b7v2ttkw9k9rqgk8iHDZbKynbMUzBTFeRrBNC8hBikXmJ2yM2YphSQwSbevds6_lFNN4aCkXge6EKjzuzMsITnDq8Yiq8P3XAWah92c5cNavDt_QGSqUd7Tg-283mxK8Wfl-57zKXLdKZmkDfcQG3LHcJoDxTRZhWGI4';
+    if (name.includes('figma')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuA8MI9NNI7cXZYzkIGsJtzxB-pTl3BgMcYt7GRe8n08njxpYIjUmjXijsTxdKf60NgstGUc0lPILTBXZtcRIEBEYrrCuXeeEimxwXglFEQx6Y6KlPj-iLvqzyV4w5iHqeo0Db3oO1PMh7QIRNtlvLTCI2yPwfI0VBT5A9OGg4dYh6oNfUtdY1pI8sMbg6B3KhecU0NSH7Fe5V-NRDnci7czCB99TR65FzoK2dlRNM35o9Jr3KJ4ULFXEuPkG0QR_9dltL70H4NYt0o';
+    if (name.includes('meta') || name.includes('facebook')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJSf9m_RDTo7egDvDqWmvv5fhx-nyDafJFol41wleuii6QPbVoVmkUAyDiPLigrrVaRNy27CJndfoLfJOQ0xNC4cf0OEu7zyC8Yjahq1XcFOLsn76EUE-8YBlytb57TIIzkfr_YLdXLn0Eg72n4patbldvN6YBtRsQaGN8zcA83DpNN5HXBmFbb_8wb52Llcqb81nF3xxTGTnxPLBTzjYxO7oZntlcH7cr6txWbOCQjHDS5k93pEkByLM82UlzEwXmjW1gy9kF09o';
+    if (name.includes('amazon')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAl5kFgTRHWBieneCyd40apKBqyGDdIKFokX33rqoRKi_8j43Mcx4m4HuvJO6NZqKnMT9nddiXqm5_bFGgtm9bk9pWlSf2572RlNRiTAWS_Py_HNOUhbcIxObYy6YBRT4fg3DaUsgbeEH4VboQ9UgWi0oxDRdljFlPt5j_i-udRoA-y2apWoa5eZ9eeNZumyr8f9atB0rO2jp7tnq1WdHf1DUu4wgNfHAlLryvZZ6LP7bZNPFB6KYWLCXxsrXoOZtCCAbogR7nfCTU';
+    if (name.includes('microsoft')) return 'https://lh3.googleusercontent.com/aida-public/AB6AXuAlArAEVo7czm_pf0a3pKC18-FBBdLe9LZL-agFlxgL_0IGuMaNcnOmMtkBjKRykaPugQ-pFBOi9zZ_VFag_Hnt46lhBj7lvdGe1gBIGOSnH15twcmQ2PJ4Z9dJsq0AthOe1sxio_OqDeDnEAq95p-t1fBrf9q8_L9MGF5fhX0oNOklkE_wkQ4HOiyIi8wg0GiRtgsxaAeN-ADVE-NgRlTiOt5RBoe4U4Veqq0ea8bE1d-tMoB6pR56leKoYwhuaoX-yO3_8EJOflY';
+    return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=200&auto=format&fit=crop';
+  };
+
+  const formatSalary = (pkg, company) => {
+    if (pkg) {
+      if (!isNaN(pkg)) return `₹${pkg} LPA`;
+      return pkg;
+    }
+    const name = company?.toLowerCase() || '';
+    if (name.includes('google')) return '$8,500 - $10,000 / mo';
+    if (name.includes('stripe')) return '$7,800 - $9,200 / mo';
+    if (name.includes('figma')) return '$9,200/mo';
+    return 'TBD';
+  };
+
+  const getLocation = (company) => {
+    const name = company?.toLowerCase() || '';
+    if (name.includes('google')) return 'Mountain View, CA';
+    if (name.includes('stripe')) return 'San Francisco, CA';
+    if (name.includes('figma')) return 'Remote';
+    return 'Bengaluru, India';
+  };
+
+  const getStipend = (pkg, company) => {
+    if (pkg) {
+      if (!isNaN(pkg)) return `₹${pkg} LPA`;
+      return pkg;
+    }
+    const name = company?.toLowerCase() || '';
+    if (name.includes('google')) return '$9,250';
+    if (name.includes('stripe')) return '$8,500';
+    if (name.includes('figma')) return '$9,200';
+    return 'TBD';
+  };
+
+  const getMockDetails = (company) => {
+    const name = company?.toLowerCase() || '';
+    if (name.includes('google')) return DRIVE_DETAILS[1];
+    if (name.includes('stripe')) return DRIVE_DETAILS[2];
+    if (name.includes('figma')) return DRIVE_DETAILS[3];
+    if (name.includes('meta')) return DRIVE_DETAILS[3];
+    if (name.includes('amazon')) return DRIVE_DETAILS[4];
+    if (name.includes('microsoft')) return DRIVE_DETAILS[5];
+    return null;
+  };
+
+  const mock = drive ? getMockDetails(drive.company) : null;
+  const details = drive ? {
+    company: drive.company,
+    logo: getCompanyLogo(drive.company),
+    title: drive.role,
+    location: getLocation(drive.company),
+    duration: drive.type || 'Full-time Permanent',
+    salary: formatSalary(drive.package, drive.company),
+    openings: mock ? mock.openings : 'Multiple Openings',
+    stipend: mock ? mock.stipend : (drive.package ? `₹${drive.package} LPA` : 'TBD'),
+    about: mock ? mock.about : `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`,
+    responsibilities: mock ? mock.responsibilities : [
+      `Design and develop reliable, secure, and scalable solutions for ${drive.company}'s core business systems.`,
+      'Collaborate with product design and engineering teams to identify requirements and refine user flows.',
+      'Participate in peer reviews, system triage, and unit testing to ensure high technical standards.'
+    ],
+    requirements: mock ? mock.requirements : [
+      drive.eligibility ? `Minimum academic CGPA requirement of ${drive.eligibility} / 10.` : 'Strong academic background in engineering, design, or business streams.',
+      'Core technical understanding of data structures, algorithms, and application architectures.',
+      'Excellent verbal and written communication skills to articulate system engineering challenges.'
+    ],
+    techStack: mock ? mock.techStack : ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
+    perks: mock ? mock.perks : ['Competitive Compensation', 'Premium Health Coverage', 'Flexible Working Hours', 'Professional Mentorship'],
+    timeline: mock ? mock.timeline : [
+      { step: 'Application Phase', date: 'Active Now', desc: 'Submit your resume and statement of purpose.' },
+      { step: 'Technical Screening', date: 'TBD', desc: 'Skill assessments and system design assignments.' },
+      { step: 'Final Interviews', date: 'TBD', desc: 'Panel discussions with the hiring managers.' }
+    ]
+  } : null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (!details) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+        <span className="material-symbols-outlined text-[48px] text-error mb-4">error</span>
+        <h2 className="text-headline-md font-bold text-on-surface mb-2">Drive Not Found</h2>
+        <p className="text-body-md text-on-surface-variant mb-6 text-center max-w-sm">
+          The placement drive details could not be found or has expired.
+        </p>
+        <button onClick={() => navigate('/drives')} className="px-6 py-3 bg-primary text-white font-semibold rounded-xl">
+          Back to Drives
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

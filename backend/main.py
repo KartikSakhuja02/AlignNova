@@ -47,6 +47,18 @@ def on_startup():
             create_user("admin", hash_password("adminpass"), role="admin", full_name="Administrator", email="admin@demo.local")
     except Exception:
         pass
+    # seed default drives for mapping
+    try:
+        from backend.database import SessionLocal, Drive
+        with SessionLocal() as db:
+            if db.query(Drive).count() == 0:
+                create_drive("Google", "Tech Internship (Summer 2024)", type="Summer Internship", eligibility="8.0", package="12.5", drive_date="2026-10-15")
+                create_drive("Stripe", "Software Engineer I (Product)", type="Full-Time Graduate", eligibility="7.5", package="18.5", drive_date="2026-09-30")
+                create_drive("Figma", "Product Design Intern", type="Summer Internship", eligibility="7.0", package="14.0", drive_date="2026-11-20")
+                create_drive("Meta", "Data Scientist (New Grad)", type="Full-Time Graduate", eligibility="8.0", package="22.0", drive_date="2026-11-05")
+                create_drive("Amazon Web Services", "Cloud Support Engineer", type="Full-Time Graduate", eligibility="7.5", package="16.0", drive_date="2026-10-02")
+    except Exception as e:
+        print(f"Startup drives seeding warning: {e}")
 
 
 def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_MINUTES) -> str:
@@ -277,6 +289,24 @@ def get_drives():
     return list_drives()
 
 
+@app.get('/api/drives/{drive_id}')
+def get_drive_detail(drive_id: int):
+    from backend.database import SessionLocal, Drive
+    with SessionLocal() as db:
+        drive = db.query(Drive).filter(Drive.id == drive_id).first()
+        if not drive:
+            raise HTTPException(status_code=404, detail='drive_not_found')
+        return {
+            "id": drive.id,
+            "company": drive.company,
+            "role": drive.role,
+            "type": drive.type or "Full-time",
+            "eligibility": drive.eligibility or "Open to all",
+            "package": drive.package or "TBD",
+            "drive_date": drive.drive_date or "TBD"
+        }
+
+
 @app.post('/api/apply')
 def apply_drive(request: Request, payload: dict):
     auth = request.headers.get('Authorization')
@@ -384,6 +414,39 @@ def update_app_status(app_id: int, payload: dict, request: Request):
         db.commit()
         db.refresh(app_entry)
         return {"id": app_entry.id, "status": app_entry.status}
+
+
+@app.delete('/api/applications/{app_id}')
+def delete_application(app_id: int, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    
+    from backend.database import SessionLocal, Application
+    with SessionLocal() as db:
+        app_entry = db.query(Application).filter(Application.id == app_id).first()
+        if not app_entry:
+            raise HTTPException(status_code=404, detail='application_not_found')
+        if role != 'admin' and app_entry.user_id != user['id']:
+            raise HTTPException(status_code=403, detail='forbidden')
+        db.delete(app_entry)
+        db.commit()
+        return {'deleted': True, 'app_id': app_id}
+
+
 
 
 # ── Admin: List Students ─────────────────────────────────────────────────────

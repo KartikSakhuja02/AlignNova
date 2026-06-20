@@ -1,72 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const ALL_APPLICATIONS = [
-  {
-    abbr: 'GS',
-    company: 'Goldman Sachs',
-    role: 'Investment Banking Analyst',
-    date: 'Oct 12, 2023',
-    status: 'Selected',
-    statusClass: 'bg-secondary/10 text-secondary',
-  },
-  {
-    abbr: 'MC',
-    company: 'McKinsey & Co.',
-    role: 'Junior Consultant',
-    date: 'Oct 28, 2023',
-    status: 'Interviewing',
-    statusClass: 'bg-primary/10 text-primary',
-  },
-  {
-    abbr: 'MS',
-    company: 'Morgan Stanley',
-    role: 'Data Scientist',
-    date: 'Nov 02, 2023',
-    status: 'Shortlisted',
-    statusClass: 'bg-tertiary/10 text-tertiary',
-  },
-  {
-    abbr: 'BB',
-    company: 'BlackRock',
-    role: 'Portfolio Manager Intern',
-    date: 'Nov 05, 2023',
-    status: 'Under Review',
-    statusClass: 'bg-outline-variant/30 text-on-surface-variant',
-  },
-  {
-    abbr: 'AP',
-    company: 'Apple Inc.',
-    role: 'Product Design Intern',
-    date: 'Nov 10, 2023',
-    status: 'Applied',
-    statusClass: 'bg-outline-variant/20 text-on-surface-variant',
-  },
-  {
-    abbr: 'GO',
-    company: 'Google',
-    role: 'Software Engineer',
-    date: 'Nov 15, 2023',
-    status: 'Interviewing',
-    statusClass: 'bg-primary/10 text-primary',
-  },
-  {
-    abbr: 'AM',
-    company: 'Amazon',
-    role: 'Product Manager Intern',
-    date: 'Nov 18, 2023',
-    status: 'Applied',
-    statusClass: 'bg-outline-variant/20 text-on-surface-variant',
-  },
-];
-
-const INTERVIEWS = [
-  { day: '18', month: 'Nov', title: 'Technical Assessment', sub: 'Google • 10:00 AM' },
-  { day: '22', month: 'Nov', title: 'Final Partner Round', sub: 'McKinsey • 02:30 PM' },
-];
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const PAGE_SIZE = 5;
+
+const getAbbr = (company) => {
+  if (!company) return 'APP';
+  const parts = company.trim().split(/\s+/);
+  if (parts.length > 1) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return company.slice(0, 3).toUpperCase();
+};
+
+const formatDate = (isoString) => {
+  if (!isoString) return '—';
+  const d = new Date(isoString);
+  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+};
+
+const getStatusStyles = (status) => {
+  const s = status?.toLowerCase() || 'submitted';
+  if (s === 'selected' || s === 'approved' || s === 'offer' || s === 'hired') {
+    return { text: 'Selected', statusClass: 'bg-secondary/10 text-secondary' };
+  }
+  if (s === 'rejected') {
+    return { text: 'Rejected', statusClass: 'bg-error/10 text-error' };
+  }
+  if (s === 'withdrawn') {
+    return { text: 'Withdrawn', statusClass: 'bg-outline-variant/40 text-on-surface-variant' };
+  }
+  if (s === 'shortlisted') {
+    return { text: 'Shortlisted', statusClass: 'bg-tertiary/10 text-tertiary' };
+  }
+  if (s === 'interviewing' || s === 'interview') {
+    return { text: 'Interviewing', statusClass: 'bg-primary/10 text-primary' };
+  }
+  return { text: s.charAt(0).toUpperCase() + s.slice(1), statusClass: 'bg-outline-variant/20 text-on-surface-variant' };
+};
 
 // ─── Donut Chart ──────────────────────────────────────────────────────────────
 
@@ -93,9 +64,33 @@ function DonutChart({ percent }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Applications() {
+  const { token } = useAuth();
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const glowRef = useRef(null);
+
+  // Fetch applications
+  useEffect(() => {
+    if (!token) return;
+    setLoading(true);
+    fetch('/api/applications', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to load applications');
+      })
+      .then((data) => {
+        setApplications(data);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
+  }, [token]);
 
   // Cursor glow effect
   useEffect(() => {
@@ -109,11 +104,62 @@ export default function Applications() {
     return () => window.removeEventListener('mousemove', handler);
   }, []);
 
+  // Withdraw Handler
+  const handleWithdraw = async (appId, companyName) => {
+    if (!token) return;
+    if (!window.confirm(`Are you sure you want to withdraw your application for ${companyName}?`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/applications/${appId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setApplications((prev) => prev.filter((app) => app.id !== appId));
+      } else {
+        alert('Failed to withdraw application. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred. Please try again.');
+    }
+  };
+
+  // Export report as CSV
+  const handleExportReport = () => {
+    if (applications.length === 0) {
+      alert('No applications to export.');
+      return;
+    }
+    const headers = ['Company', 'Role', 'Applied Date', 'Status', 'Package', 'Deadline'];
+    const csvRows = [headers.join(',')];
+    applications.forEach((app) => {
+      const row = [
+        `"${app.company || ''}"`,
+        `"${app.role || ''}"`,
+        `"${formatDate(app.created_at)}"`,
+        `"${app.status || ''}"`,
+        `"${app.package || 'TBD'}"`,
+        `"${app.drive_date || 'TBD'}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'AlignNova_Applications_Report.csv');
+    a.click();
+  };
+
   // Filter & paginate
-  const filtered = ALL_APPLICATIONS.filter((a) =>
-    a.company.toLowerCase().includes(search.toLowerCase()) ||
-    a.role.toLowerCase().includes(search.toLowerCase()) ||
-    a.status.toLowerCase().includes(search.toLowerCase())
+  const filtered = applications.filter((a) =>
+    a.company?.toLowerCase().includes(search.toLowerCase()) ||
+    a.role?.toLowerCase().includes(search.toLowerCase()) ||
+    a.status?.toLowerCase().includes(search.toLowerCase())
   );
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const visible = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -122,6 +168,43 @@ export default function Applications() {
     setSearch(e.target.value);
     setPage(0);
   };
+
+  // Calculate statistics
+  const totalApplied = applications.length;
+  const inProgress = applications.filter(
+    (a) => !['selected', 'approved', 'offer', 'hired', 'rejected', 'withdrawn'].includes(a.status?.toLowerCase())
+  ).length;
+  const offersReceived = applications.filter((a) =>
+    ['selected', 'approved', 'offer', 'hired'].includes(a.status?.toLowerCase())
+  ).length;
+
+  const successRate = totalApplied > 0
+    ? Math.round(
+        (applications.filter((a) =>
+          ['shortlisted', 'selected', 'approved', 'interviewing', 'interview', 'offer', 'hired'].includes(a.status?.toLowerCase())
+        ).length / totalApplied) * 100
+      )
+    : 0;
+
+  // Upcoming Interviews from database
+  const interviewingApps = applications.filter((a) =>
+    ['interviewing', 'interview'].includes(a.status?.toLowerCase())
+  );
+  const interviewsList = interviewingApps.length > 0
+    ? interviewingApps.map((app) => {
+        const dateObj = app.created_at ? new Date(app.created_at) : new Date();
+        dateObj.setDate(dateObj.getDate() + 5); // Mock interview scheduled 5 days after app date
+        return {
+          day: dateObj.getDate().toString().padStart(2, '0'),
+          month: dateObj.toLocaleString('en-US', { month: 'short' }),
+          title: 'Technical Round',
+          sub: `${app.company} • 11:00 AM`,
+        };
+      })
+    : [
+        { day: '24', month: 'Jun', title: 'Technical Assessment', sub: 'Google Web Dev • 10:00 AM' },
+        { day: '28', month: 'Jun', title: 'Culture Fit Round', sub: 'Stripe Product • 02:30 PM' },
+      ];
 
   return (
     <div className="relative">
@@ -146,10 +229,16 @@ export default function Applications() {
             </p>
           </div>
           <div className="flex gap-3 flex-shrink-0">
-            <button className="px-6 py-3 border border-outline-variant text-on-surface text-label-md rounded-xl hover:bg-surface-container-low transition-all">
+            <button
+              onClick={handleExportReport}
+              className="px-6 py-3 border border-outline-variant text-on-surface text-label-md rounded-xl hover:bg-surface-container-low transition-all cursor-pointer font-semibold"
+            >
               Export Report
             </button>
-            <button className="px-6 py-3 bg-primary text-on-primary text-label-md rounded-xl hover:shadow-lg hover:scale-[1.01] transition-all flex items-center gap-2">
+            <button
+              onClick={() => navigate('/drives')}
+              className="px-6 py-3 bg-primary text-on-primary text-label-md rounded-xl hover:shadow-lg hover:scale-[1.01] transition-all flex items-center gap-2 cursor-pointer font-semibold"
+            >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
               New Application
             </button>
@@ -164,9 +253,11 @@ export default function Applications() {
               <div className="bg-primary/10 p-3 rounded-xl text-primary">
                 <span className="material-symbols-outlined">send</span>
               </div>
-              <span className="text-secondary text-label-md">+12% from last month</span>
+              <span className="text-secondary text-label-md">Live Sync</span>
             </div>
-            <div className="text-[48px] font-extrabold leading-tight text-on-surface">24</div>
+            <div className="text-[48px] font-extrabold leading-tight text-on-surface">
+              {totalApplied.toString().padStart(2, '0')}
+            </div>
             <div className="text-label-md text-on-surface-variant uppercase tracking-wider">Total Applied</div>
           </div>
 
@@ -176,9 +267,11 @@ export default function Applications() {
               <div className="bg-tertiary/10 p-3 rounded-xl text-tertiary">
                 <span className="material-symbols-outlined">pending_actions</span>
               </div>
-              <span className="text-on-surface-variant text-label-md">8 pending review</span>
+              <span className="text-on-surface-variant text-label-md">Under review</span>
             </div>
-            <div className="text-[48px] font-extrabold leading-tight text-on-surface">14</div>
+            <div className="text-[48px] font-extrabold leading-tight text-on-surface">
+              {inProgress.toString().padStart(2, '0')}
+            </div>
             <div className="text-label-md text-on-surface-variant uppercase tracking-wider">In Progress</div>
           </div>
 
@@ -188,9 +281,11 @@ export default function Applications() {
               <div className="bg-secondary/10 p-3 rounded-xl text-secondary">
                 <span className="material-symbols-outlined">verified</span>
               </div>
-              <span className="text-secondary text-label-md">95th Percentile</span>
+              <span className="text-secondary text-label-md">Select Pool</span>
             </div>
-            <div className="text-[48px] font-extrabold leading-tight text-on-surface">03</div>
+            <div className="text-[48px] font-extrabold leading-tight text-on-surface">
+              {offersReceived.toString().padStart(2, '0')}
+            </div>
             <div className="text-label-md text-on-surface-variant uppercase tracking-wider">Offers Received</div>
           </div>
         </section>
@@ -236,41 +331,68 @@ export default function Applications() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
-                {visible.length > 0 ? visible.map(({ abbr, company, role, date, status, statusClass }) => (
-                  <tr
-                    key={`${company}-${role}`}
-                    className="hover:bg-surface-container-low/20 transition-all duration-200 group"
-                    onMouseEnter={e => e.currentTarget.style.transform = 'translateX(4px)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
-                    style={{ transition: 'transform 0.2s ease, background 0.2s ease' }}
-                  >
-                    <td className="px-p-md py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-bold text-primary text-label-md flex-shrink-0">
-                          {abbr}
-                        </div>
-                        <span className="text-body-md text-on-surface font-semibold">{company}</span>
-                      </div>
-                    </td>
-                    <td className="px-p-md py-6 text-body-md text-on-surface-variant">{role}</td>
-                    <td className="px-p-md py-6 text-body-md text-on-surface-variant">{date}</td>
-                    <td className="px-p-md py-6">
-                      <span className={`px-3 py-1.5 rounded-full text-[12px] font-bold uppercase ${statusClass}`}>
-                        {status}
-                      </span>
-                    </td>
-                    <td className="px-p-md py-6 text-right">
-                      <div className="flex justify-end gap-3">
-                        <button className="text-primary text-label-md hover:underline transition-all">
-                          View Details
-                        </button>
-                        <button className="text-error/70 text-label-md hover:text-error transition-colors">
-                          Withdraw
-                        </button>
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-p-md py-12 text-center text-on-surface-variant text-body-md font-medium">
+                      <div className="flex justify-center items-center gap-2">
+                        <svg className="animate-spin h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>Loading applications from server...</span>
                       </div>
                     </td>
                   </tr>
-                )) : (
+                ) : visible.length > 0 ? visible.map((app) => {
+                  const abbr = getAbbr(app.company);
+                  const date = formatDate(app.created_at);
+                  const { text, statusClass } = getStatusStyles(app.status);
+                  const isWithdrawn = app.status?.toLowerCase() === 'withdrawn';
+
+                  return (
+                    <tr
+                      key={app.id}
+                      className="hover:bg-surface-container-low/20 transition-all duration-200 group"
+                      onMouseEnter={e => e.currentTarget.style.transform = 'translateX(4px)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
+                      style={{ transition: 'transform 0.2s ease, background 0.2s ease' }}
+                    >
+                      <td className="px-p-md py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-bold text-primary text-label-md flex-shrink-0">
+                            {abbr}
+                          </div>
+                          <span className="text-body-md text-on-surface font-semibold">{app.company}</span>
+                        </div>
+                      </td>
+                      <td className="px-p-md py-6 text-body-md text-on-surface-variant">{app.role}</td>
+                      <td className="px-p-md py-6 text-body-md text-on-surface-variant">{date}</td>
+                      <td className="px-p-md py-6">
+                        <span className={`px-3 py-1.5 rounded-full text-[12px] font-bold uppercase ${statusClass}`}>
+                          {text}
+                        </span>
+                      </td>
+                      <td className="px-p-md py-6 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button
+                            onClick={() => navigate(`/apply/${app.drive_id}`)}
+                            className="text-primary text-label-md hover:underline transition-all cursor-pointer font-semibold"
+                          >
+                            View Details
+                          </button>
+                          {!isWithdrawn && (
+                            <button
+                              onClick={() => handleWithdraw(app.id, app.company)}
+                              className="text-error/75 text-label-md hover:text-error hover:underline transition-colors cursor-pointer font-semibold"
+                            >
+                              Withdraw
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }) : (
                   <tr>
                     <td colSpan={5} className="px-p-md py-12 text-center text-on-surface-variant text-body-md">
                       No applications match your search.
@@ -314,10 +436,10 @@ export default function Applications() {
               Upcoming Interviews
             </h4>
             <div className="space-y-4">
-              {INTERVIEWS.map(({ day, month, title, sub }) => (
+              {interviewsList.map(({ day, month, title, sub }, idx) => (
                 <div
-                  key={`${day}-${month}-${title}`}
-                  className="flex items-center p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors group"
+                  key={`${idx}-${day}-${month}`}
+                  className="flex items-center p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors group animate-fadeIn"
                 >
                   <div className="pr-4 border-r border-outline-variant/30 text-center min-w-[52px]">
                     <div className="text-headline-md font-bold text-primary">{day}</div>
@@ -327,7 +449,7 @@ export default function Applications() {
                     <div className="text-label-md text-on-surface">{title}</div>
                     <div className="text-body-md text-on-surface-variant">{sub}</div>
                   </div>
-                  <button className="ml-auto text-primary material-symbols-outlined group-hover:translate-x-1 transition-transform">
+                  <button className="ml-auto text-primary material-symbols-outlined group-hover:translate-x-1 transition-transform cursor-pointer">
                     arrow_forward
                   </button>
                 </div>
@@ -341,11 +463,11 @@ export default function Applications() {
               Application Success Rate
             </h4>
             <div className="flex items-center justify-center py-4">
-              <DonutChart percent={70} />
+              <DonutChart percent={successRate} />
               <div className="ml-8 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-primary flex-shrink-0" />
-                  <span className="text-label-md text-on-surface">Shortlisted</span>
+                  <span className="text-label-md text-on-surface">Shortlisted / Select</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-surface-container-high flex-shrink-0" />
@@ -354,7 +476,7 @@ export default function Applications() {
               </div>
             </div>
             <p className="text-caption text-on-surface-variant mt-4 text-center">
-              Your profile strength is currently 15% higher than the candidate average for Finance roles.
+              Your profile strength is currently 15% higher than the candidate average. Apply to more premium drives to boost your career.
             </p>
           </div>
         </section>
