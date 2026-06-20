@@ -455,10 +455,17 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
 
     # Generate a set-password token and send the welcome email (non-blocking)
     sp_token = create_set_password_token(payload.username)
+    
+    # Retrieve base URL respecting proxy headers if present (e.g. Render/Vercel)
+    proto = request.headers.get("x-forwarded-proto", "http")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    base_url = f"{proto}://{host}" if host else str(request.base_url).rstrip("/")
+
     send_welcome_email(
         to_email=payload.email,
         student_name=payload.full_name or payload.username,
-        set_password_token=sp_token
+        set_password_token=sp_token,
+        base_url=base_url
     )
 
     return user

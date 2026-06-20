@@ -42,8 +42,7 @@ FROM_EMAIL     = os.getenv("FROM_EMAIL", _default_from).strip()
 
 # ── HTML template ─────────────────────────────────────────────────────────────
 
-def _build_welcome_html(student_name: str, set_password_url: str) -> str:
-    logo_url = f"{APP_BASE_URL}/logo.png"
+def _build_welcome_html(student_name: str, set_password_url: str, logo_url: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -354,7 +353,7 @@ def send_test_email_sync(to_email: str) -> dict:
         return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
 
 
-def send_welcome_email(to_email: str, student_name: str, set_password_token: str) -> bool:
+def send_welcome_email(to_email: str, student_name: str, set_password_token: str, base_url: str = None) -> bool:
     """
     Send the welcome / account-activation email.
     Runs in a background thread — never blocks the API response.
@@ -363,9 +362,11 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
         print("[email] No provider configured — skipping welcome email.")
         return False
 
-    set_password_url = f"{APP_BASE_URL}/set-password?token={set_password_token}"
+    active_base_url = (base_url or APP_BASE_URL).rstrip("/")
+    set_password_url = f"{active_base_url}/set-password?token={set_password_token}"
+    logo_url = f"{active_base_url}/logo.png"
     subject = "🎓 Welcome to AlignNova — Activate Your Account"
-    html    = _build_welcome_html(student_name, set_password_url)
+    html    = _build_welcome_html(student_name, set_password_url, logo_url)
     plain   = (
         f"Welcome to AlignNova, {student_name}!\n\n"
         f"Set your password and access your dashboard here:\n{set_password_url}\n\n"
