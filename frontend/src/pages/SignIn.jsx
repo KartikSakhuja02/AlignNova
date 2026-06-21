@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isAdmin } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,9 +16,10 @@ export default function SignIn() {
   // Redirect if already signed in
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(isAdmin ? '/admin' : '/', { replace: true });
+      const dest = role === 'admin' ? '/admin' : (role === 'hr' ? '/partner' : '/');
+      navigate(dest, { replace: true });
     }
-  }, [isAuthenticated, isAdmin, navigate]);
+  }, [isAuthenticated, role, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +53,8 @@ export default function SignIn() {
       setStatus('success');
 
       setTimeout(() => {
-        navigate(data.role === 'admin' ? '/admin' : '/', { replace: true });
+        const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : '/');
+        navigate(dest, { replace: true });
       }, 900);
     } catch (err) {
       setStatus('error');

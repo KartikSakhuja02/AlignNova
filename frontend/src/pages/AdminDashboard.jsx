@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import OpportunityEmailPreview from '../components/OpportunityEmailPreview';
+import PartnerEmailPreview from '../components/PartnerEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { COURSE_OPTIONS, SELECTION_ROUNDS } from '../utils/constants';
@@ -295,62 +296,295 @@ function AdminSettingsView({ profile, token, onSaved }) {
   );
 }
 
-function RecruitersView() {
-  const partners = [
-    { name: 'Google India', sector: 'Technology', status: 'Active Partner', drives: 4, logo: 'G', color: 'bg-blue-500 text-white' },
-    { name: 'Microsoft India', sector: 'Software & Cloud', status: 'Active Partner', drives: 6, logo: 'M', color: 'bg-red-500 text-white' },
-    { name: 'Omniscient Software', sector: 'Enterprise Dev', status: 'Active Partner', drives: 2, logo: 'O', color: 'bg-purple-600 text-white' },
-    { name: 'Amazon Dev Center', sector: 'E-commerce & AI', status: 'Active Partner', drives: 3, logo: 'A', color: 'bg-amber-600 text-white' },
-    { name: 'Infosys', sector: 'IT Services', status: 'Active Partner', drives: 8, logo: 'I', color: 'bg-indigo-600 text-white' },
-    { name: 'TCS Research', sector: 'Consulting', status: 'Pending Review', drives: 0, logo: 'T', color: 'bg-teal-600 text-white' }
+function AddPartnerModal({ visible, token, onClose, onAdded }) {
+  const [form, setForm] = useState({
+    full_name: '',
+    email: '',
+    company: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setForm({ full_name: '', email: '', company: '' });
+      setError('');
+      setSuccess(false);
+    }
+  }, [visible]);
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    setCreating(true);
+    setError('');
+    try {
+      const res = await fetch('/api/admin/partners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        const msg = d.detail === 'email_taken'
+          ? 'Email already registered.'
+          : d.detail || 'Failed to add corporate partner';
+        throw new Error(msg);
+      }
+      setSuccess(true);
+      onAdded();
+      setTimeout(() => { onClose(); }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>business</span>
+            </div>
+            <h2 className="text-white font-bold text-title-lg">Add Corporate Partner</h2>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        {/* Content / Form */}
+        <form onSubmit={handleCreate} className="p-6 space-y-5">
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-body-md border border-error-container/30">
+              <span className="material-symbols-outlined flex-shrink-0" style={{ fontSize: '18px' }}>error</span>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-secondary-container/20 rounded-xl text-on-secondary-container text-body-md border border-secondary-container/35">
+              <span className="material-symbols-outlined flex-shrink-0" style={{ fontVariationSettings: "'FILL' 1'", fontSize: '18px' }}>check_circle</span>
+              Partner added! Invitation email sent successfully.
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-caption text-on-surface font-semibold uppercase tracking-wider block">Full Name (Contact Person)</label>
+              <input
+                required
+                disabled={creating || success}
+                value={form.full_name}
+                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                placeholder="e.g. Alex Thorne"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-caption text-on-surface font-semibold uppercase tracking-wider block">Corporate Email Address</label>
+              <input
+                required
+                type="email"
+                disabled={creating || success}
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="e.g. alex.thorne@company.com"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-caption text-on-surface font-semibold uppercase tracking-wider block">Company / Organization Name</label>
+              <input
+                required
+                disabled={creating || success}
+                value={form.company}
+                onChange={(e) => setForm({ ...form, company: e.target.value })}
+                placeholder="e.g. Microsoft India"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-outline-variant/40">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={creating || success}
+              className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={creating || success}
+              className="flex-1 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {creating ? (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1'", fontSize: '18px' }}>business</span>
+              )}
+              {creating ? 'Inviting...' : 'Invite Partner'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function RecruitersView({ token, onPreviewPartnerEmail }) {
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddPartner, setShowAddPartner] = useState(false);
+
+  const fetchPartners = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/partners', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPartners(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchPartners();
+  }, [fetchPartners]);
+
+  const handleDeletePartner = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this corporate partner?")) return;
+    try {
+      const res = await fetch(`/api/admin/partners/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setPartners(partners.filter(p => p.id !== id));
+      } else {
+        alert("Failed to delete partner");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const colors = [
+    'bg-blue-500 text-white',
+    'bg-red-500 text-white',
+    'bg-purple-600 text-white',
+    'bg-amber-600 text-white',
+    'bg-indigo-600 text-white',
+    'bg-teal-600 text-white'
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-headline-md font-bold text-on-surface">Corporate Partners</h2>
           <p className="text-body-md text-on-surface-variant">Manage relationships with placement & internship recruiters</p>
         </div>
-        <button className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center gap-2">
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-          Add Recruiter
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            type="button"
+            onClick={onPreviewPartnerEmail}
+            className="px-4 py-2.5 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-[18px]">drafts</span>
+            Preview Welcome Email
+          </button>
+          <button 
+            type="button"
+            onClick={() => setShowAddPartner(true)}
+            className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+            Add Partner
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {partners.map((partner) => (
-          <div key={partner.name} className="bg-white rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-title-lg shadow-inner ${partner.color}`}>
-                  {partner.logo}
+      {loading ? (
+        <div className="text-center py-12">
+          <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+        </div>
+      ) : partners.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-outline-variant/60 rounded-2xl bg-white">
+          <span className="material-symbols-outlined text-[48px] text-outline mb-2">business</span>
+          <p className="text-body-md text-on-surface-variant font-semibold">No corporate partners added yet.</p>
+          <p className="text-caption text-outline mt-1">Invite partners to grant them access to recruit students from your network.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {partners.map((partner, idx) => {
+            const logo = (partner.company || partner.full_name || 'C')[0].toUpperCase();
+            const colorClass = colors[idx % colors.length];
+            return (
+              <div key={partner.id} className="bg-white rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-title-lg shadow-inner ${colorClass}`}>
+                      {logo}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">{partner.company || 'Corporate Partner'}</h3>
+                      <p className="text-caption text-on-surface-variant">{partner.full_name}</p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-caption font-bold border bg-emerald-50 border-emerald-200 text-emerald-700">
+                    Active Partner
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">{partner.name}</h3>
-                  <p className="text-caption text-on-surface-variant">{partner.sector}</p>
+                
+                <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between text-caption text-outline">
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>mail</span>
+                    {partner.email}
+                  </span>
+                  <button 
+                    type="button"
+                    onClick={() => handleDeletePartner(partner.id)}
+                    className="p-1.5 hover:bg-error-container/30 rounded-lg text-error transition-colors"
+                    title="Remove corporate partner"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
+                  </button>
                 </div>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-caption font-bold border ${
-                partner.status === 'Active Partner' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
-              }`}>
-                {partner.status}
-              </span>
-            </div>
-            
-            <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between text-caption text-outline">
-              <span className="flex items-center gap-1">
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>campaign</span>
-                {partner.drives} Drives launched
-              </span>
-              <button className="text-primary hover:underline font-semibold flex items-center gap-0.5">
-                Manage
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      <AddPartnerModal 
+        visible={showAddPartner}
+        token={token}
+        onClose={() => setShowAddPartner(false)}
+        onAdded={() => fetchPartners()}
+      />
     </div>
   );
 }
@@ -1610,6 +1844,7 @@ export default function AdminDashboard() {
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [showOpportunityPreview, setShowOpportunityPreview] = useState(false);
+  const [showPartnerEmailPreview, setShowPartnerEmailPreview] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -2658,7 +2893,12 @@ export default function AdminDashboard() {
             </section>
           )}
 
-          {currentPath === '/admin/recruiters' && <RecruitersView />}
+          {currentPath === '/admin/recruiters' && (
+            <RecruitersView
+              token={token}
+              onPreviewPartnerEmail={() => setShowPartnerEmailPreview(true)}
+            />
+          )}
 
           {currentPath === '/admin/settings' && (
             <AdminSettingsView
@@ -2716,6 +2956,10 @@ export default function AdminDashboard() {
       <OpportunityEmailPreview
         visible={showOpportunityPreview}
         onClose={() => setShowOpportunityPreview(false)}
+      />
+      <PartnerEmailPreview
+        visible={showPartnerEmailPreview}
+        onClose={() => setShowPartnerEmailPreview(false)}
       />
     </div>
   );

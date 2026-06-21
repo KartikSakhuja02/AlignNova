@@ -18,29 +18,49 @@ import AdminDashboard from './pages/AdminDashboard';
 import SetPassword from './pages/SetPassword';
 import RequestActivation from './pages/RequestActivation';
 import ForgotPassword from './pages/ForgotPassword';
+import PartnerDashboard from './pages/PartnerDashboard';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
-/** Redirects unauthenticated users to /signin; redirects admins to /admin */
+/** Redirects unauthenticated users to /signin; redirects admins/hr to their dashboards */
 function RequireStudent() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
-  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (role === 'admin') return <Navigate to="/admin" replace />;
+  if (role === 'hr') return <Navigate to="/partner" replace />;
   return <Outlet />;
 }
 
-/** Redirects unauthenticated users to /signin; redirects students to / */
+/** Redirects unauthenticated users to /signin; redirects non-admins appropriately */
 function RequireAdmin() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (role !== 'admin') {
+    if (role === 'hr') return <Navigate to="/partner" replace />;
+    return <Navigate to="/" replace />;
+  }
+  return <Outlet />;
+}
+
+/** Redirects unauthenticated users to /signin; redirects non-hr appropriately */
+function RequireHr() {
+  const { isAuthenticated, role } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/signin" replace />;
+  if (role !== 'hr') {
+    if (role === 'admin') return <Navigate to="/admin" replace />;
+    return <Navigate to="/" replace />;
+  }
   return <Outlet />;
 }
 
 /** Redirects already-authenticated users away from /signin */
 function RequireGuest() {
-  const { isAuthenticated, isAdmin } = useAuth();
-  if (isAuthenticated) return <Navigate to={isAdmin ? '/admin' : '/'} replace />;
+  const { isAuthenticated, role } = useAuth();
+  if (isAuthenticated) {
+    if (role === 'admin') return <Navigate to="/admin" replace />;
+    if (role === 'hr') return <Navigate to="/partner" replace />;
+    return <Navigate to="/" replace />;
+  }
   return <Outlet />;
 }
 
@@ -101,6 +121,11 @@ export default function App() {
             <Route path="/admin/students" element={<AdminDashboard />} />
             <Route path="/admin/recruiters" element={<AdminDashboard />} />
             <Route path="/admin/settings" element={<AdminDashboard />} />
+          </Route>
+
+          {/* HR / Partner routes */}
+          <Route element={<RequireHr />}>
+            <Route path="/partner" element={<PartnerDashboard />} />
           </Route>
 
           {/* Student routes */}

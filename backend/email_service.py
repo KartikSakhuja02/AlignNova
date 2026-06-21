@@ -859,3 +859,155 @@ def send_opportunity_alert_email(
     threading.Thread(target=_send, daemon=True).start()
     return True
 
+
+def _build_partner_welcome_html(partner_name: str, company_name: str, set_password_url: str, logo_white_url: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Welcome to the Network</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+</head>
+<body style="background-color: #F8FAFC; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111C2D; margin: 0; padding: 32px 16px; min-height: 100vh;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid rgba(199, 196, 216, 0.3); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
+    <!-- Brand Header -->
+    <div style="background-color: #4f46e5; padding: 24px; border-bottom: 1px solid rgba(199, 196, 216, 0.1);">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="vertical-align: middle;">
+            <img alt="Alignova Logo" src="{logo_white_url}" style="height: 36px; width: auto; vertical-align: middle; border-radius: 6px; display: inline-block;" />
+            <span style="font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; margin-left: 8px; font-family: 'Plus Jakarta Sans', sans-serif; vertical-align: middle; display: inline-block;">Alignova</span>
+            <span style="font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.1em; margin-left: 8px; font-family: 'Plus Jakarta Sans', sans-serif; vertical-align: middle; display: inline-block;">Institutional Partner</span>
+          </td>
+          <td align="right" style="vertical-align: middle; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif;">
+            Placement Portal v2.4
+          </td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- Hero Banner -->
+    <div style="background-color: #dee8ff; padding: 40px 24px; text-align: left;">
+      <h2 style="font-size: 28px; font-weight: 700; color: #111c2d; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif;">Welcome to the Network</h2>
+    </div>
+
+    <!-- Body Content -->
+    <div style="padding: 32px 24px; background-color: #ffffff;">
+      <p style="font-size: 16px; color: #464555; line-height: 1.6; margin: 0 0 16px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Dear Partner,</p>
+      <p style="font-size: 15px; color: #464555; line-height: 1.6; margin: 0 0 16px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+        We are pleased to inform you that an institutional account has been successfully provisioned for your organization within the <span style="font-weight: 600; color: #4f46e5;">Alignova Placement Portal</span>.
+      </p>
+      <p style="font-size: 15px; color: #464555; line-height: 1.6; margin: 0 0 24px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+        As an official corporate partner, you now have priority access to our elite pool of high-performing student talent. This workspace is designed to streamline your end-to-end recruitment lifecycle.
+      </p>
+
+      <!-- CTA -->
+      <table role="presentation" style="width: 100%; border-collapse: collapse; margin: 28px 0; text-align: center;">
+        <tr>
+          <td>
+            <a href="{set_password_url}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 14px; font-weight: 600; padding: 14px 40px; text-decoration: none; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2); font-family: 'Plus Jakarta Sans', sans-serif;">
+              Activate Account &nbsp;&rarr;
+            </a>
+            <p style="margin-top: 12px; font-size: 11px; color: #777587; font-family: 'Plus Jakarta Sans', sans-serif;">Link expires in 48 hours for security reasons.</p>
+          </td>
+        </tr>
+      </table>
+
+      <hr style="border: 0; border-top: 1px solid rgba(199, 196, 216, 0.3); margin: 32px 0;" />
+
+      <!-- Features Grid -->
+      <div style="margin-bottom: 32px;">
+        <h3 style="font-size: 18px; font-weight: 700; color: #111c2d; margin: 0 0 20px 0; font-family: 'Plus Jakarta Sans', sans-serif;">Getting Started</h3>
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="width: 31%; padding: 12px; background-color: #e7eeff; border-radius: 12px; vertical-align: top; border: 1px solid rgba(199, 196, 216, 0.1);">
+              <span style="font-size: 14px; font-weight: 700; color: #111c2d; display: block; margin-bottom: 4px; font-family: 'Plus Jakarta Sans', sans-serif;">Profile Setup</span>
+              <span style="font-size: 11px; color: #464555; line-height: 1.4; display: block; font-family: 'Plus Jakarta Sans', sans-serif;">Complete your organization's brand identity.</span>
+            </td>
+            <td style="width: 3.5%;"></td>
+            <td style="width: 31%; padding: 12px; background-color: #e7eeff; border-radius: 12px; vertical-align: top; border: 1px solid rgba(199, 196, 216, 0.1);">
+              <span style="font-size: 14px; font-weight: 700; color: #111c2d; display: block; margin-bottom: 4px; font-family: 'Plus Jakarta Sans', sans-serif;">Launch Drives</span>
+              <span style="font-size: 11px; color: #464555; line-height: 1.4; display: block; font-family: 'Plus Jakarta Sans', sans-serif;">Initiate recruitment campaigns for Q3/Q4.</span>
+            </td>
+            <td style="width: 3.5%;"></td>
+            <td style="width: 31%; padding: 12px; background-color: #e7eeff; border-radius: 12px; vertical-align: top; border: 1px solid rgba(199, 196, 216, 0.1);">
+              <span style="font-size: 14px; font-weight: 700; color: #111c2d; display: block; margin-bottom: 4px; font-family: 'Plus Jakarta Sans', sans-serif;">Live Feeds</span>
+              <span style="font-size: 11px; color: #464555; line-height: 1.4; display: block; font-family: 'Plus Jakarta Sans', sans-serif;">Review applicant data in real-time streams.</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Banner Image -->
+      <div style="border-radius: 12px; overflow: hidden; height: 120px; border: 1px solid rgba(199, 196, 216, 0.2);">
+        <img alt="Office Lounge" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rTXzfrIpO6Ee40Pm-7lDnsJ43mAUb7MmU3ti_1K7f0QYi5tMtfjb83ZgLpEZG7jzP68x-oNFWjCAfrTEpj0XMggnsDBqOxIND9lxmtPLu7pU1m1pM6RswXFB4196GYSTbYpgXORufIoNX-QD3W4hCoTuV4AliPtNuo9vvRs41AoNAVEZmjMZ3oKsdVLldghnNiIRHUK_kW5EoLTxUxrZ8uu8rW0AkVXVNyWpG1DPS2eJ5NzTX-4lqZHIsOF8w-ZtA4Q_H4OVeeE" style="width: 100%; height: 100%; object-fit: cover;" />
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background-color: #f0f3ff; padding: 24px; border-top: 1px solid rgba(199, 196, 216, 0.2); font-family: 'Plus Jakarta Sans', sans-serif;">
+      <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td>
+            <p style="font-size: 13px; font-weight: 700; color: #111c2d; margin: 0 0 4px 0;">Alignnova Placement Office</p>
+            <p style="font-size: 11px; color: #464555; margin: 0;">Institutional Building, South Wing, Level 4</p>
+          </td>
+          <td align="right" style="vertical-align: middle;">
+            <a href="#" style="font-size: 13px; font-weight: 600; color: #4f46e5; text-decoration: none; margin-left: 16px;">Support</a>
+            <a href="#" style="font-size: 13px; font-weight: 600; color: #4f46e5; text-decoration: none; margin-left: 16px;">Privacy</a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+
+def send_partner_welcome_email(to_email: str, partner_name: str, company_name: str, set_password_token: str, base_url: str = None) -> bool:
+    """
+    Send the partner welcome / account-activation email.
+    Runs in a background thread — never blocks the API response.
+    """
+    if not EMAIL_PROXY_URL and not BREVO_API_KEY and not RESEND_API_KEY:
+        print("[email] No provider configured — skipping partner welcome email.")
+        return False
+
+    active_base_url = (base_url or APP_BASE_URL).rstrip("/")
+    set_password_url = f"{active_base_url}/set-password?token={set_password_token}"
+    logo_white_url = f"{active_base_url}/logo_white.png"
+    subject = "✉️ Welcome to the Network — Action Required"
+    html    = _build_partner_welcome_html(partner_name, company_name, set_password_url, logo_white_url)
+    plain   = (
+        f"Welcome to the Network, {partner_name}!\n\n"
+        f"We are pleased to inform you that an institutional account has been successfully provisioned for your organization ({company_name}) within the Alignova Placement Portal.\n\n"
+        f"Activate your account here:\n{set_password_url}\n\n"
+        f"Link expires in 48 hours for security reasons.\n— AlignNova Team"
+    )
+
+    def _send():
+        try:
+            if EMAIL_PROXY_URL:
+                print(f"[email] Sending partner welcome via Vercel Proxy to {to_email} ...")
+                _send_via_proxy(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent partner welcome via Vercel Proxy to {to_email}")
+            elif BREVO_API_KEY:
+                print(f"[email] Sending partner welcome via Brevo to {to_email} ...")
+                _send_via_brevo(to_email, subject, html, plain, partner_name)
+                print(f"[email] ✓ Sent partner welcome via Brevo to {to_email}")
+            else:
+                print(f"[email] Sending partner welcome via Resend to {to_email} ...")
+                _send_via_resend(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent partner welcome via Resend to {to_email}")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()
+            print(f"[email] ✗ API error {e.code}: {body}")
+        except Exception as exc:
+            print(f"[email] ✗ Failed to send partner welcome to {to_email}: {type(exc).__name__}: {exc}")
+
+    threading.Thread(target=_send, daemon=True).start()
+    return True
+
+

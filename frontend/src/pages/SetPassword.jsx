@@ -74,7 +74,7 @@ export default function SetPassword() {
       
       // Redirect after 2s
       setTimeout(() => {
-        const dest = data.role === 'admin' ? '/admin' : (isReset ? '/' : '/profile?tutorial=true');
+        const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : (isReset ? '/' : '/profile?tutorial=true'));
         navigate(dest, { replace: true });
       }, 2000);
     } catch (err) {

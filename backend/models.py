@@ -43,3 +43,8 @@ class RequestActivationPayload(BaseModel):
 
 class TestEmailPayload(BaseModel):
     to_email: str
+
+class CreatePartnerPayload(BaseModel):
+    full_name: str
+    email: str
+    company: str

@@ -11,8 +11,8 @@ import os
 
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
-from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email, send_opportunity_alert_email
-from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload, TestEmailPayload
+from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email, send_opportunity_alert_email, send_partner_welcome_email
+from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload, TestEmailPayload, CreatePartnerPayload
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 from backend.access_token import create_access_token, get_current_user_from_token, decode_token, create_set_password_token, create_reset_password_token
 
@@ -960,6 +960,167 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
     )
 
     return user
+
+
+# ── Admin: Create Corporate Partner (HR) ──────────────────────────────────────
+@app.post('/api/admin/partners')
+def admin_create_partner(payload: CreatePartnerPayload, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+
+    if payload.email and get_user_by_email(payload.email):
+        raise HTTPException(status_code=400, detail='email_taken')
+
+    username = payload.email.split('@')[0].lower()
+    if get_user(username):
+        import time
+        username = f"{username}_{int(time.time())}"
+
+    import secrets
+    temp_password = secrets.token_urlsafe(12)
+    hashed = hash_password(temp_password)
+
+    try:
+        user = create_user(
+            username=username,
+            hashed_password=hashed,
+            role='hr',
+            full_name=payload.full_name,
+            email=payload.email,
+            enrollment_id=payload.company, # company name stored in enrollment_id
+            must_change_password="1"
+        )
+    except ValueError:
+        raise HTTPException(status_code=400, detail='username_taken')
+
+    sp_token = create_set_password_token(username)
+
+    proto = request.headers.get("x-forwarded-proto", "http")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    base_url = f"{proto}://{host}" if host else str(request.base_url).rstrip("/")
+
+    send_partner_welcome_email(
+        to_email=payload.email,
+        partner_name=payload.full_name,
+        company_name=payload.company,
+        set_password_token=sp_token,
+        base_url=base_url
+    )
+
+    return user
+
+
+# ── Admin: List Corporate Partners ────────────────────────────────────────────
+@app.get('/api/admin/partners')
+def admin_list_partners(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+
+    from backend.database import SessionLocal, User
+    with SessionLocal() as db:
+        partners = db.query(User).filter(User.role == 'hr').all()
+        return [
+            {
+                "id": p.id,
+                "username": p.username,
+                "full_name": p.full_name,
+                "email": p.email,
+                "company": p.enrollment_id,
+                "created_at": p.created_at.isoformat() if p.created_at else None
+            }
+            for p in partners
+        ]
+
+
+# ── Admin: Delete Corporate Partner ───────────────────────────────────────────
+@app.delete('/api/admin/partners/{user_id}')
+def admin_delete_partner(user_id: int, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+
+    from backend.database import SessionLocal, User
+    with SessionLocal() as db:
+        partner = db.query(User).filter(User.id == user_id, User.role == 'hr').first()
+        if not partner:
+            raise HTTPException(status_code=404, detail='partner_not_found')
+        db.delete(partner)
+        db.commit()
+    return {'deleted': True, 'user_id': user_id}
+
+
+# ── HR / Corporate Partner: List Students ──────────────────────────────────────
+@app.get('/api/partner/students')
+def partner_list_students(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'hr':
+        raise HTTPException(status_code=403, detail='hr_required')
+
+    from backend.database import SessionLocal, User
+    with SessionLocal() as db:
+        students = db.query(User).filter(User.role == 'student').all()
+        return [
+            {
+                "id": s.id,
+                "username": s.username,
+                "full_name": s.full_name,
+                "email": s.email,
+                "phone": s.phone,
+                "course": s.course or "",
+                "is_eligible": s.is_eligible or 0,
+                "enrollment_id": s.enrollment_id or "",
+                "location": s.location or "",
+                "headline": s.headline or "",
+                "uni_performance": s.uni_performance or "{}"
+            }
+            for s in students
+        ]
 
 
 # ── Admin: Test Email (synchronous — returns exact error) ─────────────────────
