@@ -85,7 +85,7 @@ export default function HeroBanner() {
 
       <div className="relative z-10 max-w-2xl">
         <h2 className="text-display-lg font-extrabold mb-4 text-white leading-tight">
-          Welcome back, {firstName}!
+          Welcome, {firstName}!
         </h2>
         <p className="text-body-lg text-on-primary-container mb-8 max-w-lg">
           {welcomeText}
