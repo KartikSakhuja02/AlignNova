@@ -42,6 +42,7 @@ class User(Base):
     languages = Column(String, nullable=True, default="[]")
     projects = Column(String, nullable=True, default="[]")
     course = Column(String, nullable=True, default="")
+    uni_performance = Column(String, nullable=True, default="{}")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -107,7 +108,8 @@ def init_db() -> None:
                 "skills": "TEXT DEFAULT '[]'",
                 "languages": "TEXT DEFAULT '[]'",
                 "projects": "TEXT DEFAULT '[]'",
-                "course": "VARCHAR(255) DEFAULT ''"
+                "course": "VARCHAR(255) DEFAULT ''",
+                "uni_performance": "TEXT DEFAULT '{}'"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -174,6 +176,7 @@ def get_user(username: str):
             "skills": user.skills or "[]",
             "languages": user.languages or "[]",
             "projects": user.projects or "[]",
+            "uni_performance": user.uni_performance or "{}",
             "id": user.id,
         }
 
@@ -206,11 +209,12 @@ def get_user_by_email(email: str):
             "skills": user.skills or "[]",
             "languages": user.languages or "[]",
             "projects": user.projects or "[]",
+            "uni_performance": user.uni_performance or "{}",
             "id": user.id,
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None, uni_performance: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -253,6 +257,8 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.languages = languages
         if projects is not None:
             user.projects = projects
+        if uni_performance is not None:
+            user.uni_performance = uni_performance
         
         # Automatically compute eligibility based on updated fields
         has_required_details = bool(user.full_name and user.email and user.resume_name)
@@ -286,7 +292,23 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             except Exception:
                 pass
 
-        if has_required_details and has_eligible_education:
+        # Check university performance eligibility
+        has_uni_perf = False
+        if user.uni_performance:
+            try:
+                import json
+                perf = json.loads(user.uni_performance)
+                if isinstance(perf, dict):
+                    agg_cgpa = str(perf.get("aggregate_cgpa", "")).strip()
+                    if agg_cgpa and float(agg_cgpa) > 0:
+                        sems = perf.get("semesters", [])
+                        filled_sems = [s for s in sems if str(s.get("cgpa", "")).strip()]
+                        if filled_sems and all(str(s.get("marksheet_url", "")).strip() for s in filled_sems):
+                            has_uni_perf = True
+            except Exception:
+                pass
+
+        if has_required_details and has_eligible_education and has_uni_perf:
             user.is_eligible = 1
         else:
             user.is_eligible = 0

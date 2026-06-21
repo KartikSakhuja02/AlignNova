@@ -2,6 +2,33 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { COURSE_OPTIONS } from '../utils/constants';
 
+const DEFAULT_SEMESTERS = [
+  { year: '1', sem: 'I', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '1', sem: 'II', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '2', sem: 'III', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '2', sem: 'IV', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '3', sem: 'V', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '3', sem: 'VI', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '4', sem: 'VII', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' },
+  { year: '4', sem: 'VIII', cgpa: '', closed_backlogs: '', live_backlogs: '', marksheet_name: '', marksheet_url: '' }
+];
+
+const parseUniPerformance = (val) => {
+  let parsed = { semesters: DEFAULT_SEMESTERS, aggregate_cgpa: '' };
+  if (!val) return parsed;
+  try {
+    const data = typeof val === 'string' ? JSON.parse(val) : val;
+    if (data && Array.isArray(data.semesters)) {
+      const mergedSemesters = DEFAULT_SEMESTERS.map((defSem, idx) => {
+        const found = data.semesters[idx] || {};
+        return { ...defSem, ...found };
+      });
+      return { semesters: mergedSemesters, aggregate_cgpa: data.aggregate_cgpa || '' };
+    }
+  } catch (_) {}
+  return parsed;
+};
+
 const getEduLevel = (deg) => {
   const d = (deg || '').toLowerCase();
   if (["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"].some(x => d.includes(x))) {
@@ -15,7 +42,7 @@ const getEduLevel = (deg) => {
 
 // ─── Edit Profile Form Component ─────────────────────────────────────────────
 
-function EditProfileForm({ profile, onCancel, onSave }) {
+function EditProfileForm({ profile, token, onCancel, onSave }) {
   const [form, setForm] = useState({
     full_name: profile.full_name || '',
     headline: profile.headline || '',
@@ -33,10 +60,74 @@ function EditProfileForm({ profile, onCancel, onSave }) {
     skills: profile.skills || [],
     languages: profile.languages || [],
     projects: profile.projects || [],
+    uni_performance: profile.uni_performance || { semesters: DEFAULT_SEMESTERS, aggregate_cgpa: '' },
   });
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const fileInputRef = useRef(null);
+  
+  const marksheetInputRef = useRef(null);
+  const [uploadingSemIdx, setUploadingSemIdx] = useState(null);
+  const [marksheetUploading, setMarksheetUploading] = useState(false);
+
+  const triggerMarksheetUpload = (idx) => {
+    setUploadingSemIdx(idx);
+    marksheetInputRef.current?.click();
+  };
+
+  const handleMarksheetChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || uploadingSemIdx === null) return;
+    
+    setMarksheetUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/profile/marksheet', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setForm((prev) => {
+          const sems = [...prev.uni_performance.semesters];
+          sems[uploadingSemIdx] = {
+            ...sems[uploadingSemIdx],
+            marksheet_name: data.filename,
+            marksheet_url: data.url
+          };
+          return {
+            ...prev,
+            uni_performance: { ...prev.uni_performance, semesters: sems }
+          };
+        });
+      } else {
+        alert('Failed to upload marksheet. Please try again.');
+      }
+    } catch (_) {
+      alert('Upload failed due to network error.');
+    } finally {
+      setMarksheetUploading(false);
+      setUploadingSemIdx(null);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const removeMarksheet = (idx) => {
+    setForm((prev) => {
+      const sems = [...prev.uni_performance.semesters];
+      sems[idx] = {
+        ...sems[idx],
+        marksheet_name: '',
+        marksheet_url: ''
+      };
+      return {
+        ...prev,
+        uni_performance: { ...prev.uni_performance, semesters: sems }
+      };
+    });
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -315,6 +406,129 @@ function EditProfileForm({ profile, onCancel, onSave }) {
               </div>
             </section>
 
+            {/* University Performance */}
+            <section className="bg-white border border-outline-variant/30 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-label-md text-label-md text-primary uppercase tracking-widest">University Performance</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse table-fixed min-w-[600px]">
+                  <thead>
+                    <tr className="text-left border-b border-outline-variant/30">
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider px-2 text-center w-16">Year</th>
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider px-2 text-center w-20">Semester</th>
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider px-2 w-36">Aggregate CGPA</th>
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider px-2 w-36">Closed Backlogs</th>
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider px-2 w-36">Live Backlogs</th>
+                      <th className="pb-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-center px-2 w-32">Marksheet</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant/10">
+                    {form.uni_performance.semesters.map((sem, idx) => (
+                      <tr key={idx} className="group hover:bg-surface-container-low/50 transition-colors">
+                        <td className="font-body-md text-on-surface py-3 px-2 text-center">{sem.year}</td>
+                        <td className="font-body-md text-on-surface py-3 px-2 text-center">{sem.sem}</td>
+                        <td className="py-3 px-2">
+                          <input
+                            type="number" step="0.01" min="0" max="10"
+                            value={sem.cgpa || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setForm((prev) => {
+                                const sems = [...prev.uni_performance.semesters];
+                                sems[idx] = { ...sems[idx], cgpa: val };
+                                return { ...prev, uni_performance: { ...prev.uni_performance, semesters: sems } };
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:border-primary outline-none transition-all"
+                            placeholder="GPA"
+                          />
+                        </td>
+                        <td className="py-3 px-2">
+                          <input
+                            type="number" min="0"
+                            value={sem.closed_backlogs || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setForm((prev) => {
+                                const sems = [...prev.uni_performance.semesters];
+                                sems[idx] = { ...sems[idx], closed_backlogs: val };
+                                return { ...prev, uni_performance: { ...prev.uni_performance, semesters: sems } };
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:border-primary outline-none transition-all"
+                            placeholder="Count"
+                          />
+                        </td>
+                        <td className="py-3 px-2">
+                          <input
+                            type="number" min="0"
+                            value={sem.live_backlogs || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setForm((prev) => {
+                                const sems = [...prev.uni_performance.semesters];
+                                sems[idx] = { ...sems[idx], live_backlogs: val };
+                                return { ...prev, uni_performance: { ...prev.uni_performance, semesters: sems } };
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/30 rounded-lg focus:border-primary outline-none transition-all"
+                            placeholder="Count"
+                          />
+                        </td>
+                        <td className="text-center py-3 px-2">
+                          {sem.marksheet_url ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <a href={sem.marksheet_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold text-caption truncate max-w-[80px]" title={sem.marksheet_name}>
+                                View
+                              </a>
+                              <button type="button" onClick={() => removeMarksheet(idx)} className="text-error hover:scale-110 transition-transform">
+                                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => triggerMarksheetUpload(idx)}
+                              disabled={marksheetUploading && uploadingSemIdx === idx}
+                              className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all disabled:opacity-50"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                {marksheetUploading && uploadingSemIdx === idx ? 'hourglass_empty' : 'upload'}
+                              </span>
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="bg-primary/5">
+                      <td className="py-6 px-4 font-bold text-on-surface" colSpan="2">Aggregate CGPA *</td>
+                      <td className="py-6 px-2">
+                        <input
+                          type="number" step="0.01" min="0" max="10"
+                          value={form.uni_performance.aggregate_cgpa || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setForm((prev) => ({
+                              ...prev,
+                              uni_performance: { ...prev.uni_performance, aggregate_cgpa: val }
+                            }));
+                          }}
+                          className="w-full px-3 py-2 bg-surface-container-lowest border-2 border-primary rounded-lg font-bold text-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                          placeholder="e.g. 8.50"
+                          required
+                        />
+                      </td>
+                      <td className="py-6" colSpan="3"></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              <input ref={marksheetInputRef} type="file" accept=".pdf,image/*" onChange={handleMarksheetChange} className="hidden" />
+            </section>
+
             {/* Education */}
             <section className="bg-white border border-outline-variant/30 rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-8">
@@ -557,6 +771,7 @@ export default function Profile() {
     education: [], experience: [], profile_image: '',
     resume_name: '', resume_url: '', is_eligible: 0,
     skills: [], languages: [], projects: [],
+    uni_performance: { semesters: DEFAULT_SEMESTERS, aggregate_cgpa: '' },
   });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -576,6 +791,7 @@ export default function Profile() {
     skills: parseJson(data.skills),
     languages: parseJson(data.languages),
     projects: parseJson(data.projects),
+    uni_performance: parseUniPerformance(data.uni_performance),
   });
 
   const fetchProfile = useCallback(async () => {
@@ -605,6 +821,7 @@ export default function Profile() {
         skills: JSON.stringify(form.skills),
         languages: JSON.stringify(form.languages),
         projects: JSON.stringify(form.projects),
+        uni_performance: JSON.stringify(form.uni_performance),
       };
       const res = await fetch('/api/profile', {
         method: 'POST',
@@ -716,7 +933,7 @@ export default function Profile() {
     return (
       <div className="p-p-lg min-h-screen"
         style={{ background: 'radial-gradient(at 0% 0%, rgba(79,70,229,0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.05) 0px, transparent 50%)' }}>
-        <EditProfileForm profile={profile} onCancel={() => setIsEditing(false)} onSave={handleSave} />
+        <EditProfileForm profile={profile} token={token} onCancel={() => setIsEditing(false)} onSave={handleSave} />
       </div>
     );
   }
@@ -755,7 +972,7 @@ export default function Profile() {
             <div>
               <h4 className="font-bold text-body-lg text-amber-900">Account Not Fully Activated</h4>
               <p className="text-body-md text-amber-800/90 mt-1">
-                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
+                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, complete your <strong>University Performance details (Aggregate CGPA and upload marksheets for filled semesters)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
               </p>
             </div>
           </div>
@@ -859,6 +1076,75 @@ export default function Profile() {
                 <p className="text-on-surface-variant text-body-md leading-relaxed whitespace-pre-line">{profile.bio}</p>
               </section>
             )}
+
+            {/* University Performance (Read-only) */}
+            <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary font-bold">analytics</span> University Performance
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse table-fixed min-w-[600px]">
+                  <thead>
+                    <tr className="text-left border-b border-outline-variant/30 text-on-surface-variant font-bold text-label-md">
+                      <th className="pb-4 px-2 text-center w-16">Year</th>
+                      <th className="pb-4 px-2 text-center w-20">Semester</th>
+                      <th className="pb-4 px-2 w-36">Aggregate CGPA</th>
+                      <th className="pb-4 px-2 w-36">Closed Backlogs</th>
+                      <th className="pb-4 px-2 w-36">Live Backlogs</th>
+                      <th className="pb-4 px-2 text-center w-32">Marksheet</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant/10 text-body-md text-on-surface">
+                    {profile.uni_performance?.semesters?.map((sem, idx) => {
+                      if (!sem.cgpa && !sem.closed_backlogs && !sem.live_backlogs && !sem.marksheet_url) {
+                        return null;
+                      }
+                      return (
+                        <tr key={idx} className="hover:bg-surface-container-low/30 transition-colors">
+                          <td className="py-3 px-2 text-center font-semibold">{sem.year}</td>
+                          <td className="py-3 px-2 text-center font-semibold">{sem.sem}</td>
+                          <td className="py-3 px-2">{sem.cgpa ? `${parseFloat(sem.cgpa).toFixed(2)} / 10` : '—'}</td>
+                          <td className="py-3 px-2">{sem.closed_backlogs || '0'}</td>
+                          <td className="py-3 px-2">{sem.live_backlogs || '0'}</td>
+                          <td className="py-3 px-2 text-center">
+                            {sem.marksheet_url ? (
+                              <a
+                                href={sem.marksheet_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-primary hover:underline font-bold text-caption"
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>visibility</span> View
+                              </a>
+                            ) : (
+                              <span className="text-outline text-caption">Not Uploaded</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {(!profile.uni_performance?.semesters || profile.uni_performance.semesters.every(s => !s.cgpa && !s.closed_backlogs && !s.live_backlogs && !s.marksheet_url)) && (
+                      <tr>
+                        <td colSpan="6" className="py-6 text-center text-on-surface-variant italic">
+                          No semester-wise performance details entered yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                  {profile.uni_performance?.aggregate_cgpa && (
+                    <tfoot>
+                      <tr className="bg-primary/5 font-bold text-on-surface">
+                        <td className="py-4 px-4" colSpan="2">Aggregate CGPA</td>
+                        <td className="py-4 px-2 text-primary font-extrabold text-body-lg">
+                          {parseFloat(profile.uni_performance.aggregate_cgpa).toFixed(2)} / 10
+                        </td>
+                        <td className="py-4" colSpan="3"></td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            </section>
 
             {/* Education */}
             <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">

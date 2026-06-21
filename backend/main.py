@@ -157,7 +157,8 @@ def post_profile(request: Request, payload: dict):
         is_eligible=payload.get('is_eligible'),
         skills=payload.get('skills'),
         languages=payload.get('languages'),
-        projects=payload.get('projects')
+        projects=payload.get('projects'),
+        uni_performance=payload.get('uni_performance')
     )
     if not updated:
         raise HTTPException(status_code=404, detail='user_not_found')
@@ -210,13 +211,59 @@ async def upload_resume(request: Request, file: UploadFile = File(...)):
     return updated
 
 
+@app.post('/api/profile/marksheet')
+async def upload_marksheet(request: Request, file: UploadFile = File(...)):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        username = payload_token.get('sub')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    user = get_user(username)
+    if not user:
+        raise HTTPException(status_code=404, detail='user_not_found')
+    
+    # Check that file is PDF or image
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ('.pdf', '.jpg', '.jpeg', '.png'):
+        raise HTTPException(status_code=400, detail='only_pdf_and_images_allowed')
+    
+    # Save the file
+    uploads_dir = os.path.join(BASE_DIR, 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    
+    import uuid
+    filename = f"marksheet_{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(uploads_dir, filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    url = f"/api/uploads/{filename}"
+    return {"filename": file.filename, "url": url}
+
+
 @app.get('/api/uploads/{filename}')
 def get_uploaded_file(filename: str):
     uploads_dir = os.path.join(BASE_DIR, 'uploads')
     file_path = os.path.join(uploads_dir, filename)
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail='file_not_found')
-    return FileResponse(file_path, media_type='application/pdf')
+    ext = os.path.splitext(filename)[1].lower()
+    if ext == '.pdf':
+        media_type = 'application/pdf'
+    elif ext in ('.jpg', '.jpeg'):
+        media_type = 'image/jpeg'
+    elif ext == '.png':
+        media_type = 'image/png'
+    else:
+        media_type = 'application/octet-stream'
+    return FileResponse(file_path, media_type=media_type)
 
 
 @app.post('/api/drives')
