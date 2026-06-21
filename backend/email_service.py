@@ -648,3 +648,188 @@ def send_reset_password_email(to_email: str, student_name: str, reset_token: str
     threading.Thread(target=_send, daemon=True).start()
     return True
 
+
+def _build_opportunity_alert_html(
+    student_name: str,
+    company: str,
+    role: str,
+    type_str: str,
+    location: str,
+    package_or_stipend: str,
+    deadline: str,
+    fit_explanation: str,
+    apply_url: str,
+    logo_white_url: str
+) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Alignova Opportunity Alert</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+</head>
+<body style="background-color: #f0f3ff; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #111C2D; margin: 0; padding: 48px 16px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #c7c4d8; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+    <div style="background-color: #4f46e5; padding: 32px 24px; text-align: center; position: relative; overflow: hidden;">
+      <table role="presentation" style="margin: 0 auto; border-collapse: collapse;">
+        <tr>
+          <td style="vertical-align: middle;">
+            <img alt="Alignova Logo" src="{logo_white_url}" style="height: 36px; width: auto; vertical-align: middle; border-radius: 8px;" />
+          </td>
+          <td style="vertical-align: middle; padding-left: 12px;">
+            <span style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: -0.01em; font-family: 'Plus Jakarta Sans', sans-serif;">Alignova</span>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div style="padding: 32px 24px;">
+      <div style="margin-bottom: 32px;">
+        <p style="font-size: 16px; color: #464555; margin: 0 0 16px 0;">Hi {student_name},</p>
+        <h2 style="font-size: 28px; font-weight: 700; color: #3525cd; margin: 0 0 24px 0; line-height: 1.3;">You are eligible for a new placement drive</h2>
+        <div style="background-color: #e7eeff; padding: 24px; border-radius: 12px; border: 1px solid #c7c4d8;">
+          <table role="presentation" style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="vertical-align: middle;">
+                <div style="font-size: 14px; font-weight: 600; color: #006c49; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">New Opportunity</div>
+                <h3 style="font-size: 20px; font-weight: 700; color: #111c2d; margin: 0 0 4px 0;">{role}</h3>
+                <p style="font-size: 16px; color: #464555; margin: 0;">{company}</p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div style="background-color: rgba(226, 223, 255, 0.3); padding: 20px; border-radius: 12px; margin-bottom: 32px;">
+        <table role="presentation" style="border-collapse: collapse; margin-bottom: 12px;">
+          <tr>
+            <td style="color: #3525cd; font-size: 16px; font-weight: 600;">Why you're a fit</td>
+          </tr>
+        </table>
+        <p style="font-size: 16px; line-height: 1.5; color: #111c2d; margin: 0;">{fit_explanation}</p>
+      </div>
+      <div style="border: 1px solid #c7c4d8; border-radius: 12px; overflow: hidden; margin-bottom: 32px;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f0f3ff;">
+          <tr>
+            <td style="padding: 16px; border-bottom: 1px solid #c7c4d8; border-right: 1px solid #c7c4d8; width: 50%;">
+              <p style="font-size: 12px; color: #464555; margin: 0 0 4px 0; text-transform: uppercase; font-weight: 500;">Location</p>
+              <p style="font-size: 14px; font-weight: 600; color: #111c2d; margin: 0;">{location}</p>
+            </td>
+            <td style="padding: 16px; border-bottom: 1px solid #c7c4d8; width: 50%;">
+              <p style="font-size: 12px; color: #464555; margin: 0 0 4px 0; text-transform: uppercase; font-weight: 500;">Role Type</p>
+              <p style="font-size: 14px; font-weight: 600; color: #111c2d; margin: 0;">{type_str}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 16px; border-right: 1px solid #c7c4d8; width: 50%;">
+              <p style="font-size: 12px; color: #464555; margin: 0 0 4px 0; text-transform: uppercase; font-weight: 500;">Package / Stipend</p>
+              <p style="font-size: 14px; font-weight: 600; color: #006c49; margin: 0;">{package_or_stipend}</p>
+            </td>
+            <td style="padding: 16px; width: 50%;">
+              <p style="font-size: 12px; color: #464555; margin: 0 0 4px 0; text-transform: uppercase; font-weight: 500;">Deadline</p>
+              <p style="font-size: 14px; font-weight: 600; color: #ba1a1a; margin: 0;">{deadline}</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <table role="presentation" style="margin: 0 auto; border-collapse: collapse;">
+          <tr>
+            <td align="center">
+              <a href="{apply_url}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 14px; font-weight: 600; padding: 16px 40px; text-decoration: none; border-radius: 9999px; box-shadow: 0 4px 6px rgba(79, 70, 229, 0.15); font-family: 'Plus Jakarta Sans', sans-serif;">
+                View Details &amp; Apply &nbsp;&rarr;
+              </a>
+            </td>
+          </tr>
+        </table>
+        <p style="font-size: 12px; color: #464555; margin-top: 16px; margin-bottom: 0;">Applicants are reviewed on a rolling basis. Early applications are encouraged.</p>
+      </div>
+    </div>
+    <div style="background-color: #f0f3ff; padding: 32px 24px; text-align: center; border-top: 1px solid #c7c4d8;">
+      <div style="margin-bottom: 24px;">
+        <a href="{apply_url}" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600;">Dashboard</a>
+        <a href="#" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600;">Support</a>
+        <a href="#" style="font-size: 12px; color: #3525cd; text-decoration: none; margin: 0 12px; font-weight: 600;">Privacy Policy</a>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <p style="font-size: 14px; font-weight: 600; color: #464555; margin: 0 0 8px 0;">Sent by Alignova Placement Portal</p>
+        <p style="font-size: 12px; color: #777587; max-w-xs; margin: 0 auto; line-height: 1.5;">
+          This is an automated notification based on your profile preferences and eligibility. Manage your email preferences in your settings.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
+def send_opportunity_alert_email(
+    to_email: str,
+    student_name: str,
+    company: str,
+    role: str,
+    type_str: str,
+    location: str,
+    package_or_stipend: str,
+    deadline: str,
+    fit_explanation: str,
+    base_url: str = None
+) -> bool:
+    """
+    Send the opportunity alert email.
+    Runs in a background thread — never blocks the API response.
+    """
+    if not EMAIL_PROXY_URL and not BREVO_API_KEY and not RESEND_API_KEY:
+        print("[email] No provider configured — skipping opportunity alert email.")
+        return False
+
+    active_base_url = (base_url or APP_BASE_URL).rstrip("/")
+    apply_url = f"{active_base_url}/opportunities"
+    logo_white_url = f"{active_base_url}/logo_white.png"
+    subject = f"🔔 Alignova Opportunity Alert: {company} is hiring for {role}!"
+    html    = _build_opportunity_alert_html(
+        student_name=student_name,
+        company=company,
+        role=role,
+        type_str=type_str,
+        location=location,
+        package_or_stipend=package_or_stipend,
+        deadline=deadline,
+        fit_explanation=fit_explanation,
+        apply_url=apply_url,
+        logo_white_url=logo_white_url
+    )
+    plain   = (
+        f"Hi {student_name},\n\n"
+        f"You are eligible for a new placement drive: {company} - {role} ({type_str}).\n\n"
+        f"Why you're a fit:\n{fit_explanation}\n\n"
+        f"Details:\n"
+        f"- Location: {location}\n"
+        f"- Stipend/Package: {package_or_stipend}\n"
+        f"- Deadline: {deadline}\n\n"
+        f"Apply on your dashboard: {apply_url}\n\n"
+        f"— Alignnova Team"
+    )
+
+    def _send():
+        try:
+            if EMAIL_PROXY_URL:
+                print(f"[email] Sending opportunity alert via Vercel Proxy to {to_email} ...")
+                _send_via_proxy(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent opportunity alert via Vercel Proxy to {to_email}")
+            elif BREVO_API_KEY:
+                print(f"[email] Sending opportunity alert via Brevo to {to_email} ...")
+                _send_via_brevo(to_email, subject, html, plain, student_name)
+                print(f"[email] ✓ Sent opportunity alert via Brevo to {to_email}")
+            else:
+                print(f"[email] Sending opportunity alert via Resend to {to_email} ...")
+                _send_via_resend(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent opportunity alert via Resend to {to_email}")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()
+            print(f"[email] ✗ API error {e.code}: {body}")
+        except Exception as exc:
+            print(f"[email] ✗ Failed to send opportunity alert to {to_email}: {type(exc).__name__}: {exc}")
+
+    threading.Thread(target=_send, daemon=True).start()
+    return True
+

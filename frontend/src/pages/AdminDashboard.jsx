@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
+import OpportunityEmailPreview from '../components/OpportunityEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { COURSE_OPTIONS, SELECTION_ROUNDS } from '../utils/constants';
@@ -465,6 +466,8 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     org_size: '', contact_person: '',
     responsibilities: '', requirements: '', tech_stack: '',
     no_active_backlogs: 0,
+    min_10th_percent: '',
+    min_12th_percent: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -494,6 +497,8 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
         requirements: drive.requirements || '',
         tech_stack: drive.tech_stack || '',
         no_active_backlogs: drive.no_active_backlogs || 0,
+        min_10th_percent: drive.min_10th_percent || '',
+        min_12th_percent: drive.min_12th_percent || '',
       });
       setError('');
     }
@@ -507,6 +512,8 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     const payload = {
       ...form,
       eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
+      min_10th_percent: form.min_10th_percent && !isNaN(form.min_10th_percent) ? parseFloat(form.min_10th_percent).toFixed(2) : form.min_10th_percent,
+      min_12th_percent: form.min_12th_percent && !isNaN(form.min_12th_percent) ? parseFloat(form.min_12th_percent).toFixed(2) : form.min_12th_percent,
     };
     if (form.type === 'Placement') {
       payload.stipend = '';
@@ -595,6 +602,24 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                 type="number" step="0.01" min="0" max="10"
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
                 placeholder="Min CGPA"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Min 10th Percentage</label>
+              <input
+                name="min_10th_percent" value={form.min_10th_percent} onChange={(e) => setForm({...form, min_10th_percent: e.target.value})}
+                type="number" step="0.01" min="0" max="100"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                placeholder="e.g. 75.00"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Min 12th Percentage</label>
+              <input
+                name="min_12th_percent" value={form.min_12th_percent} onChange={(e) => setForm({...form, min_12th_percent: e.target.value})}
+                type="number" step="0.01" min="0" max="100"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                placeholder="e.g. 75.00"
               />
             </div>
             <div className="flex items-center gap-2 pt-5">
@@ -1179,6 +1204,8 @@ export default function AdminDashboard() {
     org_size: '', contact_person: '',
     responsibilities: '', requirements: '', tech_stack: '',
     no_active_backlogs: 0,
+    min_10th_percent: '',
+    min_12th_percent: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
@@ -1256,6 +1283,7 @@ export default function AdminDashboard() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [showOpportunityPreview, setShowOpportunityPreview] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -1369,6 +1397,8 @@ export default function AdminDashboard() {
       responsibilities: form.responsibilities, requirements: form.requirements,
       tech_stack: form.tech_stack,
       no_active_backlogs: form.no_active_backlogs,
+      min_10th_percent: form.min_10th_percent && !isNaN(form.min_10th_percent) ? parseFloat(form.min_10th_percent).toFixed(2) : form.min_10th_percent,
+      min_12th_percent: form.min_12th_percent && !isNaN(form.min_12th_percent) ? parseFloat(form.min_12th_percent).toFixed(2) : form.min_12th_percent,
     };
     if (form.type === 'Placement') {
       payload.stipend = '';
@@ -1395,6 +1425,8 @@ export default function AdminDashboard() {
         org_size: '', contact_person: '',
         responsibilities: '', requirements: '', tech_stack: '',
         no_active_backlogs: 0,
+        min_10th_percent: '',
+        min_12th_percent: '',
       });
     } catch (err) {
       setFormError(err.message);
@@ -1632,6 +1664,24 @@ export default function AdminDashboard() {
                             type="number" step="0.01" min="0" max="10"
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
                             placeholder="Min CGPA"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Min 10th Percentage</label>
+                          <input
+                            name="min_10th_percent" value={form.min_10th_percent} onChange={handleFormChange}
+                            type="number" step="0.01" min="0" max="100"
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                            placeholder="e.g. 75.00"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Min 12th Percentage</label>
+                          <input
+                            name="min_12th_percent" value={form.min_12th_percent} onChange={handleFormChange}
+                            type="number" step="0.01" min="0" max="100"
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                            placeholder="e.g. 75.00"
                           />
                         </div>
                         <div className="flex items-center gap-2 pt-6">
@@ -2044,6 +2094,13 @@ export default function AdminDashboard() {
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
                       Preview Welcome Email
                     </button>
+                    <button
+                      onClick={() => setShowOpportunityPreview(true)}
+                      className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
+                      Preview Opportunity Email
+                    </button>
                     <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
                       Bulk Import
@@ -2321,6 +2378,10 @@ export default function AdminDashboard() {
       <OnboardingEmailPreview
         visible={showEmailPreview}
         onClose={() => setShowEmailPreview(false)}
+      />
+      <OpportunityEmailPreview
+        visible={showOpportunityPreview}
+        onClose={() => setShowOpportunityPreview(false)}
       />
     </div>
   );

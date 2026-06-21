@@ -73,7 +73,8 @@ class Drive(Base):
     requirements = Column(String, nullable=True, default="")
     tech_stack = Column(String, nullable=True, default="")
     no_active_backlogs = Column(Integer, nullable=True, default=0)
-
+    min_10th_percent = Column(String, nullable=True, default="")
+    min_12th_percent = Column(String, nullable=True, default="")
 
 
 class Application(Base):
@@ -135,7 +136,9 @@ def init_db() -> None:
                 "responsibilities": "TEXT DEFAULT ''",
                 "requirements": "TEXT DEFAULT ''",
                 "tech_stack": "TEXT DEFAULT ''",
-                "no_active_backlogs": "INTEGER DEFAULT 0"
+                "no_active_backlogs": "INTEGER DEFAULT 0",
+                "min_10th_percent": "VARCHAR(255) DEFAULT ''",
+                "min_12th_percent": "VARCHAR(255) DEFAULT ''"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -339,7 +342,8 @@ def create_drive(
     eligible_courses: str | None = None, selection_process: str | None = None, about_company: str | None = None, website: str | None = None,
     org_size: str | None = None, contact_person: str | None = None,
     responsibilities: str | None = None, requirements: str | None = None, tech_stack: str | None = None,
-    no_active_backlogs: int | None = 0
+    no_active_backlogs: int | None = 0,
+    min_10th_percent: str | None = None, min_12th_percent: str | None = None
 ):
     with SessionLocal() as db:
         drive = Drive(
@@ -348,7 +352,9 @@ def create_drive(
             duration=duration or "", eligible_courses=eligible_courses or "", selection_process=selection_process or "",
             about_company=about_company or "", website=website or "", org_size=org_size or "", contact_person=contact_person or "",
             responsibilities=responsibilities or "", requirements=requirements or "", tech_stack=tech_stack or "",
-            no_active_backlogs=no_active_backlogs if no_active_backlogs is not None else 0
+            no_active_backlogs=no_active_backlogs if no_active_backlogs is not None else 0,
+            min_10th_percent=min_10th_percent or "",
+            min_12th_percent=min_12th_percent or ""
         )
         db.add(drive)
         db.commit()
@@ -375,7 +381,9 @@ def create_drive(
             "responsibilities": drive.responsibilities,
             "requirements": drive.requirements,
             "tech_stack": drive.tech_stack,
-            "no_active_backlogs": drive.no_active_backlogs
+            "no_active_backlogs": drive.no_active_backlogs,
+            "min_10th_percent": drive.min_10th_percent,
+            "min_12th_percent": drive.min_12th_percent
         }
 
 
@@ -388,7 +396,8 @@ def list_drives():
                 "location": r.location, "stipend": r.stipend, "description": r.description, "other_benefits": r.other_benefits, "duration": r.duration,
                 "eligible_courses": r.eligible_courses, "selection_process": r.selection_process, "about_company": r.about_company, "website": r.website,
                 "org_size": r.org_size, "contact_person": r.contact_person, "responsibilities": r.responsibilities, "requirements": r.requirements,
-                "tech_stack": r.tech_stack, "no_active_backlogs": r.no_active_backlogs
+                "tech_stack": r.tech_stack, "no_active_backlogs": r.no_active_backlogs,
+                "min_10th_percent": r.min_10th_percent, "min_12th_percent": r.min_12th_percent
             }
             for r in rows
         ]

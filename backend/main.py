@@ -11,7 +11,7 @@ import os
 
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
-from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email
+from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email, send_opportunity_alert_email
 from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload, TestEmailPayload
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 from backend.access_token import create_access_token, get_current_user_from_token, decode_token, create_set_password_token, create_reset_password_token
@@ -266,6 +266,140 @@ def get_uploaded_file(filename: str):
     return FileResponse(file_path, media_type=media_type)
 
 
+def extract_gpas_and_percentages(education_str):
+    import json
+    result = {"cgpa": None, "percent_10": None, "percent_12": None}
+    if not education_str:
+        return result
+    try:
+        edu_list = json.loads(education_str)
+        if isinstance(edu_list, list):
+            for item in edu_list:
+                deg = (item.get("degree") or "").strip().lower()
+                detail = (item.get("detail") or "").strip()
+                if not deg or not detail:
+                    continue
+                try:
+                    val_str = "".join(c for c in detail if c.isdigit() or c == '.')
+                    val = float(val_str) if val_str else None
+                except ValueError:
+                    val = None
+                
+                if val is None:
+                    continue
+
+                # Match 10th
+                if any(x in deg for x in ["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"]):
+                    result["percent_10"] = val
+                # Match 12th
+                elif any(x in deg for x in ["12", "senior", "hsc", "intermediate", "diploma", "junior college", "class xii", "class 12"]):
+                    result["percent_12"] = val
+                # Match College
+                elif any(x in deg for x in ["b.tech", "btech", "b.e", "be", "b.sc", "bsc", "bca", "mca", "mtech", "m.tech", "bachelor", "master", "graduation", "university", "college", "degree"]):
+                    result["cgpa"] = val
+    except Exception:
+        pass
+    return result
+
+
+def check_student_eligibility(user_dict, drive_dict) -> tuple:
+    import json
+    if user_dict.get("role") != "student":
+        return False, "Not a student"
+
+    edu_info = extract_gpas_and_percentages(user_dict.get("education", "[]"))
+    
+    uni_perf = {}
+    if user_dict.get("uni_performance"):
+        try:
+            uni_perf = json.loads(user_dict["uni_performance"])
+        except Exception:
+            pass
+            
+    student_cgpa = None
+    if isinstance(uni_perf, dict) and uni_perf.get("aggregate_cgpa"):
+        try:
+            student_cgpa = float(uni_perf["aggregate_cgpa"])
+        except ValueError:
+            pass
+    if student_cgpa is None:
+        student_cgpa = edu_info.get("cgpa")
+        
+    # Check CGPA requirement
+    drive_min_cgpa_str = drive_dict.get("eligibility", "")
+    if drive_min_cgpa_str and drive_min_cgpa_str.strip():
+        try:
+            drive_min_cgpa = float(drive_min_cgpa_str)
+            if student_cgpa is None:
+                return False, "CGPA information is missing from your profile"
+            if student_cgpa < drive_min_cgpa:
+                return False, f"Your CGPA ({student_cgpa:.2f}) does not meet the minimum requirement of {drive_min_cgpa:.2f}"
+        except ValueError:
+            pass
+            
+    # Check 10th percentage requirement
+    drive_min_10th_str = drive_dict.get("min_10th_percent", "")
+    if drive_min_10th_str and drive_min_10th_str.strip():
+        try:
+            drive_min_10th = float(drive_min_10th_str)
+            student_10th = edu_info.get("percent_10")
+            if student_10th is None:
+                return False, "10th standard percentage is missing from your profile"
+            if student_10th < drive_min_10th:
+                return False, f"Your 10th standard percentage ({student_10th:.2f}%) does not meet the minimum requirement of {drive_min_10th:.2f}%"
+        except ValueError:
+            pass
+            
+    # Check 12th percentage requirement
+    drive_min_12th_str = drive_dict.get("min_12th_percent", "")
+    if drive_min_12th_str and drive_min_12th_str.strip():
+        try:
+            drive_min_12th = float(drive_min_12th_str)
+            student_12th = edu_info.get("percent_12")
+            if student_12th is None:
+                return False, "12th standard percentage is missing from your profile"
+            if student_12th < drive_min_12th:
+                return False, f"Your 12th standard percentage ({student_12th:.2f}%) does not meet the minimum requirement of {drive_min_12th:.2f}%"
+        except ValueError:
+            pass
+
+    # Check active backlogs requirement
+    drive_no_backlogs = drive_dict.get("no_active_backlogs", 0)
+    if drive_no_backlogs:
+        live_backlogs = 0
+        if isinstance(uni_perf, dict) and "semesters" in uni_perf:
+            for sem in uni_perf["semesters"]:
+                lb_val = sem.get("live_backlogs")
+                if lb_val is not None and str(lb_val).strip() != "":
+                    try:
+                        live_backlogs += int(lb_val)
+                    except ValueError:
+                        pass
+        if live_backlogs > 0:
+            return False, f"This drive requires 0 active backlogs, but you have {live_backlogs} active backlog(s)"
+
+    # Check eligible courses
+    drive_courses_str = drive_dict.get("eligible_courses", "")
+    if drive_courses_str and drive_courses_str.strip():
+        drive_courses = [c.strip().lower() for c in drive_courses_str.split("\n") if c.strip()]
+        if drive_courses:
+            student_course = (user_dict.get("course") or "").strip().lower()
+            if not student_course or student_course not in drive_courses:
+                return False, f"Your course ({user_dict.get('course') or 'Not specified'}) is not in the list of eligible courses"
+
+    fit_details = []
+    if student_cgpa is not None:
+        try:
+            min_cgpa_val = float(drive_min_cgpa_str)
+            fit_details.append(f"your {student_cgpa:.2f} CGPA meets the minimum requirement of {min_cgpa_val:.2f}")
+        except Exception:
+            fit_details.append(f"your {student_cgpa:.2f} CGPA")
+    fit_detail_str = "Specifically, " + ", ".join(fit_details) + "." if fit_details else ""
+    explanation = f"Your academic performance and technical profile align with the eligibility criteria for this role. {fit_detail_str}"
+    
+    return True, explanation
+
+
 @app.post('/api/drives')
 def post_drive(request: Request, payload: dict):
     # only admin may create drives
@@ -293,8 +427,74 @@ def post_drive(request: Request, payload: dict):
         org_size=payload.get('org_size'), contact_person=payload.get('contact_person'),
         responsibilities=payload.get('responsibilities'), requirements=payload.get('requirements'),
         tech_stack=payload.get('tech_stack'),
-        no_active_backlogs=payload.get('no_active_backlogs', 0)
+        no_active_backlogs=payload.get('no_active_backlogs', 0),
+        min_10th_percent=payload.get('min_10th_percent', ''),
+        min_12th_percent=payload.get('min_12th_percent', '')
     )
+
+    def broadcast_task():
+        try:
+            from backend.database import SessionLocal, User
+            proto = request.headers.get("x-forwarded-proto", "http")
+            host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+            base_url = f"{proto}://{host}" if host else "http://localhost:5173"
+            
+            with SessionLocal() as db:
+                students = db.query(User).filter(User.role == "student").all()
+                for student in students:
+                    if not student.email or not student.email.strip():
+                        continue
+                    
+                    student_dict = {
+                        "id": student.id,
+                        "username": student.username,
+                        "full_name": student.full_name,
+                        "email": student.email,
+                        "role": student.role,
+                        "course": student.course or "",
+                        "education": student.education or "[]",
+                        "uni_performance": student.uni_performance or "{}",
+                    }
+                    
+                    is_eligible, explanation = check_student_eligibility(student_dict, drive)
+                    if is_eligible:
+                        p_or_s = "TBD"
+                        if drive.get("type") == "Internship":
+                            p_or_s = f"₹{drive.get('stipend')} / month" if drive.get("stipend") else "TBD"
+                        elif drive.get("type") == "Internship + PPO":
+                            stipend_str = f"₹{drive.get('stipend')} / month" if drive.get("stipend") else "TBD"
+                            ppo_str = f"₹{drive.get('package')} LPA PPO" if drive.get("package") else "TBD"
+                            p_or_s = f"{stipend_str} + {ppo_str}"
+                        else:
+                            p_or_s = f"₹{drive.get('package')} LPA" if drive.get("package") else "TBD"
+                            
+                        deadline_str = drive.get("drive_date") or "TBD"
+                        if drive.get("drive_date"):
+                            try:
+                                from datetime import datetime
+                                dt = datetime.strptime(drive.get("drive_date"), "%Y-%m-%d")
+                                deadline_str = dt.strftime("%b %d, %Y")
+                            except Exception:
+                                pass
+                                
+                        send_opportunity_alert_email(
+                            to_email=student.email,
+                            student_name=student.full_name or student.username,
+                            company=drive.get("company", ""),
+                            role=drive.get("role", ""),
+                            type_str=drive.get("type") or "Placement",
+                            location=drive.get("location") or "TBD",
+                            package_or_stipend=p_or_s,
+                            deadline=deadline_str,
+                            fit_explanation=explanation,
+                            base_url=base_url
+                        )
+        except Exception as e:
+            print(f"[broadcast_task] Error in background alert broadcast: {e}")
+            
+    import threading
+    threading.Thread(target=broadcast_task, daemon=True).start()
+
     return drive
 
 
@@ -332,7 +532,9 @@ def get_drive_detail(drive_id: int):
             "responsibilities": drive.responsibilities or "",
             "requirements": drive.requirements or "",
             "tech_stack": drive.tech_stack or "",
-            "no_active_backlogs": drive.no_active_backlogs or 0
+            "no_active_backlogs": drive.no_active_backlogs or 0,
+            "min_10th_percent": drive.min_10th_percent or "",
+            "min_12th_percent": drive.min_12th_percent or ""
         }
 
 
@@ -382,6 +584,8 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
         drive.tech_stack = payload.get('tech_stack', drive.tech_stack)
         if 'no_active_backlogs' in payload:
             drive.no_active_backlogs = payload.get('no_active_backlogs')
+        drive.min_10th_percent = payload.get('min_10th_percent', drive.min_10th_percent)
+        drive.min_12th_percent = payload.get('min_12th_percent', drive.min_12th_percent)
         
         db.add(drive)
         db.commit()
@@ -409,7 +613,9 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "responsibilities": drive.responsibilities,
             "requirements": drive.requirements,
             "tech_stack": drive.tech_stack,
-            "no_active_backlogs": drive.no_active_backlogs
+            "no_active_backlogs": drive.no_active_backlogs,
+            "min_10th_percent": drive.min_10th_percent,
+            "min_12th_percent": drive.min_12th_percent
         }
 
 
