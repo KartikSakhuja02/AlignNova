@@ -2,6 +2,17 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { COURSE_OPTIONS } from '../utils/constants';
 
+const getEduLevel = (deg) => {
+  const d = (deg || '').toLowerCase();
+  if (["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"].some(x => d.includes(x))) {
+    return '10th';
+  }
+  if (["12", "senior", "hsc", "intermediate", "diploma", "junior college", "class xii", "class 12"].some(x => d.includes(x))) {
+    return '12th';
+  }
+  return 'college';
+};
+
 // ─── Edit Profile Form Component ─────────────────────────────────────────────
 
 function EditProfileForm({ profile, onCancel, onSave }) {
@@ -56,7 +67,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
   const handleEducationChange = (i, field, val) =>
     setForm((prev) => { const u = [...prev.education]; u[i] = { ...u[i], [field]: val }; return { ...prev, education: u }; });
   const addEducation = () =>
-    setForm((prev) => ({ ...prev, education: [...prev.education, { institution: '', degree: '', timeline: '', detail: '' }] }));
+    setForm((prev) => ({ ...prev, education: [...prev.education, { institution: '', degree: '', timeline: '', detail: '', board: '' }] }));
   const deleteEducation = (i) =>
     setForm((prev) => ({ ...prev, education: prev.education.filter((_, idx) => idx !== i) }));
 
@@ -314,30 +325,112 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                 </button>
               </div>
               <div className="space-y-8">
-                {form.education.map((edu, idx) => (
-                  <div key={idx} className="group relative p-6 bg-surface-container-lowest border border-outline-variant/20 rounded-2xl hover:border-primary/30 transition-all">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { field: 'institution', label: 'Institution', cls: 'font-headline-md text-headline-md', placeholder: 'School/College Name' },
-                        { field: 'degree', label: 'Degree / Major (B.Tech CSE, Class 10, Class 12)', cls: 'font-body-lg text-body-lg', placeholder: 'Class 10, Class 12, B.Tech CSE' },
-                        { field: 'timeline', label: 'Timeline', cls: 'font-body-md text-body-md', placeholder: '2020 - 2024' },
-                        { field: 'detail', label: 'GPA / Marks (8.50, 9.00)', cls: 'font-body-md text-body-md', placeholder: '8.50' },
-                      ].map(({ field, label, cls, placeholder }) => (
-                        <div key={field} className="space-y-1.5">
-                          <label className="text-caption font-bold text-outline">{label}</label>
-                          <input value={edu[field]} onChange={(e) => handleEducationChange(idx, field, e.target.value)}
-                            placeholder={placeholder}
-                            className={`w-full px-4 py-2 bg-transparent border-b border-outline-variant ${cls} focus:border-primary outline-none transition-all text-on-surface`}
-                            type="text" />
+                {form.education.map((edu, idx) => {
+                  const level = getEduLevel(edu.degree);
+                  return (
+                    <div key={idx} className="group relative p-6 bg-surface-container-lowest border border-outline-variant/20 rounded-2xl hover:border-primary/30 transition-all">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Education Level Selection */}
+                        <div className="space-y-1.5 md:col-span-2">
+                          <label className="text-caption font-bold text-outline">Education Level</label>
+                          <select
+                            value={level}
+                            onChange={(e) => {
+                              const nextLevel = e.target.value;
+                              let nextDegree = edu.degree;
+                              if (nextLevel === '10th') {
+                                nextDegree = 'Class 10th';
+                              } else if (nextLevel === '12th') {
+                                nextDegree = 'Class 12th';
+                              } else {
+                                nextDegree = '';
+                              }
+                              setForm((prev) => {
+                                const u = [...prev.education];
+                                u[idx] = { ...u[idx], degree: nextDegree };
+                                return { ...prev, education: u };
+                              });
+                            }}
+                            className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                          >
+                            <option value="college">College / University</option>
+                            <option value="12th">Class 12th</option>
+                            <option value="10th">Class 10th</option>
+                          </select>
                         </div>
-                      ))}
+
+                        {/* Institution Name */}
+                        <div className="space-y-1.5">
+                          <label className="text-caption font-bold text-outline">
+                            {level === 'college' ? 'Institution / University Name' : 'School Name'}
+                          </label>
+                          <input
+                            value={edu.institution || ''}
+                            onChange={(e) => handleEducationChange(idx, 'institution', e.target.value)}
+                            placeholder={level === 'college' ? 'University / College Name' : 'School Name'}
+                            className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                            type="text"
+                          />
+                        </div>
+
+                        {/* Degree / Board */}
+                        {level === 'college' ? (
+                          <div className="space-y-1.5">
+                            <label className="text-caption font-bold text-outline">Degree / Major</label>
+                            <input
+                              value={edu.degree || ''}
+                              onChange={(e) => handleEducationChange(idx, 'degree', e.target.value)}
+                              placeholder="e.g. B.Tech CSE"
+                              className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                              type="text"
+                            />
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            <label className="text-caption font-bold text-outline">Education Board</label>
+                            <input
+                              value={edu.board || ''}
+                              onChange={(e) => handleEducationChange(idx, 'board', e.target.value)}
+                              placeholder="e.g. CBSE, ICSE, State Board"
+                              className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                              type="text"
+                            />
+                          </div>
+                        )}
+
+                        {/* Timeline */}
+                        <div className="space-y-1.5">
+                          <label className="text-caption font-bold text-outline">Timeline</label>
+                          <input
+                            value={edu.timeline || ''}
+                            onChange={(e) => handleEducationChange(idx, 'timeline', e.target.value)}
+                            placeholder="e.g. 2020 - 2024"
+                            className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                            type="text"
+                          />
+                        </div>
+
+                        {/* Detail (CGPA / Percentage) */}
+                        <div className="space-y-1.5">
+                          <label className="text-caption font-bold text-outline">
+                            {level === 'college' ? 'CGPA (Scale of 10)' : 'Percentage (not CGPA)'}
+                          </label>
+                          <input
+                            value={edu.detail || ''}
+                            onChange={(e) => handleEducationChange(idx, 'detail', e.target.value)}
+                            placeholder={level === 'college' ? 'e.g. 8.50' : 'e.g. 92.50'}
+                            className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface"
+                            type="text"
+                          />
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => deleteEducation(idx)}
+                        className="absolute top-4 right-4 text-error opacity-0 group-hover:opacity-100 transition-opacity hover:scale-105 active:scale-95">
+                        <span className="material-symbols-outlined">delete</span>
+                      </button>
                     </div>
-                    <button type="button" onClick={() => deleteEducation(idx)}
-                      className="absolute top-4 right-4 text-error opacity-0 group-hover:opacity-100 transition-opacity hover:scale-105 active:scale-95">
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 
@@ -773,21 +866,29 @@ export default function Profile() {
                 <span className="material-symbols-outlined text-primary">school</span> Education
               </h3>
               <div className="space-y-8">
-                {profile.education?.length > 0 ? profile.education.map(({ institution, timeline, degree, detail }, idx) => (
-                  <div key={idx} className="flex gap-6">
-                    <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-primary">school</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-body-lg font-bold">{institution}</h4>
-                        <span className="text-outline text-label-md whitespace-nowrap ml-4">{timeline}</span>
+                {profile.education?.length > 0 ? profile.education.map((edu, idx) => {
+                  const { institution, timeline, degree, detail, board } = edu;
+                  const level = getEduLevel(degree);
+                  return (
+                    <div key={idx} className="flex gap-6">
+                      <div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                        <span className="material-symbols-outlined text-primary">school</span>
                       </div>
-                      <p className="text-primary text-label-md mb-2">{degree}</p>
-                      <p className="text-on-surface-variant text-body-md">{detail}</p>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="text-body-lg font-bold">{institution}</h4>
+                          <span className="text-outline text-label-md whitespace-nowrap ml-4">{timeline}</span>
+                        </div>
+                        <p className="text-primary text-label-md mb-2">
+                          {level === 'college' ? degree : `${level === '10th' ? 'Class 10th' : 'Class 12th'}${board ? ` (${board})` : ''}`}
+                        </p>
+                        <p className="text-on-surface-variant text-body-md">
+                          {level === 'college' ? `CGPA: ${detail}` : `Percentage: ${detail}%`}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )) : <p className="text-on-surface-variant text-body-md">No education history added yet. Click Edit Profile to add.</p>}
+                  );
+                }) : <p className="text-on-surface-variant text-body-md">No education history added yet. Click Edit Profile to add.</p>}
               </div>
             </section>
 
