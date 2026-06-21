@@ -303,7 +303,7 @@ def print_config():
     elif cfg['provider'] == 'resend':
         print(f"  resend_key     : {cfg['resend_key_prefix']}")
     else:
-        print("  ⚠️  NO EMAIL PROVIDER configured. Set EMAIL_PROXY_URL, BREVO_API_KEY, or RESEND_API_KEY.")
+        print("  [WARNING] NO EMAIL PROVIDER configured. Set EMAIL_PROXY_URL, BREVO_API_KEY, or RESEND_API_KEY.")
     print(f"  from_email     : {cfg['from_email']}")
     print(f"  app_base_url   : {cfg['app_base_url']}")
     print("=" * 60)

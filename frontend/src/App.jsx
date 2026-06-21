@@ -48,11 +48,18 @@ function RequireGuest() {
 
 function StudentLayout() {
   const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = React.useState(() => {
+    return localStorage.getItem('student-sidebar-collapsed') === 'true';
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem('student-sidebar-collapsed', isCollapsed);
+  }, [isCollapsed]);
 
   return (
     <div className="text-on-background">
-      <Sidebar />
-      <main className="ml-64 min-h-screen">
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <main className={`${isCollapsed ? 'ml-20' : 'ml-64'} min-h-screen transition-all duration-300 ease-in-out`}>
         <TopBar />
         <div key={location.pathname} className="animate-fadeIn">
           <Outlet />

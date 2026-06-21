@@ -1073,6 +1073,14 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState('');
 
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('admin-sidebar-collapsed') === 'true';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('admin-sidebar-collapsed', isCollapsed);
+  }, [isCollapsed]);
+
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -1265,9 +1273,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface">
-      <AdminSidebar onPostDrive={scrollToForm} />
+      <AdminSidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} onPostDrive={scrollToForm} />
 
-      <main className="flex-1 md:ml-64 min-h-screen pb-20">
+      <main className={`flex-1 ${isCollapsed ? 'md:ml-20' : 'md:ml-64'} min-h-screen pb-20 transition-all duration-300 ease-in-out`}>
         {/* TopBar */}
         <header className="w-full h-16 sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-outline-variant flex items-center justify-between px-p-lg shadow-sm">
           <div className="flex items-center gap-4">
