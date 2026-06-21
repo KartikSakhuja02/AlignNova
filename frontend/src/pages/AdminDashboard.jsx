@@ -580,7 +580,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                 name="eligibility" value={form.eligibility} onChange={(e) => setForm({...form, eligibility: e.target.value})}
                 type="number" step="0.01" min="0" max="10"
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                placeholder="8.50"
+                placeholder="Min CGPA"
               />
             </div>
 
@@ -593,7 +593,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   name="package" value={form.package} onChange={(e) => setForm({...form, package: e.target.value})}
                   required
                   className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                  placeholder="12.50"
+                  placeholder="Package (LPA)"
                 />
               </div>
             )}
@@ -606,7 +606,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     name="stipend" value={form.stipend} onChange={(e) => setForm({...form, stipend: e.target.value})}
                     required
                     className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                    placeholder="25000"
+                    placeholder="Monthly Stipend"
                   />
                 </div>
                 <div className="space-y-1">
@@ -615,7 +615,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     name="duration" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})}
                     required
                     className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                    placeholder="6 Months"
+                    placeholder="Duration"
                   />
                 </div>
               </>
@@ -652,6 +652,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
                     <input
                       name="location" value={form.location} onChange={(e) => setForm({...form, location: e.target.value})}
+                      placeholder="Job Location"
                       className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                     />
                   </div>
@@ -659,6 +660,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Company Website</label>
                     <input
                       name="website" value={form.website} onChange={(e) => setForm({...form, website: e.target.value})}
+                      placeholder="Company Website"
                       className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                     />
                   </div>
@@ -666,6 +668,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Organisation Size</label>
                     <input
                       name="org_size" value={form.org_size} onChange={(e) => setForm({...form, org_size: e.target.value})}
+                      placeholder="Organisation Size"
                       className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                     />
                   </div>
@@ -673,6 +676,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Contact Person</label>
                     <input
                       name="contact_person" value={form.contact_person} onChange={(e) => setForm({...form, contact_person: e.target.value})}
+                      placeholder="Contact Person Name"
                       className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                     />
                   </div>
@@ -683,11 +687,24 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   <textarea
                     name="description" value={form.description} onChange={(e) => setForm({...form, description: e.target.value})}
                     rows={3}
+                    placeholder="Specify role description, technical skills, and requirements..."
                     className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const allSelected = (form.eligible_courses || '').split('\n').filter(Boolean).length === COURSE_OPTIONS.length;
+                        setForm({ ...form, eligible_courses: allSelected ? '' : COURSE_OPTIONS.join('\n') });
+                      }}
+                      className="text-caption font-bold text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2.5 py-1 rounded transition-colors select-none"
+                    >
+                      {(form.eligible_courses || '').split('\n').filter(Boolean).length === COURSE_OPTIONS.length ? 'Deselect All' : 'Select All Specializations'}
+                    </button>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
                     {COURSE_OPTIONS.map((course) => {
                       const selected = (form.eligible_courses || '').split('\n').filter(Boolean).includes(course);
@@ -718,6 +735,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
                   <textarea
                     name="selection_process" value={form.selection_process} onChange={(e) => setForm({...form, selection_process: e.target.value})}
+                    placeholder="Specify selection stages (one per line)..."
                     rows={3}
                     className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                   />
@@ -726,6 +744,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
                   <textarea
                     name="other_benefits" value={form.other_benefits} onChange={(e) => setForm({...form, other_benefits: e.target.value})}
+                    placeholder="Specify benefits, joining terms, and date..."
                     rows={2}
                     className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                   />
@@ -734,6 +753,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
                   <textarea
                     name="about_company" value={form.about_company} onChange={(e) => setForm({...form, about_company: e.target.value})}
+                    placeholder="Specify details about the organization..."
                     rows={3}
                     className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                   />
@@ -1478,7 +1498,7 @@ export default function AdminDashboard() {
                             name="company" value={form.company} onChange={handleFormChange}
                             required
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="Microsoft India"
+                            placeholder="Company Name"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1498,7 +1518,7 @@ export default function AdminDashboard() {
                             name="role" value={form.role} onChange={handleFormChange}
                             required
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="Software Engineer I"
+                            placeholder="e.g. Software Engineer"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1507,7 +1527,7 @@ export default function AdminDashboard() {
                             name="eligibility" value={form.eligibility} onChange={handleFormChange}
                             type="number" step="0.01" min="0" max="10"
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="8.50"
+                            placeholder="Min CGPA"
                           />
                         </div>
 
@@ -1522,7 +1542,7 @@ export default function AdminDashboard() {
                                 name="package" value={form.package} onChange={handleFormChange}
                                 required
                                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                placeholder="12.50"
+                                placeholder="Package (LPA)"
                               />
                             </div>
                           </div>
@@ -1538,7 +1558,7 @@ export default function AdminDashboard() {
                                   name="stipend" value={form.stipend} onChange={handleFormChange}
                                   required
                                   className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                  placeholder="25000"
+                                  placeholder="Monthly Stipend"
                                 />
                               </div>
                             </div>
@@ -1548,7 +1568,7 @@ export default function AdminDashboard() {
                                 name="duration" value={form.duration} onChange={handleFormChange}
                                 required
                                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                placeholder="6 Months"
+                                placeholder="Duration"
                               />
                             </div>
                           </>
@@ -1588,7 +1608,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="location" value={form.location} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="Pune (Koregaon Park)"
+                                  placeholder="Job Location"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1596,7 +1616,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="website" value={form.website} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="https://www.omniscient.co.in/"
+                                  placeholder="Company Website"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1604,7 +1624,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="org_size" value={form.org_size} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="10,000+"
+                                  placeholder="Organisation Size"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1612,7 +1632,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="contact_person" value={form.contact_person} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="Dr. Swati More"
+                                  placeholder="Contact Person Name"
                                 />
                               </div>
                             </div>
@@ -1623,12 +1643,24 @@ export default function AdminDashboard() {
                                 name="description" value={form.description} onChange={handleFormChange}
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Specify role description, tech stack requirements (Java, Angular, React)..."
+                                placeholder="Specify role description, technical skills, and requirements..."
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const allSelected = (form.eligible_courses || '').split('\n').filter(Boolean).length === COURSE_OPTIONS.length;
+                                    setForm({ ...form, eligible_courses: allSelected ? '' : COURSE_OPTIONS.join('\n') });
+                                  }}
+                                  className="text-caption font-bold text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2.5 py-1 rounded transition-colors select-none"
+                                >
+                                  {(form.eligible_courses || '').split('\n').filter(Boolean).length === COURSE_OPTIONS.length ? 'Deselect All' : 'Select All Specializations'}
+                                </button>
+                              </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
                                 {COURSE_OPTIONS.map((course) => {
                                   const selected = (form.eligible_courses || '').split('\n').filter(Boolean).includes(course);
@@ -1662,7 +1694,7 @@ export default function AdminDashboard() {
                                 name="selection_process" value={form.selection_process} onChange={handleFormChange}
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
+                                placeholder="Specify selection stages (one per line)..."
                               />
                             </div>
 
@@ -1672,7 +1704,7 @@ export default function AdminDashboard() {
                                 name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
                                 rows={2}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Join us on 1st January 2027. Work from Office Koregaon Park."
+                                placeholder="Specify benefits, joining terms, and date..."
                               />
                             </div>
 
@@ -1682,37 +1714,7 @@ export default function AdminDashboard() {
                                 name="about_company" value={form.about_company} onChange={handleFormChange}
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Company background, treasury details, domain expertise..."
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
-                              <textarea
-                                name="selection_process" value={form.selection_process} onChange={handleFormChange}
-                                rows={3}
-                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
-                              <textarea
-                                name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
-                                rows={2}
-                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="e.g. Join us on 1st January 2027. Work from Office Koregaon Park."
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
-                              <textarea
-                                name="about_company" value={form.about_company} onChange={handleFormChange}
-                                rows={3}
-                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Company background, treasury details, domain expertise..."
+                                placeholder="Specify details about the organization..."
                               />
                             </div>
                           </div>
