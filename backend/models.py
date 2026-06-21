@@ -23,6 +23,7 @@ class UserPublic(BaseModel):
     languages: Optional[str] = "[]"
     projects: Optional[str] = "[]"
     course: Optional[str] = ""
+    uni_performance: Optional[str] = "{}"
 
 class CreateStudentPayload(BaseModel):
     full_name: str

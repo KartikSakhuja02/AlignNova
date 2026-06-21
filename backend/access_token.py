@@ -67,7 +67,8 @@ def get_current_user_from_token(token: str) -> UserPublic:
         skills=user.get("skills", "[]"),
         languages=user.get("languages", "[]"),
         projects=user.get("projects", "[]"),
-        course=user.get("course", "")
+        course=user.get("course", ""),
+        uni_performance=user.get("uni_performance", "{}")
     )
 
 
@@ -115,5 +116,6 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
         skills=user.get('skills', "[]"),
         languages=user.get('languages', "[]"),
         projects=user.get('projects', "[]"),
-        course=user.get('course', "")
+        course=user.get('course', ""),
+        uni_performance=user.get('uni_performance', "{}")
     )
