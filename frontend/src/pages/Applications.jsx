@@ -70,6 +70,7 @@ export default function Applications() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [withdrawModal, setWithdrawModal] = useState({ visible: false, appId: null, companyName: '' });
   const glowRef = useRef(null);
 
   // Fetch applications
@@ -104,12 +105,19 @@ export default function Applications() {
     return () => window.removeEventListener('mousemove', handler);
   }, []);
 
-  // Withdraw Handler
-  const handleWithdraw = async (appId, companyName) => {
-    if (!token) return;
-    if (!window.confirm(`Are you sure you want to withdraw your application for ${companyName}?`)) {
-      return;
-    }
+  // Withdraw Trigger
+  const handleWithdraw = (appId, companyName) => {
+    setWithdrawModal({
+      visible: true,
+      appId,
+      companyName
+    });
+  };
+
+  // Withdraw Confirm Handler
+  const confirmWithdraw = async () => {
+    const { appId } = withdrawModal;
+    if (!token || !appId) return;
     try {
       const res = await fetch(`/api/applications/${appId}`, {
         method: 'DELETE',
@@ -119,6 +127,7 @@ export default function Applications() {
       });
       if (res.ok) {
         setApplications((prev) => prev.filter((app) => app.id !== appId));
+        setWithdrawModal({ visible: false, appId: null, companyName: '' });
       } else {
         alert('Failed to withdraw application. Please try again.');
       }
@@ -190,21 +199,16 @@ export default function Applications() {
   const interviewingApps = applications.filter((a) =>
     ['interviewing', 'interview'].includes(a.status?.toLowerCase())
   );
-  const interviewsList = interviewingApps.length > 0
-    ? interviewingApps.map((app) => {
-        const dateObj = app.created_at ? new Date(app.created_at) : new Date();
-        dateObj.setDate(dateObj.getDate() + 5); // Mock interview scheduled 5 days after app date
-        return {
-          day: dateObj.getDate().toString().padStart(2, '0'),
-          month: dateObj.toLocaleString('en-US', { month: 'short' }),
-          title: 'Technical Round',
-          sub: `${app.company} • 11:00 AM`,
-        };
-      })
-    : [
-        { day: '24', month: 'Jun', title: 'Technical Assessment', sub: 'Google Web Dev • 10:00 AM' },
-        { day: '28', month: 'Jun', title: 'Culture Fit Round', sub: 'Stripe Product • 02:30 PM' },
-      ];
+  const interviewsList = interviewingApps.map((app) => {
+    const dateObj = app.created_at ? new Date(app.created_at) : new Date();
+    dateObj.setDate(dateObj.getDate() + 5); // Interview scheduled 5 days after app date
+    return {
+      day: dateObj.getDate().toString().padStart(2, '0'),
+      month: dateObj.toLocaleString('en-US', { month: 'short' }),
+      title: 'Technical Round',
+      sub: `${app.company} • 11:00 AM`,
+    };
+  });
 
   return (
     <div className="relative">
@@ -436,24 +440,32 @@ export default function Applications() {
               Upcoming Interviews
             </h4>
             <div className="space-y-4">
-              {interviewsList.map(({ day, month, title, sub }, idx) => (
-                <div
-                  key={`${idx}-${day}-${month}`}
-                  className="flex items-center p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors group animate-fadeIn"
-                >
-                  <div className="pr-4 border-r border-outline-variant/30 text-center min-w-[52px]">
-                    <div className="text-headline-md font-bold text-primary">{day}</div>
-                    <div className="text-caption uppercase text-on-surface-variant">{month}</div>
+              {interviewsList.length > 0 ? (
+                interviewsList.map(({ day, month, title, sub }, idx) => (
+                  <div
+                    key={`${idx}-${day}-${month}`}
+                    className="flex items-center p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/20 hover:border-primary/30 transition-colors group animate-fadeIn"
+                  >
+                    <div className="pr-4 border-r border-outline-variant/30 text-center min-w-[52px]">
+                      <div className="text-headline-md font-bold text-primary">{day}</div>
+                      <div className="text-caption uppercase text-on-surface-variant">{month}</div>
+                    </div>
+                    <div className="pl-4 flex-1">
+                      <div className="text-label-md text-on-surface">{title}</div>
+                      <div className="text-body-md text-on-surface-variant">{sub}</div>
+                    </div>
+                    <button className="ml-auto text-primary material-symbols-outlined group-hover:translate-x-1 transition-transform cursor-pointer">
+                      arrow_forward
+                    </button>
                   </div>
-                  <div className="pl-4 flex-1">
-                    <div className="text-label-md text-on-surface">{title}</div>
-                    <div className="text-body-md text-on-surface-variant">{sub}</div>
-                  </div>
-                  <button className="ml-auto text-primary material-symbols-outlined group-hover:translate-x-1 transition-transform cursor-pointer">
-                    arrow_forward
-                  </button>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center p-8 bg-surface-container-low/30 rounded-xl border border-outline-variant/10 text-center select-none">
+                  <span className="material-symbols-outlined text-[36px] text-on-surface-variant/40 mb-2">event_busy</span>
+                  <p className="text-label-md text-on-surface-variant font-semibold">No upcoming interviews scheduled</p>
+                  <p className="text-caption text-outline mt-1">When an admin schedules an interview, it will appear here.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -482,6 +494,35 @@ export default function Applications() {
         </section>
 
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {withdrawModal.visible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm transition-all duration-300">
+          <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-[400px] overflow-hidden flex flex-col p-6 animate-scaleIn">
+            <div className="flex items-center gap-3 text-error mb-4">
+              <span className="material-symbols-outlined text-[32px]">warning</span>
+              <h3 className="text-headline-md font-bold leading-tight text-on-surface">Confirm Withdrawal</h3>
+            </div>
+            <p className="text-body-md text-on-surface-variant mb-6">
+              Are you sure you want to withdraw your application for <strong className="font-bold text-on-surface">{withdrawModal.companyName}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setWithdrawModal({ visible: false, appId: null, companyName: '' })}
+                className="px-4 py-2 border border-outline-variant text-on-surface text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmWithdraw}
+                className="px-5 py-2.5 bg-error text-white text-label-md font-semibold rounded-xl hover:bg-error-container hover:shadow-md active:scale-95 transition-all cursor-pointer"
+              >
+                Yes, Withdraw
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
