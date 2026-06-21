@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // ─── Stat Data ────────────────────────────────────────────────────────────────
 
@@ -121,7 +121,7 @@ function SuccessModal({ visible, companyName, onClose }) {
 
 // ─── Edit Admin Profile Modal ─────────────────────────────────────────────────
 
-function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
+function AdminSettingsView({ profile, token, onSaved }) {
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -131,10 +131,11 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (profile && visible) {
+    if (profile) {
       setForm({
         full_name: profile.full_name || '',
         email: profile.email || '',
@@ -143,8 +144,9 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
         profile_image: profile.profile_image || '',
       });
       setError('');
+      setSuccess(false);
     }
-  }, [profile, visible]);
+  }, [profile]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -172,9 +174,11 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
     };
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault();
     setSaving(true);
     setError('');
+    setSuccess(false);
     try {
       const res = await fetch('/api/admin/profile', {
         method: 'POST',
@@ -187,7 +191,7 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
       }
       const updated = await res.json();
       onSaved(updated);
-      onClose();
+      setSuccess(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -195,92 +199,87 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
     }
   };
 
-  if (!visible) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>manage_accounts</span>
+    <div className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden max-w-4xl">
+      <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center gap-3">
+        <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+          <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>manage_accounts</span>
+        </div>
+        <h2 className="text-white font-bold text-title-lg">Account Settings</h2>
+      </div>
+
+      <form onSubmit={handleSave} className="p-6 space-y-6">
+        {/* Avatar */}
+        <div className="flex flex-col items-center gap-3 border-b border-outline-variant/60 pb-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container">
+              {form.profile_image ? (
+                <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-primary-container text-primary text-[36px] font-bold">
+                  {form.full_name ? form.full_name[0].toUpperCase() : 'A'}
+                </div>
+              )}
             </div>
-            <h2 className="text-white font-bold text-title-lg">Edit Profile</h2>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>photo_camera</span>
+            </button>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
-            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
-          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+          {form.profile_image && (
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, profile_image: '' }))}
+              className="text-caption text-error hover:underline"
+            >
+              Remove photo
+            </button>
+          )}
         </div>
 
-        <div className="p-6 space-y-5">
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full border-4 border-primary/20 overflow-hidden bg-surface-container">
-                {form.profile_image ? (
-                  <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary-container text-primary text-[32px] font-bold">
-                    {form.full_name ? form.full_name[0].toUpperCase() : 'A'}
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>photo_camera</span>
-              </button>
-            </div>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-            {form.profile_image && (
-              <button
-                onClick={() => setForm((f) => ({ ...f, profile_image: '' }))}
-                className="text-caption text-error hover:underline"
-              >
-                Remove photo
-              </button>
-            )}
+        {error && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+            {error}
           </div>
+        )}
 
-          {error && (
-            <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
-              {error}
-            </div>
-          )}
+        {success && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-label-md">
+            <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: '18px' }}>check_circle</span>
+            Profile updated successfully!
+          </div>
+        )}
 
-          {/* Fields */}
+        {/* Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
             { label: 'Full Name', key: 'full_name', type: 'text', placeholder: 'Your name' },
-            { label: 'Email', key: 'email', type: 'email', placeholder: 'your@email.com' },
-            { label: 'Phone', key: 'phone', type: 'tel', placeholder: '+91 xxxxxxxxxx' },
+            { label: 'Email Address', key: 'email', type: 'email', placeholder: 'your@email.com' },
+            { label: 'Phone Number', key: 'phone', type: 'tel', placeholder: '+91 xxxxxxxxxx' },
             { label: 'Title / Designation', key: 'headline', type: 'text', placeholder: 'e.g. Chief Placement Officer' },
           ].map(({ label, key, type, placeholder }) => (
-            <div key={key} className="space-y-1">
+            <div key={key} className="space-y-1.5">
               <label className="text-label-md text-on-surface font-semibold">{label}</label>
               <input
                 type={type}
                 value={form[key]}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                 placeholder={placeholder}
+                required
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
               />
             </div>
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 pb-6 flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end pt-4 border-t border-outline-variant/60">
           <button
-            onClick={onClose}
-            className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
+            type="submit"
             disabled={saving}
             className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
           >
@@ -293,8 +292,191 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
+      </form>
+    </div>
+  );
+}
+
+function RecruitersView() {
+  const partners = [
+    { name: 'Google India', sector: 'Technology', status: 'Active Partner', drives: 4, logo: 'G', color: 'bg-blue-500 text-white' },
+    { name: 'Microsoft India', sector: 'Software & Cloud', status: 'Active Partner', drives: 6, logo: 'M', color: 'bg-red-500 text-white' },
+    { name: 'Omniscient Software', sector: 'Enterprise Dev', status: 'Active Partner', drives: 2, logo: 'O', color: 'bg-purple-600 text-white' },
+    { name: 'Amazon Dev Center', sector: 'E-commerce & AI', status: 'Active Partner', drives: 3, logo: 'A', color: 'bg-amber-600 text-white' },
+    { name: 'Infosys', sector: 'IT Services', status: 'Active Partner', drives: 8, logo: 'I', color: 'bg-indigo-600 text-white' },
+    { name: 'TCS Research', sector: 'Consulting', status: 'Pending Review', drives: 0, logo: 'T', color: 'bg-teal-600 text-white' }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-headline-md font-bold text-on-surface">Corporate Partners</h2>
+          <p className="text-body-md text-on-surface-variant">Manage relationships with placement & internship recruiters</p>
+        </div>
+        <button className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center gap-2">
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+          Add Recruiter
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {partners.map((partner) => (
+          <div key={partner.name} className="bg-white rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-title-lg shadow-inner ${partner.color}`}>
+                  {partner.logo}
+                </div>
+                <div>
+                  <h3 className="font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">{partner.name}</h3>
+                  <p className="text-caption text-on-surface-variant">{partner.sector}</p>
+                </div>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-caption font-bold border ${
+                partner.status === 'Active Partner' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700'
+              }`}>
+                {partner.status}
+              </span>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between text-caption text-outline">
+              <span className="flex items-center gap-1">
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>campaign</span>
+                {partner.drives} Drives launched
+              </span>
+              <button className="text-primary hover:underline font-semibold flex items-center gap-0.5">
+                Manage
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>chevron_right</span>
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
+  );
+}
+
+function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, driveSearch, setDriveSearch }) {
+  const filteredDrives = drives.filter((d) => {
+    const q = driveSearch.toLowerCase();
+    if (!q) return true;
+    return (
+      (d.company || '').toLowerCase().includes(q) ||
+      (d.role || '').toLowerCase().includes(q) ||
+      (d.type || '').toLowerCase().includes(q)
+    );
+  });
+
+  return (
+    <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="p-p-lg border-b border-outline-variant">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-headline-md font-bold text-on-surface">Opportunities Management</h2>
+            <p className="text-body-md text-on-surface-variant">
+              {loadingDrives ? 'Loading...' : `${filteredDrives.length} of ${drives.length} active placement/internship drives`}
+            </p>
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" style={{ fontSize: '20px' }}>search</span>
+          <input
+            type="text"
+            value={driveSearch}
+            onChange={(e) => setDriveSearch(e.target.value)}
+            placeholder="Search by company, role or drive type..."
+            className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface placeholder:text-outline/60"
+          />
+          {driveSearch && (
+            <button
+              onClick={() => setDriveSearch('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-surface-container-low">
+            <tr>
+              {['Company', 'Job Role', 'Type', 'Min CGPA', 'Package / Stipend', 'Date', 'Actions'].map((h, i) => (
+                <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-outline-variant">
+            {loadingDrives ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-12 text-center">
+                  <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                </td>
+              </tr>
+            ) : filteredDrives.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-12 text-center text-outline text-body-md">
+                  {driveSearch ? `No drives match "${driveSearch}"` : 'No placement drives launched yet.'}
+                </td>
+              </tr>
+            ) : (
+              filteredDrives.map((d) => {
+                const driveDateStr = d.drive_date
+                  ? new Date(d.drive_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                  : '—';
+                return (
+                  <tr
+                    key={d.id}
+                    className="hover:bg-surface-container-lowest transition-all"
+                    style={{ transition: 'background 0.15s, transform 0.15s' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
+                  >
+                    <td className="px-6 py-5 text-body-md font-bold text-on-surface">{d.company}</td>
+                    <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.role}</td>
+                    <td className="px-6 py-5">
+                      <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
+                        {d.type || 'Full-Time'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.eligibility ? `${d.eligibility} CGPA` : 'Open'}</td>
+                    <td className="px-6 py-5 text-body-md text-on-surface-variant">
+                      {d.package ? `₹${d.package} LPA` : d.stipend || '—'}
+                    </td>
+                    <td className="px-6 py-5 text-caption text-outline">{driveDateStr}</td>
+                    <td className="px-6 py-5 text-right">
+                      <button
+                        onClick={() => onEditDrive(d)}
+                        className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors"
+                        title="Edit drive"
+                      >
+                        <span className="material-symbols-outlined">edit</span>
+                      </button>
+                      <button
+                        onClick={() => onDeleteDrive(d.id)}
+                        className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
+                        title="Delete drive"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
@@ -800,11 +982,15 @@ export default function AdminDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState('');
 
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const [students, setStudents] = useState([]);
   const [drives, setDrives] = useState([]);
   const [loadingDrives, setLoadingDrives] = useState(true);
   const [showEditDrive, setShowEditDrive] = useState(false);
   const [driveToEdit, setDriveToEdit] = useState(null);
+  const [driveSearch, setDriveSearch] = useState('');
 
   const fetchDrives = useCallback(async () => {
     setLoadingDrives(true);
@@ -911,7 +1097,16 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => { logout(); navigate('/signin', { replace: true }); };
-  const scrollToForm = () => { formRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+  const scrollToForm = () => {
+    if (location.pathname !== '/admin') {
+      navigate('/admin');
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      formRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const handleDeleteStudent = async () => {
     if (!studentToDelete) return;
@@ -982,9 +1177,9 @@ export default function AdminDashboard() {
 
             {/* Clickable profile area */}
             <button
-              onClick={() => setShowEditProfile(true)}
+              onClick={() => navigate('/admin/settings')}
               className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low px-3 py-1.5 rounded-xl transition-colors active:scale-[0.98]"
-              title="Edit Profile"
+              title="Settings"
             >
               <div className="text-right hidden sm:block">
                 <p className="text-label-md font-bold text-on-surface">{adminName}</p>
@@ -1003,7 +1198,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
                 <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-outline-variant">
-                  <span className="material-symbols-outlined text-primary" style={{ fontSize: '10px' }}>edit</span>
+                  <span className="material-symbols-outlined text-primary" style={{ fontSize: '10px' }}>settings</span>
                 </span>
               </div>
             </button>
@@ -1018,695 +1213,628 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        <div className="max-w-[1400px] mx-auto p-p-lg space-y-10">
-
-          {/* ── Welcome Banner ── */}
-          <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/10 px-6 py-5 flex items-center justify-between">
-            <div>
-              <p className="text-caption text-primary font-semibold uppercase tracking-wider mb-1">Admin Portal</p>
-              <h1 className="text-headline-lg font-extrabold text-on-surface">
-                Welcome back, {adminName.split(' ')[0]} 👋
-              </h1>
-              <p className="text-body-md text-on-surface-variant mt-1">{adminTitle}</p>
-            </div>
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={() => setShowAddStudent(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 shadow-sm transition-all"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-                Add Student
-              </button>
-              <button
-                onClick={scrollToForm}
-                className="flex items-center gap-2 px-5 py-2.5 border border-primary text-primary rounded-xl text-label-md font-semibold hover:bg-primary/5 transition-colors"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
-                Launch Drive
-              </button>
-            </div>
-          </div>
-
-          {/* ── Section 1: Stats ── */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-headline-lg font-bold text-on-surface">Institutional Intelligence</h2>
-              <p className="text-body-md text-on-surface-variant">Real-time placement analytics</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {statsData.map((s) => <StatCard key={s.label} {...s} />)}
-            </div>
-          </section>
-
-          {/* ── Section 2+3: Drive Form + Live Feed ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Launch Drive Form */}
-            <section className="lg:col-span-7" ref={formRef}>
-              <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm h-full">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="w-10 h-10 bg-primary-container text-on-primary rounded-lg flex items-center justify-center">
-                    <span className="material-symbols-outlined">campaign</span>
-                  </div>
-                  <div>
-                    <h2 className="text-headline-md font-bold text-on-surface">Launch Internship Drive</h2>
-                    <p className="text-caption text-on-surface-variant">Drives will be visible to all eligible students</p>
-                  </div>
-                </div>
-
-                {formError && (
-                  <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
-                    {formError}
-                  </div>
-                )}
-
-                <form onSubmit={handleLaunchDrive} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Company Name</label>
-                      <input
-                        name="company" value={form.company} onChange={handleFormChange}
-                        required
-                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                        placeholder="e.g. Microsoft India"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Opportunity Type</label>
-                      <select
-                        name="type" value={form.type} onChange={handleFormChange}
-                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                      >
-                        <option>Full-Time Graduate</option>
-                        <option>Summer Internship</option>
-                        <option>6-Month Co-op</option>
-                        <option>Part-Time Internship</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Job Role</label>
-                      <input
-                        name="role" value={form.role} onChange={handleFormChange}
-                        required
-                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                        placeholder="e.g. Software Engineer I"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
-                      <input
-                        name="eligibility" value={form.eligibility} onChange={handleFormChange}
-                        type="number" step="0.1" min="0" max="10"
-                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                        placeholder="e.g. 7.5"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
-                        <input
-                          name="package" value={form.package} onChange={handleFormChange}
-                          className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                          placeholder="e.g. 12.5"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
-                      <input
-                        name="drive_date" value={form.drive_date} onChange={handleFormChange}
-                        type="date"
-                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Collapsible Rich Details Section */}
-                  <div className="border border-outline-variant rounded-xl overflow-hidden mt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowAdvanced(!showAdvanced)}
-                      className="w-full flex items-center justify-between px-5 py-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-label-md font-bold text-on-surface outline-none"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">settings_applications</span>
-                        Placement Specification / Details (Optional)
-                      </span>
-                      <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none' }}>
-                        keyboard_arrow_down
-                      </span>
-                    </button>
-                    
-                    {showAdvanced && (
-                      <div className="p-5 bg-white border-t border-outline-variant space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
-                            <input
-                              name="location" value={form.location} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. Pune (Koregaon Park)"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
-                            <input
-                              name="stipend" value={form.stipend} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. Stipend: INR 21,100"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
-                            <input
-                              name="duration" value={form.duration} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. 6 Months"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Company Website</label>
-                            <input
-                              name="website" value={form.website} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. https://www.omniscient.co.in/"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Organisation Size</label>
-                            <input
-                              name="org_size" value={form.org_size} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. 10,000+"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Contact Person</label>
-                            <input
-                              name="contact_person" value={form.contact_person} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                              placeholder="e.g. Dr. Swati More"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Description & Preferred Technical Skills</label>
-                          <textarea
-                            name="description" value={form.description} onChange={handleFormChange}
-                            rows={3}
-                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                            placeholder="Specify role description, tech stack requirements (e.g. Java, Angular, React)..."
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
-                          <textarea
-                            name="eligible_courses" value={form.eligible_courses} onChange={handleFormChange}
-                            rows={3}
-                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                            placeholder="B.Tech. - CSE&#10;B.Tech. - IT&#10;M.Tech. - CSE"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
-                          <textarea
-                            name="selection_process" value={form.selection_process} onChange={handleFormChange}
-                            rows={3}
-                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                            placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
-                          <textarea
-                            name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
-                            rows={2}
-                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                            placeholder="e.g. Join us on 1st January 2027. Work from Office Koregaon Park."
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
-                          <textarea
-                            name="about_company" value={form.about_company} onChange={handleFormChange}
-                            rows={3}
-                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                            placeholder="Company background, treasury details, domain expertise..."
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-end gap-4">
-                    <button
-                      type="button"
-                      className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
-                    >
-                      Save as Draft
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={launching}
-                      className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
-                    >
-                      {launching && (
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                      )}
-                      {launching ? 'Launching...' : 'Launch Drive'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </section>
-
-            {/* Quick Stats Panel */}
-            <section className="lg:col-span-5">
-              <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm h-full flex flex-col">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-lg flex items-center justify-center">
-                      <span className="material-symbols-outlined">people</span>
-                    </div>
-                    <h2 className="text-headline-md font-bold text-on-surface">Student Overview</h2>
-                  </div>
-                  <span className="px-3 py-1 bg-secondary-container/20 text-secondary text-caption rounded-full font-bold">
-                    {students.length} Total
-                  </span>
-                </div>
-
-                {loadingStudents ? (
-                  <div className="flex-1 flex items-center justify-center">
-                    <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  </div>
-                ) : students.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-                    <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
-                      <span className="material-symbols-outlined text-outline" style={{ fontSize: '32px' }}>person_off</span>
-                    </div>
-                    <p className="text-body-md font-semibold text-on-surface">No students yet</p>
-                    <p className="text-caption text-on-surface-variant mt-1">Add your first student to get started</p>
-                    <button
-                      onClick={() => setShowAddStudent(true)}
-                      className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-                      Add First Student
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex-1 space-y-3 overflow-y-auto max-h-[420px] pr-1 custom-scrollbar">
-                    {students.slice(0, 6).map((s) => {
-                      const initials = s.full_name
-                        ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                        : s.username[0].toUpperCase();
-                      return (
-                        <div key={s.id} className="p-3 rounded-xl border border-outline-variant/50 hover:bg-surface-container-low transition-colors flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-outline-variant">
-                            {s.profile_image ? (
-                              <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
-                                {initials}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-label-md font-bold text-on-surface truncate">{s.full_name || s.username}</p>
-                            <p className="text-caption text-outline truncate">{s.email || s.username}</p>
-                          </div>
-                          {s.enrollment_id && (
-                            <span className="text-[10px] bg-primary-container/20 text-primary px-2 py-0.5 rounded font-semibold flex-shrink-0">
-                              {s.enrollment_id}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setShowAddStudent(true)}
-                  className="w-full mt-6 py-2.5 border border-dashed border-primary/40 text-primary text-label-md font-semibold hover:bg-primary/5 transition-colors rounded-xl flex items-center justify-center gap-2"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-                  Add New Student
-                </button>
-              </div>
-            </section>
-          </div>
-
-          {/* ── Section 4: Student Management Table ── */}
-          <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-            <div className="p-p-lg border-b border-outline-variant">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        <div className="max-w-[1400px] mx-auto p-p-lg space-y-8">
+          {currentPath === '/admin' && (
+            <>
+              {/* ── Welcome Banner ── */}
+              <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-2xl border border-primary/10 px-6 py-5 flex items-center justify-between">
                 <div>
-                  <h2 className="text-headline-md font-bold text-on-surface">Student Management</h2>
-                  <p className="text-body-md text-on-surface-variant">
-                    {loadingStudents ? 'Loading...' : `${filteredStudents.length} of ${students.length} student${students.length !== 1 ? 's' : ''}`}
-                  </p>
+                  <p className="text-caption text-primary font-semibold uppercase tracking-wider mb-1">Admin Portal</p>
+                  <h1 className="text-headline-lg font-extrabold text-on-surface">
+                    Welcome back, {adminName.split(' ')[0]} 👋
+                  </h1>
+                  <p className="text-body-md text-on-surface-variant mt-1">{adminTitle}</p>
                 </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <button
-                    onClick={() => setShowEmailPreview(true)}
-                    className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
-                    Preview Welcome Email
-                  </button>
-                  <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
-                    Bulk Import
-                  </button>
+                <div className="hidden md:flex items-center gap-3">
                   <button
                     onClick={() => setShowAddStudent(true)}
-                    className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 shadow-sm transition-all"
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                     Add Student
                   </button>
+                  <button
+                    onClick={scrollToForm}
+                    className="flex items-center gap-2 px-5 py-2.5 border border-primary text-primary rounded-xl text-label-md font-semibold hover:bg-primary/5 transition-colors"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>campaign</span>
+                    Launch Drive
+                  </button>
                 </div>
               </div>
-              {/* Search Bar */}
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" style={{ fontSize: '20px' }}>search</span>
-                <input
-                  type="text"
-                  value={studentSearch}
-                  onChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
-                  placeholder="Search by name, email, username or enrollment ID…"
-                  className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface placeholder:text-outline/60"
-                />
-                {studentSearch && (
-                  <button
-                    onClick={() => { setStudentSearch(''); setStudentPage(1); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
-                  </button>
-                )}
-              </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-surface-container-low">
-                  <tr>
-                    {['Student Name', 'Email', 'Enrollment ID', 'Course', 'Account Status', 'Joined', 'Actions'].map((h, i) => (
-                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant">
-                  {loadingStudents ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant">
-                        <svg className="animate-spin h-6 w-6 text-primary mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              {/* ── Section 1: Stats ── */}
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-headline-lg font-bold text-on-surface">Institutional Intelligence</h2>
+                  <p className="text-body-md text-on-surface-variant">Real-time placement analytics</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {statsData.map((s) => <StatCard key={s.label} {...s} />)}
+                </div>
+              </section>
+
+              {/* ── Section 2+3: Drive Form + Live Feed ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Launch Drive Form */}
+                <section className="lg:col-span-7" ref={formRef}>
+                  <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm h-full">
+                    <div className="flex items-center gap-3 mb-8">
+                      <div className="w-10 h-10 bg-primary-container text-on-primary rounded-lg flex items-center justify-center">
+                        <span className="material-symbols-outlined">campaign</span>
+                      </div>
+                      <div>
+                        <h2 className="text-headline-md font-bold text-on-surface">Launch Internship Drive</h2>
+                        <p className="text-caption text-on-surface-variant">Drives will be visible to all eligible students</p>
+                      </div>
+                    </div>
+
+                    {formError && (
+                      <div className="mb-4 flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+                        {formError}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleLaunchDrive} className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Company Name</label>
+                          <input
+                            name="company" value={form.company} onChange={handleFormChange}
+                            required
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                            placeholder="e.g. Microsoft India"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Opportunity Type</label>
+                          <select
+                            name="type" value={form.type} onChange={handleFormChange}
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                          >
+                            <option>Full-Time Graduate</option>
+                            <option>Summer Internship</option>
+                            <option>6-Month Co-op</option>
+                            <option>Part-Time Internship</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Job Role</label>
+                          <input
+                            name="role" value={form.role} onChange={handleFormChange}
+                            required
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                            placeholder="e.g. Software Engineer I"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
+                          <input
+                            name="eligibility" value={form.eligibility} onChange={handleFormChange}
+                            type="number" step="0.1" min="0" max="10"
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                            placeholder="e.g. 7.5"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
+                            <input
+                              name="package" value={form.package} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                              placeholder="e.g. 12.5"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
+                          <input
+                            name="drive_date" value={form.drive_date} onChange={handleFormChange}
+                            type="date"
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Collapsible Rich Details Section */}
+                      <div className="border border-outline-variant rounded-xl overflow-hidden mt-6">
+                        <button
+                          type="button"
+                          onClick={() => setShowAdvanced(!showAdvanced)}
+                          className="w-full flex items-center justify-between px-5 py-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-label-md font-bold text-on-surface outline-none"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary">settings_applications</span>
+                            Placement Specification / Details (Optional)
+                          </span>
+                          <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none' }}>
+                            keyboard_arrow_down
+                          </span>
+                        </button>
+                        
+                        {showAdvanced && (
+                          <div className="p-5 bg-white border-t border-outline-variant space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
+                                <input
+                                  name="location" value={form.location} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. Pune (Koregaon Park)"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
+                                <input
+                                  name="stipend" value={form.stipend} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. Stipend: INR 21,100"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
+                                <input
+                                  name="duration" value={form.duration} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. 6 Months"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Company Website</label>
+                                <input
+                                  name="website" value={form.website} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. https://www.omniscient.co.in/"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Organisation Size</label>
+                                <input
+                                  name="org_size" value={form.org_size} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. 10,000+"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Contact Person</label>
+                                <input
+                                  name="contact_person" value={form.contact_person} onChange={handleFormChange}
+                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                  placeholder="e.g. Dr. Swati More"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Description & Preferred Technical Skills</label>
+                              <textarea
+                                name="description" value={form.description} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="Specify role description, tech stack requirements (e.g. Java, Angular, React)..."
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
+                              <textarea
+                                name="eligible_courses" value={form.eligible_courses} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="B.Tech. - CSE&#10;B.Tech. - IT&#10;M.Tech. - CSE"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
+                              <textarea
+                                name="selection_process" value={form.selection_process} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
+                              <textarea
+                                name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
+                                rows={2}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="e.g. Join us on 1st January 2027. Work from Office Koregaon Park."
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
+                              <textarea
+                                name="about_company" value={form.about_company} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="Company background, treasury details, domain expertise..."
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-end gap-4">
+                        <button
+                          type="button"
+                          className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+                        >
+                          Save as Draft
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={launching}
+                          className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+                        >
+                          {launching && (
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                          )}
+                          {launching ? 'Launching...' : 'Launch Drive'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </section>
+
+                {/* Quick Stats Panel */}
+                <section className="lg:col-span-5">
+                  <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-secondary-container text-on-secondary-container rounded-lg flex items-center justify-center">
+                          <span className="material-symbols-outlined">people</span>
+                        </div>
+                        <h2 className="text-headline-md font-bold text-on-surface">Student Overview</h2>
+                      </div>
+                      <span className="px-3 py-1 bg-secondary-container/20 text-secondary text-caption rounded-full font-bold">
+                        {students.length} Total
+                      </span>
+                    </div>
+
+                    {loadingStudents ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Loading students...
-                      </td>
-                    </tr>
-                  ) : pagedStudents.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center">
-                        <div className="flex flex-col items-center gap-3">
-                          <span className="material-symbols-outlined text-outline" style={{ fontSize: '40px' }}>person_search</span>
-                          <p className="text-body-md text-on-surface-variant font-semibold">
-                            {studentSearch ? `No students match "${studentSearch}"` : 'No students found'}
-                          </p>
-                          {!studentSearch && (
-                            <button
-                              onClick={() => setShowAddStudent(true)}
-                              className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
-                            >
-                              Add First Student
-                            </button>
-                          )}
+                      </div>
+                    ) : students.length === 0 ? (
+                      <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
+                        <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+                          <span className="material-symbols-outlined text-outline" style={{ fontSize: '32px' }}>person_off</span>
                         </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    pagedStudents.map((s) => {
-                      const initials = s.full_name
-                        ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                        : s.username[0].toUpperCase();
-                      const joinedDate = s.created_at
-                        ? new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                        : '—';
-                      // Determine account status
-                      const isEligible = s.is_eligible === 1;
-                      const isPendingSetup = s.must_change_password === '1';
-                      const hasResume = !!s.resume_name;
-                      const hasEmail = !!s.email;
-                      const hasName = !!s.full_name;
-                      const isProfileDone = hasEmail && hasName;
-
-                      let statusLabel, statusBg, statusText, statusIcon;
-                      if (isEligible) {
-                        statusLabel = 'Eligible';
-                        statusBg = 'bg-emerald-50 border-emerald-200';
-                        statusText = 'text-emerald-700';
-                        statusIcon = 'verified';
-                      } else if (isPendingSetup) {
-                        statusLabel = 'Pending Setup';
-                        statusBg = 'bg-amber-50 border-amber-200';
-                        statusText = 'text-amber-700';
-                        statusIcon = 'schedule';
-                      } else if (!isProfileDone) {
-                        statusLabel = 'Profile Incomplete';
-                        statusBg = 'bg-slate-50 border-slate-200';
-                        statusText = 'text-slate-600';
-                        statusIcon = 'person_alert';
-                      } else if (!hasResume) {
-                        statusLabel = 'Resume Missing';
-                        statusBg = 'bg-orange-50 border-orange-200';
-                        statusText = 'text-orange-700';
-                        statusIcon = 'description';
-                      } else {
-                        statusLabel = 'Education Missing';
-                        statusBg = 'bg-amber-50 border-amber-200';
-                        statusText = 'text-amber-700';
-                        statusIcon = 'school';
-                      }
-
-                      return (
-                        <tr
-                          key={s.id}
-                          className="hover:bg-surface-container-lowest transition-all"
-                          style={{ transition: 'background 0.15s, transform 0.15s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
+                        <p className="text-body-md font-semibold text-on-surface">No students yet</p>
+                        <p className="text-caption text-on-surface-variant mt-1">Add your first student to get started</p>
+                        <button
+                          onClick={() => setShowAddStudent(true)}
+                          className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
                         >
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant flex-shrink-0">
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                          Add First Student
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 space-y-3 overflow-y-auto max-h-[420px] pr-1 custom-scrollbar">
+                        {students.slice(0, 6).map((s) => {
+                          const initials = s.full_name
+                            ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                            : s.username[0].toUpperCase();
+                          return (
+                            <div key={s.id} className="p-3 rounded-xl border border-outline-variant/50 hover:bg-surface-container-low transition-colors flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden border border-outline-variant">
                                 {s.profile_image ? (
                                   <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-caption">
+                                  <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
                                     {initials}
                                   </div>
                                 )}
                               </div>
-                              <div>
-                                <p className="text-body-md font-bold text-on-surface">{s.full_name || s.username}</p>
-                                <p className="text-caption text-outline">@{s.username}</p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-label-md font-bold text-on-surface truncate">{s.full_name || s.username}</p>
+                                <p className="text-caption text-outline truncate">{s.email || s.username}</p>
                               </div>
+                              {s.enrollment_id && (
+                                <span className="text-[10px] bg-primary-container/20 text-primary px-2 py-0.5 rounded font-semibold flex-shrink-0">
+                                  {s.enrollment_id}
+                                </span>
+                              )}
                             </div>
-                          </td>
-                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{s.email || '—'}</td>
-                          <td className="px-6 py-5">
-                            {s.enrollment_id ? (
-                              <span className="px-2 py-1 bg-primary-container/20 text-primary text-caption font-semibold rounded-lg">
-                                {s.enrollment_id}
-                              </span>
-                            ) : (
-                              <span className="text-outline text-caption">Not set</span>
-                            )}
-                          </td>
-                          <td className="px-6 py-5">
-                            {s.course ? (
-                              <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
-                                {s.course}
-                              </span>
-                            ) : (
-                              <span className="text-outline text-caption">—</span>
-                            )}
-                          </td>
-                          {/* Account Status Column */}
-                          <td className="px-6 py-5">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-label-md font-semibold ${statusBg} ${statusText}`}>
-                              <span className="material-symbols-outlined" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>{statusIcon}</span>
-                              {statusLabel}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5 text-caption text-outline">{joinedDate}</td>
-                          <td className="px-6 py-5 text-right">
-                            <button className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors" title="Edit student">
-                              <span className="material-symbols-outlined">edit</span>
-                            </button>
-                            <button className="p-2 hover:bg-error-container/20 rounded-lg text-error transition-colors ml-1" title="Reset password">
-                              <span className="material-symbols-outlined">key</span>
-                            </button>
-                            <button
-                              onClick={() => setStudentToDelete(s)}
-                              className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
-                              title="Delete student"
-                            >
-                              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
-            {/* Pagination */}
-            <div className="p-6 bg-surface-container-low/50 flex items-center justify-between border-t border-outline-variant">
-              <p className="text-caption text-on-surface-variant">
-                Showing {pagedStudents.length} of {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
-                {studentSearch && ` matching "${studentSearch}"`}
-              </p>
-              {totalPages > 1 && (
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={studentPage === 1}
-                    onClick={() => setStudentPage((p) => p - 1)}
-                    className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined">chevron_left</span>
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
                     <button
-                      key={n}
-                      onClick={() => setStudentPage(n)}
-                      className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === studentPage ? 'bg-primary text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
+                      onClick={() => setShowAddStudent(true)}
+                      className="w-full mt-6 py-2.5 border border-dashed border-primary/40 text-primary text-label-md font-semibold hover:bg-primary/5 transition-colors rounded-xl flex items-center justify-center gap-2"
                     >
-                      {n}
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                      Add New Student
                     </button>
-                  ))}
-                  <button
-                    disabled={studentPage === totalPages}
-                    onClick={() => setStudentPage((p) => p + 1)}
-                    className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
-                  >
-                    <span className="material-symbols-outlined">chevron_right</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
+                  </div>
+                </section>
+              </div>
+            </>
+          )}
 
-          {/* ── Section 5: Placement Drives Management ── */}
-          <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-            <div className="p-p-lg border-b border-outline-variant">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-                <div>
-                  <h2 className="text-headline-md font-bold text-on-surface">Placement Drives Management</h2>
-                  <p className="text-body-md text-on-surface-variant">
-                    {loadingDrives ? 'Loading...' : `${drives.length} active placement/internship drives`}
-                  </p>
+          {currentPath === '/admin/opportunities' && (
+            <OpportunitiesView
+              drives={drives}
+              loadingDrives={loadingDrives}
+              onEditDrive={(d) => { setDriveToEdit(d); setShowEditDrive(true); }}
+              onDeleteDrive={handleDeleteDrive}
+              driveSearch={driveSearch}
+              setDriveSearch={setDriveSearch}
+            />
+          )}
+
+          {currentPath === '/admin/students' && (
+            <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+              <div className="p-p-lg border-b border-outline-variant">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className="text-headline-md font-bold text-on-surface">Student Management</h2>
+                    <p className="text-body-md text-on-surface-variant">
+                      {loadingStudents ? 'Loading...' : `${filteredStudents.length} of ${students.length} student${students.length !== 1 ? 's' : ''}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button
+                      onClick={() => setShowEmailPreview(true)}
+                      className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>drafts</span>
+                      Preview Welcome Email
+                    </button>
+                    <button className="px-4 py-2 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>file_upload</span>
+                      Bulk Import
+                    </button>
+                    <button
+                      onClick={() => setShowAddStudent(true)}
+                      className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
+                      Add Student
+                    </button>
+                  </div>
+                </div>
+                {/* Search Bar */}
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline" style={{ fontSize: '20px' }}>search</span>
+                  <input
+                    type="text"
+                    value={studentSearch}
+                    onChange={(e) => { setStudentSearch(e.target.value); setStudentPage(1); }}
+                    placeholder="Search by name, email, username or enrollment ID…"
+                    className="w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant/40 rounded-xl text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface placeholder:text-outline/60"
+                  />
+                  {studentSearch && (
+                    <button
+                      onClick={() => { setStudentSearch(''); setStudentPage(1); }}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-surface-container-low">
-                  <tr>
-                    {['Company', 'Job Role', 'Type', 'Min CGPA', 'Package / Stipend', 'Date', 'Actions'].map((h, i) => (
-                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
-                        {h}
-                      </th>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-surface-container-low">
+                    <tr>
+                      {['Student Name', 'Email', 'Enrollment ID', 'Course', 'Account Status', 'Joined', 'Actions'].map((h, i) => (
+                        <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant">
+                    {loadingStudents ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-on-surface-variant">
+                          <svg className="animate-spin h-6 w-6 text-primary mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Loading students...
+                        </td>
+                      </tr>
+                    ) : pagedStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center gap-3">
+                            <span className="material-symbols-outlined text-outline" style={{ fontSize: '40px' }}>person_search</span>
+                            <p className="text-body-md text-on-surface-variant font-semibold">
+                              {studentSearch ? `No students match "${studentSearch}"` : 'No students found'}
+                            </p>
+                            {!studentSearch && (
+                              <button
+                                onClick={() => setShowAddStudent(true)}
+                                className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                              >
+                                Add First Student
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      pagedStudents.map((s) => {
+                        const initials = s.full_name
+                          ? s.full_name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+                          : s.username[0].toUpperCase();
+                        const joinedDate = s.created_at
+                          ? new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : '—';
+                        
+                        const isEligible = s.is_eligible === 1;
+                        const isPendingSetup = s.must_change_password === '1';
+                        const hasResume = !!s.resume_name;
+                        const hasEmail = !!s.email;
+                        const hasName = !!s.full_name;
+                        const isProfileDone = hasEmail && hasName;
+
+                        let statusLabel, statusBg, statusText, statusIcon;
+                        if (isEligible) {
+                          statusLabel = 'Eligible';
+                          statusBg = 'bg-emerald-50 border-emerald-200';
+                          statusText = 'text-emerald-700';
+                          statusIcon = 'verified';
+                        } else if (isPendingSetup) {
+                          statusLabel = 'Pending Setup';
+                          statusBg = 'bg-amber-50 border-amber-200';
+                          statusText = 'text-amber-700';
+                          statusIcon = 'schedule';
+                        } else if (!isProfileDone) {
+                          statusLabel = 'Profile Incomplete';
+                          statusBg = 'bg-slate-50 border-slate-200';
+                          statusText = 'text-slate-600';
+                          statusIcon = 'person_alert';
+                        } else if (!hasResume) {
+                          statusLabel = 'Resume Missing';
+                          statusBg = 'bg-orange-50 border-orange-200';
+                          statusText = 'text-orange-700';
+                          statusIcon = 'description';
+                        } else {
+                          statusLabel = 'Education Missing';
+                          statusBg = 'bg-amber-50 border-amber-200';
+                          statusText = 'text-amber-700';
+                          statusIcon = 'school';
+                        }
+
+                        return (
+                          <tr
+                            key={s.id}
+                            className="hover:bg-surface-container-lowest transition-all"
+                            style={{ transition: 'background 0.15s, transform 0.15s' }}
+                            onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
+                          >
+                            <td className="px-6 py-5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant flex-shrink-0">
+                                  {s.profile_image ? (
+                                    <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-caption">
+                                      {initials}
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="text-body-md font-bold text-on-surface">{s.full_name || s.username}</p>
+                                  <p className="text-caption text-outline">@{s.username}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-5 text-body-md text-on-surface-variant">{s.email || '—'}</td>
+                            <td className="px-6 py-5">
+                              {s.enrollment_id ? (
+                                <span className="px-2 py-1 bg-primary-container/20 text-primary text-caption font-semibold rounded-lg">
+                                  {s.enrollment_id}
+                                </span>
+                              ) : (
+                                <span className="text-outline text-caption">Not set</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5">
+                              {s.course ? (
+                                <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
+                                  {s.course}
+                                </span>
+                              ) : (
+                                <span className="text-outline text-caption">—</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-5">
+                              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-label-md font-semibold ${statusBg} ${statusText}`}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>{statusIcon}</span>
+                                {statusLabel}
+                              </span>
+                            </td>
+                            <td className="px-6 py-5 text-caption text-outline">{joinedDate}</td>
+                            <td className="px-6 py-5 text-right">
+                              <button className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors" title="Edit student">
+                                <span className="material-symbols-outlined">edit</span>
+                              </button>
+                              <button className="p-2 hover:bg-error-container/20 rounded-lg text-error transition-colors ml-1" title="Reset password">
+                                <span className="material-symbols-outlined">key</span>
+                              </button>
+                              <button
+                                onClick={() => setStudentToDelete(s)}
+                                className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
+                                title="Delete student"
+                              >
+                                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="p-6 bg-surface-container-low/50 flex items-center justify-between border-t border-outline-variant">
+                  <p className="text-caption text-on-surface-variant">
+                    Showing {pagedStudents.length} of {filteredStudents.length} student{filteredStudents.length !== 1 ? 's' : ''}
+                    {studentSearch && ` matching "${studentSearch}"`}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={studentPage === 1}
+                      onClick={() => setStudentPage((p) => p - 1)}
+                      className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setStudentPage(n)}
+                        className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === studentPage ? 'bg-primary text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
+                      >
+                        {n}
+                      </button>
                     ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant">
-                  {loadingDrives ? (
-                    <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center">
-                        <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                      </td>
-                    </tr>
-                  ) : drives.length === 0 ? (
-                    <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center text-outline text-body-md">
-                        No placement drives launched yet. Use the form above to post one.
-                      </td>
-                    </tr>
-                  ) : (
-                    drives.map((d) => {
-                      const driveDateStr = d.drive_date
-                        ? new Date(d.drive_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                        : '—';
-                      return (
-                        <tr
-                          key={d.id}
-                          className="hover:bg-surface-container-lowest transition-all"
-                          style={{ transition: 'background 0.15s, transform 0.15s' }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
-                        >
-                          <td className="px-6 py-5 text-body-md font-bold text-on-surface">{d.company}</td>
-                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.role}</td>
-                          <td className="px-6 py-5">
-                            <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
-                              {d.type || 'Full-Time'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.eligibility ? `${d.eligibility} CGPA` : 'Open'}</td>
-                          <td className="px-6 py-5 text-body-md text-on-surface-variant">
-                            {d.package ? `₹${d.package} LPA` : d.stipend || '—'}
-                          </td>
-                          <td className="px-6 py-5 text-caption text-outline">{driveDateStr}</td>
-                          <td className="px-6 py-5 text-right">
-                            <button
-                              onClick={() => { setDriveToEdit(d); setShowEditDrive(true); }}
-                              className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors"
-                              title="Edit drive"
-                            >
-                              <span className="material-symbols-outlined">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteDrive(d.id)}
-                              className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
-                              title="Delete drive"
-                            >
-                              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                    <button
+                      disabled={studentPage === totalPages}
+                      onClick={() => setStudentPage((p) => p + 1)}
+                      className="p-2 border border-outline-variant rounded-lg bg-white text-outline disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
 
+          {currentPath === '/admin/recruiters' && <RecruitersView />}
+
+          {currentPath === '/admin/settings' && (
+            <AdminSettingsView
+              profile={user || {}}
+              token={token}
+              onSaved={(updated) => setUser(updated)}
+            />
+          )}
         </div>
       </main>
 
@@ -1723,13 +1851,6 @@ export default function AdminDashboard() {
         token={token}
         onClose={() => { setShowEditDrive(false); setDriveToEdit(null); }}
         onSaved={() => fetchDrives()}
-      />
-      <EditProfileModal
-        visible={showEditProfile}
-        profile={user || {}}
-        token={token}
-        onClose={() => setShowEditProfile(false)}
-        onSaved={(updated) => setUser(updated)}
       />
       <AddStudentModal
         visible={showAddStudent}

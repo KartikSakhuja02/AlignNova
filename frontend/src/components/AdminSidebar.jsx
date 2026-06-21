@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 
 const navLinks = [
   { icon: 'dashboard', label: 'Dashboard', path: '/admin' },
-  { icon: 'work', label: 'Internships', path: '/admin/internships' },
+  { icon: 'work', label: 'Opportunities', path: '/admin/opportunities' },
   { icon: 'group', label: 'Students', path: '/admin/students' },
   { icon: 'business_center', label: 'Recruiters', path: '/admin/recruiters' },
   { icon: 'settings', label: 'Settings', path: '/admin/settings' },

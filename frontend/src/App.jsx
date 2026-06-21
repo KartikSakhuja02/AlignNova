@@ -90,6 +90,10 @@ export default function App() {
           {/* Admin routes */}
           <Route element={<RequireAdmin />}>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/opportunities" element={<AdminDashboard />} />
+            <Route path="/admin/students" element={<AdminDashboard />} />
+            <Route path="/admin/recruiters" element={<AdminDashboard />} />
+            <Route path="/admin/settings" element={<AdminDashboard />} />
           </Route>
 
           {/* Student routes */}
