@@ -285,6 +285,101 @@ def get_drive_detail(drive_id: int):
         }
 
 
+@app.put('/api/drives/{drive_id}')
+def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+        
+    from backend.database import SessionLocal, Drive
+    with SessionLocal() as db:
+        drive = db.query(Drive).filter(Drive.id == drive_id).first()
+        if not drive:
+            raise HTTPException(status_code=404, detail='drive_not_found')
+            
+        # Update fields
+        drive.company = payload.get('company', drive.company)
+        drive.role = payload.get('role', drive.role)
+        drive.type = payload.get('type', drive.type)
+        drive.eligibility = payload.get('eligibility', drive.eligibility)
+        drive.package = payload.get('package', drive.package)
+        drive.drive_date = payload.get('drive_date', drive.drive_date)
+        drive.location = payload.get('location', drive.location)
+        drive.stipend = payload.get('stipend', drive.stipend)
+        drive.description = payload.get('description', drive.description)
+        drive.other_benefits = payload.get('other_benefits', drive.other_benefits)
+        drive.duration = payload.get('duration', drive.duration)
+        drive.eligible_courses = payload.get('eligible_courses', drive.eligible_courses)
+        drive.selection_process = payload.get('selection_process', drive.selection_process)
+        drive.about_company = payload.get('about_company', drive.about_company)
+        drive.website = payload.get('website', drive.website)
+        drive.org_size = payload.get('org_size', drive.org_size)
+        drive.contact_person = payload.get('contact_person', drive.contact_person)
+        
+        db.add(drive)
+        db.commit()
+        db.refresh(drive)
+        
+        return {
+            "id": drive.id,
+            "company": drive.company,
+            "role": drive.role,
+            "type": drive.type,
+            "eligibility": drive.eligibility,
+            "package": drive.package,
+            "drive_date": drive.drive_date,
+            "location": drive.location,
+            "stipend": drive.stipend,
+            "description": drive.description,
+            "other_benefits": drive.other_benefits,
+            "duration": drive.duration,
+            "eligible_courses": drive.eligible_courses,
+            "selection_process": drive.selection_process,
+            "about_company": drive.about_company,
+            "website": drive.website,
+            "org_size": drive.org_size,
+            "contact_person": drive.contact_person
+        }
+
+
+@app.delete('/api/drives/{drive_id}')
+def delete_drive_endpoint(drive_id: int, request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        raise HTTPException(status_code=401, detail='missing_authorization')
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        raise HTTPException(status_code=401, detail='invalid_authorization')
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get('role')
+    except JWTError:
+        raise HTTPException(status_code=401, detail='invalid_token')
+    if role != 'admin':
+        raise HTTPException(status_code=403, detail='admin_required')
+        
+    from backend.database import SessionLocal, Drive
+    with SessionLocal() as db:
+        drive = db.query(Drive).filter(Drive.id == drive_id).first()
+        if not drive:
+            raise HTTPException(status_code=404, detail='drive_not_found')
+        db.delete(drive)
+        db.commit()
+        return {'deleted': True, 'drive_id': drive_id}
+
+
 @app.post('/api/apply')
 def apply_drive(request: Request, payload: dict):
     auth = request.headers.get('Authorization')

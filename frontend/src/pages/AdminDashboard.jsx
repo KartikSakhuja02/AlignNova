@@ -298,6 +298,280 @@ function EditProfileModal({ visible, profile, token, onClose, onSaved }) {
   );
 }
 
+// ─── Edit Drive Modal ────────────────────────────────────────────────────────
+
+function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    company: '', role: '', type: 'Full-Time Graduate',
+    eligibility: '', package: '', drive_date: '',
+    location: '', stipend: '', description: '',
+    other_benefits: '', duration: '', eligible_courses: '',
+    selection_process: '', about_company: '', website: '',
+    org_size: '', contact_person: '',
+  });
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (drive && visible) {
+      setForm({
+        company: drive.company || '',
+        role: drive.role || '',
+        type: drive.type || 'Full-Time Graduate',
+        eligibility: drive.eligibility || '',
+        package: drive.package || '',
+        drive_date: drive.drive_date || '',
+        location: drive.location || '',
+        stipend: drive.stipend || '',
+        description: drive.description || '',
+        other_benefits: drive.other_benefits || '',
+        duration: drive.duration || '',
+        eligible_courses: drive.eligible_courses || '',
+        selection_process: drive.selection_process || '',
+        about_company: drive.about_company || '',
+        website: drive.website || '',
+        org_size: drive.org_size || '',
+        contact_person: drive.contact_person || '',
+      });
+      setError('');
+    }
+  }, [drive, visible]);
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/drives/${drive.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || 'Failed to update drive');
+      }
+      const updated = await res.json();
+      onSaved(updated);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden my-8">
+        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>edit_document</span>
+            </div>
+            <h2 className="text-white font-bold text-title-lg">Edit Placement/Internship Drive</h2>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        <form onSubmit={handleSave} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Company Name</label>
+              <input
+                name="company" value={form.company} onChange={(e) => setForm({...form, company: e.target.value})}
+                required
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Opportunity Type</label>
+              <select
+                name="type" value={form.type} onChange={(e) => setForm({...form, type: e.target.value})}
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              >
+                <option>Full-Time Graduate</option>
+                <option>Summer Internship</option>
+                <option>6-Month Co-op</option>
+                <option>Part-Time Internship</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Job Role</label>
+              <input
+                name="role" value={form.role} onChange={(e) => setForm({...form, role: e.target.value})}
+                required
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
+              <input
+                name="eligibility" value={form.eligibility} onChange={(e) => setForm({...form, eligibility: e.target.value})}
+                type="number" step="0.1" min="0" max="10"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
+              <input
+                name="package" value={form.package} onChange={(e) => setForm({...form, package: e.target.value})}
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
+              <input
+                name="drive_date" value={form.drive_date} onChange={(e) => setForm({...form, drive_date: e.target.value})}
+                type="date"
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="border border-outline-variant rounded-xl overflow-hidden mt-4">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full flex items-center justify-between px-5 py-3.5 bg-surface-container-low hover:bg-surface-container-high transition-colors text-label-md font-bold text-on-surface outline-none"
+            >
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">settings_applications</span>
+                Edit Placement Details / Specs
+              </span>
+              <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none' }}>
+                keyboard_arrow_down
+              </span>
+            </button>
+            {showAdvanced && (
+              <div className="p-5 bg-white border-t border-outline-variant space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
+                    <input
+                      name="location" value={form.location} onChange={(e) => setForm({...form, location: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
+                    <input
+                      name="stipend" value={form.stipend} onChange={(e) => setForm({...form, stipend: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
+                    <input
+                      name="duration" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Company Website</label>
+                    <input
+                      name="website" value={form.website} onChange={(e) => setForm({...form, website: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Organisation Size</label>
+                    <input
+                      name="org_size" value={form.org_size} onChange={(e) => setForm({...form, org_size: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Contact Person</label>
+                    <input
+                      name="contact_person" value={form.contact_person} onChange={(e) => setForm({...form, contact_person: e.target.value})}
+                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Description & Preferred Technical Skills</label>
+                  <textarea
+                    name="description" value={form.description} onChange={(e) => setForm({...form, description: e.target.value})}
+                    rows={3}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
+                  <textarea
+                    name="eligible_courses" value={form.eligible_courses} onChange={(e) => setForm({...form, eligible_courses: e.target.value})}
+                    rows={3}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
+                  <textarea
+                    name="selection_process" value={form.selection_process} onChange={(e) => setForm({...form, selection_process: e.target.value})}
+                    rows={3}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
+                  <textarea
+                    name="other_benefits" value={form.other_benefits} onChange={(e) => setForm({...form, other_benefits: e.target.value})}
+                    rows={2}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
+                  <textarea
+                    name="about_company" value={form.about_company} onChange={(e) => setForm({...form, about_company: e.target.value})}
+                    rows={3}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button" onClick={onClose}
+              className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit" disabled={saving}
+              className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+            >
+              {saving && (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              )}
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Add Student Modal ────────────────────────────────────────────────────────
 
 function AddStudentModal({ visible, token, onClose, onAdded }) {
@@ -527,6 +801,41 @@ export default function AdminDashboard() {
   const [formError, setFormError] = useState('');
 
   const [students, setStudents] = useState([]);
+  const [drives, setDrives] = useState([]);
+  const [loadingDrives, setLoadingDrives] = useState(true);
+  const [showEditDrive, setShowEditDrive] = useState(false);
+  const [driveToEdit, setDriveToEdit] = useState(null);
+
+  const fetchDrives = useCallback(async () => {
+    setLoadingDrives(true);
+    try {
+      const res = await fetch('/api/drives');
+      if (res.ok) {
+        const data = await res.json();
+        setDrives(data);
+      }
+    } catch { /* ignore */ } finally {
+      setLoadingDrives(false);
+    }
+  }, []);
+
+  const handleDeleteDrive = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this placement drive?")) return;
+    try {
+      const res = await fetch(`/api/drives/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setDrives((prev) => prev.filter((d) => d.id !== id));
+      } else {
+        alert("Failed to delete drive");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [studentSearch, setStudentSearch] = useState('');
   const [studentPage, setStudentPage] = useState(1);
@@ -556,7 +865,10 @@ export default function AdminDashboard() {
     }
   }, [token]);
 
-  useEffect(() => { fetchStudents(); }, [fetchStudents]);
+  useEffect(() => {
+    fetchStudents();
+    fetchDrives();
+  }, [fetchStudents, fetchDrives]);
 
   const handleFormChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -582,6 +894,7 @@ export default function AdminDashboard() {
       });
       if (!res.ok) throw new Error('Failed to launch drive');
       setShowModal(true);
+      fetchDrives();
       setForm({
         company: '', role: '', type: 'Full-Time Graduate',
         eligibility: '', package: '', drive_date: '',
@@ -1304,6 +1617,96 @@ export default function AdminDashboard() {
             </div>
           </section>
 
+          {/* ── Section 5: Placement Drives Management ── */}
+          <section className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+            <div className="p-p-lg border-b border-outline-variant">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-headline-md font-bold text-on-surface">Placement Drives Management</h2>
+                  <p className="text-body-md text-on-surface-variant">
+                    {loadingDrives ? 'Loading...' : `${drives.length} active placement/internship drives`}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-surface-container-low">
+                  <tr>
+                    {['Company', 'Job Role', 'Type', 'Min CGPA', 'Package / Stipend', 'Date', 'Actions'].map((h, i) => (
+                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant">
+                  {loadingDrives ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center">
+                        <svg className="animate-spin h-8 w-8 text-primary mx-auto" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      </td>
+                    </tr>
+                  ) : drives.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center text-outline text-body-md">
+                        No placement drives launched yet. Use the form above to post one.
+                      </td>
+                    </tr>
+                  ) : (
+                    drives.map((d) => {
+                      const driveDateStr = d.drive_date
+                        ? new Date(d.drive_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                        : '—';
+                      return (
+                        <tr
+                          key={d.id}
+                          className="hover:bg-surface-container-lowest transition-all"
+                          style={{ transition: 'background 0.15s, transform 0.15s' }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateX(4px)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateX(0)')}
+                        >
+                          <td className="px-6 py-5 text-body-md font-bold text-on-surface">{d.company}</td>
+                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.role}</td>
+                          <td className="px-6 py-5">
+                            <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
+                              {d.type || 'Full-Time'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.eligibility ? `${d.eligibility} CGPA` : 'Open'}</td>
+                          <td className="px-6 py-5 text-body-md text-on-surface-variant">
+                            {d.package ? `₹${d.package} LPA` : d.stipend || '—'}
+                          </td>
+                          <td className="px-6 py-5 text-caption text-outline">{driveDateStr}</td>
+                          <td className="px-6 py-5 text-right">
+                            <button
+                              onClick={() => { setDriveToEdit(d); setShowEditDrive(true); }}
+                              className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors"
+                              title="Edit drive"
+                            >
+                              <span className="material-symbols-outlined">edit</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteDrive(d.id)}
+                              className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
+                              title="Delete drive"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
       </main>
 
@@ -1312,6 +1715,14 @@ export default function AdminDashboard() {
         visible={showModal}
         companyName={form.company}
         onClose={() => setShowModal(false)}
+      />
+
+      <EditDriveModal
+        visible={showEditDrive}
+        drive={driveToEdit}
+        token={token}
+        onClose={() => { setShowEditDrive(false); setDriveToEdit(null); }}
+        onSaved={() => fetchDrives()}
       />
       <EditProfileModal
         visible={showEditProfile}
