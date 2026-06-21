@@ -96,7 +96,31 @@ function EditProfileForm({ profile, onCancel, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    await onSave(form);
+    
+    // Format numeric GPA/Marks inside education history to 2 decimal places (e.g. 9 -> 9.00, 8.4 -> 8.40)
+    const formattedEducation = form.education.map((edu) => {
+      const gpaText = (edu.detail || '').trim();
+      if (gpaText && !isNaN(gpaText)) {
+        return { ...edu, detail: parseFloat(gpaText).toFixed(2) };
+      }
+      const match = gpaText.match(/^([+-]?\d*(?:\.\d+)?)$|^([+-]?\d+(?:\.\d*)?)$/);
+      if (match) {
+        return { ...edu, detail: parseFloat(gpaText).toFixed(2) };
+      }
+      
+      const numberMatch = gpaText.match(/(\b\d+(?:\.\d+)?\b)/);
+      if (numberMatch) {
+        const num = parseFloat(numberMatch[1]);
+        if (num >= 0 && num <= 100) {
+          const formattedNum = num.toFixed(2);
+          return { ...edu, detail: gpaText.replace(numberMatch[1], formattedNum) };
+        }
+      }
+      return edu;
+    });
+
+    const updatedForm = { ...form, education: formattedEducation };
+    await onSave(updatedForm);
     setSaving(false);
   };
 
@@ -277,14 +301,15 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                   <div key={idx} className="group relative p-6 bg-surface-container-lowest border border-outline-variant/20 rounded-2xl hover:border-primary/30 transition-all">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {[
-                        { field: 'institution', label: 'Institution', cls: 'font-headline-md text-headline-md' },
-                        { field: 'degree', label: 'Degree / Major', cls: 'font-body-lg text-body-lg' },
-                        { field: 'timeline', label: 'Timeline', cls: 'font-body-md text-body-md' },
-                        { field: 'detail', label: 'GPA / Honors', cls: 'font-body-md text-body-md' },
-                      ].map(({ field, label, cls }) => (
+                        { field: 'institution', label: 'Institution', cls: 'font-headline-md text-headline-md', placeholder: 'School/College Name' },
+                        { field: 'degree', label: 'Degree / Major (e.g., B.Tech CSE, Class 10, Class 12)', cls: 'font-body-lg text-body-lg', placeholder: 'e.g. Class 10, Class 12, B.Tech CSE' },
+                        { field: 'timeline', label: 'Timeline', cls: 'font-body-md text-body-md', placeholder: 'e.g. 2020 - 2024' },
+                        { field: 'detail', label: 'GPA / Marks (e.g. 8.50, 9.00)', cls: 'font-body-md text-body-md', placeholder: 'e.g. 8.50' },
+                      ].map(({ field, label, cls, placeholder }) => (
                         <div key={field} className="space-y-1.5">
                           <label className="text-caption font-bold text-outline">{label}</label>
                           <input value={edu[field]} onChange={(e) => handleEducationChange(idx, field, e.target.value)}
+                            placeholder={placeholder}
                             className={`w-full px-4 py-2 bg-transparent border-b border-outline-variant ${cls} focus:border-primary outline-none transition-all text-on-surface`}
                             type="text" />
                         </div>

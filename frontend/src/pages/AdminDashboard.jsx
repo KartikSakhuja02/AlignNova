@@ -449,8 +449,16 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
                       </span>
                     </td>
                     <td className="px-6 py-5 text-body-md text-on-surface-variant">{d.eligibility ? `${d.eligibility} CGPA` : 'Open'}</td>
-                    <td className="px-6 py-5 text-body-md text-on-surface-variant">
-                      {d.package ? `₹${d.package} LPA` : d.stipend || '—'}
+                    <td className="px-6 py-5 text-body-md text-on-surface-variant font-medium">
+                      {d.type === 'Internship' ? (
+                        <span>{d.stipend ? `₹${d.stipend} / month` : '—'}</span>
+                      ) : d.type === 'Internship + PPO' ? (
+                        <span>
+                          {d.stipend ? `₹${d.stipend} / month` : '—'} + {d.package ? `₹${d.package} LPA PPO` : '—'}
+                        </span>
+                      ) : (
+                        <span>{d.package ? `₹${d.package} LPA` : '—'}</span>
+                      )}
                     </td>
                     <td className="px-6 py-5 text-caption text-outline">{driveDateStr}</td>
                     <td className="px-6 py-5 text-right">
@@ -462,7 +470,7 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
                         <span className="material-symbols-outlined">edit</span>
                       </button>
                       <button
-                        onClick={() => onDeleteDrive(d.id)}
+                        onClick={() => onDeleteDrive(d)}
                         className="p-2 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-1"
                         title="Delete drive"
                       >
@@ -484,7 +492,7 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
 
 function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
   const [form, setForm] = useState({
-    company: '', role: '', type: 'Full-Time Graduate',
+    company: '', role: '', type: 'Placement',
     eligibility: '', package: '', drive_date: '',
     location: '', stipend: '', description: '',
     other_benefits: '', duration: '', eligible_courses: '',
@@ -500,7 +508,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
       setForm({
         company: drive.company || '',
         role: drive.role || '',
-        type: drive.type || 'Full-Time Graduate',
+        type: drive.type || 'Placement',
         eligibility: drive.eligibility || '',
         package: drive.package || '',
         drive_date: drive.drive_date || '',
@@ -524,11 +532,23 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     e.preventDefault();
     setSaving(true);
     setError('');
+    
+    const payload = {
+      ...form,
+      eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
+    };
+    if (form.type === 'Placement') {
+      payload.stipend = '';
+      payload.duration = '';
+    } else if (form.type === 'Internship') {
+      payload.package = '';
+    }
+
     try {
       const res = await fetch(`/api/drives/${drive.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -584,10 +604,9 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                 name="type" value={form.type} onChange={(e) => setForm({...form, type: e.target.value})}
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
               >
-                <option>Full-Time Graduate</option>
-                <option>Summer Internship</option>
-                <option>6-Month Co-op</option>
-                <option>Part-Time Internship</option>
+                <option value="Placement">Placement</option>
+                <option value="Internship">Internship</option>
+                <option value="Internship + PPO">Internship + PPO</option>
               </select>
             </div>
             <div className="space-y-1">
@@ -602,17 +621,49 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
               <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
               <input
                 name="eligibility" value={form.eligibility} onChange={(e) => setForm({...form, eligibility: e.target.value})}
-                type="number" step="0.1" min="0" max="10"
+                type="number" step="0.01" min="0" max="10"
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                placeholder="e.g. 8.50"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
-              <input
-                name="package" value={form.package} onChange={(e) => setForm({...form, package: e.target.value})}
-                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-              />
-            </div>
+
+            {(form.type === 'Placement' || form.type === 'Internship + PPO') && (
+              <div className="space-y-1">
+                <label className="text-label-md text-on-surface font-semibold">
+                  {form.type === 'Internship + PPO' ? 'PPO Package (LPA)' : 'Package (LPA)'}
+                </label>
+                <input
+                  name="package" value={form.package} onChange={(e) => setForm({...form, package: e.target.value})}
+                  required
+                  className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                  placeholder="e.g. 12.50"
+                />
+              </div>
+            )}
+
+            {(form.type === 'Internship' || form.type === 'Internship + PPO') && (
+              <>
+                <div className="space-y-1">
+                  <label className="text-label-md text-on-surface font-semibold">Monthly Stipend</label>
+                  <input
+                    name="stipend" value={form.stipend} onChange={(e) => setForm({...form, stipend: e.target.value})}
+                    required
+                    className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                    placeholder="e.g. 25000"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-label-md text-on-surface font-semibold">Internship Duration</label>
+                  <input
+                    name="duration" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})}
+                    required
+                    className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+                    placeholder="e.g. 6 Months"
+                  />
+                </div>
+              </>
+            )}
+
             <div className="space-y-1">
               <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
               <input
@@ -644,20 +695,6 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
                     <input
                       name="location" value={form.location} onChange={(e) => setForm({...form, location: e.target.value})}
-                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
-                    <input
-                      name="stipend" value={form.stipend} onChange={(e) => setForm({...form, stipend: e.target.value})}
-                      className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
-                    <input
-                      name="duration" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})}
                       className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                     />
                   </div>
@@ -961,6 +998,60 @@ function ConfirmDeleteModal({ student, onConfirm, onCancel, deleting }) {
   );
 }
 
+function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
+  if (!drive) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
+          </div>
+          <h2 className="text-white font-bold text-title-md">Delete Opportunity</h2>
+        </div>
+        <div className="p-6">
+          <p className="text-body-md text-on-surface mb-1">
+            Are you sure you want to delete the opportunity for
+          </p>
+          <p className="text-title-md font-extrabold text-on-surface mb-3">
+            {drive.company} - {drive.role}
+          </p>
+          <div className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 mb-6">
+            <p className="text-caption text-error font-semibold flex items-center gap-1.5">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>warning</span>
+              This will permanently delete this placement/internship drive and all student applications for it.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              disabled={deleting}
+              className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={deleting}
+              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {deleting ? (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
+              )}
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -970,7 +1061,7 @@ export default function AdminDashboard() {
 
   // Drive form state
   const [form, setForm] = useState({
-    company: '', role: '', type: 'Full-Time Graduate',
+    company: '', role: '', type: 'Placement',
     eligibility: '', package: '', drive_date: '',
     location: '', stipend: '', description: '',
     other_benefits: '', duration: '', eligible_courses: '',
@@ -1005,20 +1096,31 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  const handleDeleteDrive = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this placement drive?")) return;
+  const [driveToDelete, setDriveToDelete] = useState(null);
+  const [deletingDrive, setDeletingDrive] = useState(false);
+
+  const handleDeleteDrive = (drive) => {
+    setDriveToDelete(drive);
+  };
+
+  const handleDeleteDriveConfirm = async () => {
+    if (!driveToDelete) return;
+    setDeletingDrive(true);
     try {
-      const res = await fetch(`/api/drives/${id}`, {
+      const res = await fetch(`/api/drives/${driveToDelete.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setDrives((prev) => prev.filter((d) => d.id !== id));
+        setDrives((prev) => prev.filter((d) => d.id !== driveToDelete.id));
+        setDriveToDelete(null);
       } else {
         alert("Failed to delete drive");
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setDeletingDrive(false);
     }
   };
 
@@ -1064,25 +1166,35 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLaunching(true);
     setFormError('');
+    
+    const payload = {
+      company: form.company, role: form.role, type: form.type,
+      eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
+      package: form.package, drive_date: form.drive_date,
+      location: form.location, stipend: form.stipend, description: form.description,
+      other_benefits: form.other_benefits, duration: form.duration,
+      eligible_courses: form.eligible_courses, selection_process: form.selection_process,
+      about_company: form.about_company, website: form.website,
+      org_size: form.org_size, contact_person: form.contact_person,
+    };
+    if (form.type === 'Placement') {
+      payload.stipend = '';
+      payload.duration = '';
+    } else if (form.type === 'Internship') {
+      payload.package = '';
+    }
+
     try {
       const res = await fetch('/api/drives', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          company: form.company, role: form.role, type: form.type,
-          eligibility: form.eligibility, package: form.package, drive_date: form.drive_date,
-          location: form.location, stipend: form.stipend, description: form.description,
-          other_benefits: form.other_benefits, duration: form.duration,
-          eligible_courses: form.eligible_courses, selection_process: form.selection_process,
-          about_company: form.about_company, website: form.website,
-          org_size: form.org_size, contact_person: form.contact_person,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('Failed to launch drive');
       setShowModal(true);
       fetchDrives();
       setForm({
-        company: '', role: '', type: 'Full-Time Graduate',
+        company: '', role: '', type: 'Placement',
         eligibility: '', package: '', drive_date: '',
         location: '', stipend: '', description: '',
         other_benefits: '', duration: '', eligible_courses: '',
@@ -1293,10 +1405,9 @@ export default function AdminDashboard() {
                             name="type" value={form.type} onChange={handleFormChange}
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
                           >
-                            <option>Full-Time Graduate</option>
-                            <option>Summer Internship</option>
-                            <option>6-Month Co-op</option>
-                            <option>Part-Time Internship</option>
+                            <option value="Placement">Placement</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Internship + PPO">Internship + PPO</option>
                           </select>
                         </div>
                         <div className="space-y-2">
@@ -1312,22 +1423,55 @@ export default function AdminDashboard() {
                           <label className="text-label-md text-on-surface font-semibold">Min CGPA Requirement</label>
                           <input
                             name="eligibility" value={form.eligibility} onChange={handleFormChange}
-                            type="number" step="0.1" min="0" max="10"
+                            type="number" step="0.01" min="0" max="10"
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="e.g. 7.5"
+                            placeholder="e.g. 8.50"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <label className="text-label-md text-on-surface font-semibold">Package (LPA)</label>
-                          <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
-                            <input
-                              name="package" value={form.package} onChange={handleFormChange}
-                              className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                              placeholder="e.g. 12.5"
-                            />
+
+                        {(form.type === 'Placement' || form.type === 'Internship + PPO') && (
+                          <div className="space-y-2">
+                            <label className="text-label-md text-on-surface font-semibold">
+                              {form.type === 'Internship + PPO' ? 'PPO Package (LPA)' : 'Package (LPA)'}
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
+                              <input
+                                name="package" value={form.package} onChange={handleFormChange}
+                                required
+                                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                                placeholder="e.g. 12.50"
+                              />
+                            </div>
                           </div>
-                        </div>
+                        )}
+
+                        {(form.type === 'Internship' || form.type === 'Internship + PPO') && (
+                          <>
+                            <div className="space-y-2">
+                              <label className="text-label-md text-on-surface font-semibold">Monthly Stipend</label>
+                              <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline">₹</span>
+                                <input
+                                  name="stipend" value={form.stipend} onChange={handleFormChange}
+                                  required
+                                  className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                                  placeholder="e.g. 25000"
+                                />
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-label-md text-on-surface font-semibold">Internship Duration</label>
+                              <input
+                                name="duration" value={form.duration} onChange={handleFormChange}
+                                required
+                                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                                placeholder="e.g. 6 Months"
+                              />
+                            </div>
+                          </>
+                        )}
+
                         <div className="space-y-2">
                           <label className="text-label-md text-on-surface font-semibold">Drive Date</label>
                           <input
@@ -1363,22 +1507,6 @@ export default function AdminDashboard() {
                                   name="location" value={form.location} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                                   placeholder="e.g. Pune (Koregaon Park)"
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
-                                <input
-                                  name="stipend" value={form.stipend} onChange={handleFormChange}
-                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. Stipend: INR 21,100"
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
-                                <input
-                                  name="duration" value={form.duration} onChange={handleFormChange}
-                                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. 6 Months"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1863,6 +1991,12 @@ export default function AdminDashboard() {
         onConfirm={handleDeleteStudent}
         onCancel={() => setStudentToDelete(null)}
         deleting={deleting}
+      />
+      <ConfirmDeleteDriveModal
+        drive={driveToDelete}
+        onConfirm={handleDeleteDriveConfirm}
+        onCancel={() => setDriveToDelete(null)}
+        deleting={deletingDrive}
       />
       <OnboardingEmailPreview
         visible={showEmailPreview}

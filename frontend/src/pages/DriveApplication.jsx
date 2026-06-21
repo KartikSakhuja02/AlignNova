@@ -238,72 +238,44 @@ export default function DriveApplication() {
     return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=200&auto=format&fit=crop';
   };
 
-  const formatSalary = (pkg, company) => {
-    if (pkg) {
-      if (!isNaN(pkg)) return `₹${pkg} LPA`;
-      return pkg;
+  const formatDriveSalary = (type, packageVal, stipendVal) => {
+    const t = type?.toLowerCase() || '';
+    if (t === 'placement') {
+      return packageVal ? `₹${packageVal} LPA` : 'TBD';
+    } else if (t === 'internship') {
+      return stipendVal ? `₹${stipendVal} / month` : 'TBD';
+    } else if (t.includes('ppo')) {
+      const stipendStr = stipendVal ? `₹${stipendVal} / month` : 'TBD';
+      const packageStr = packageVal ? `₹${packageVal} LPA PPO` : 'TBD';
+      return `${stipendStr} + ${packageStr}`;
     }
-    const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return '₹1,00,000 - ₹1,50,000 / mo';
-    if (name.includes('stripe')) return '₹80,000 - ₹95,000 / mo';
-    if (name.includes('figma')) return '₹90,000 / mo';
+    if (packageVal) return `₹${packageVal} LPA`;
+    if (stipendVal) return `₹${stipendVal} / month`;
     return 'TBD';
   };
 
-  const getLocation = (company) => {
-    const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return 'Bengaluru, India';
-    if (name.includes('stripe')) return 'Bengaluru, India';
-    if (name.includes('figma')) return 'Remote';
-    return 'Bengaluru, India';
-  };
-
-  const getStipend = (pkg, company) => {
-    if (pkg) {
-      if (!isNaN(pkg)) return `₹${pkg} LPA`;
-      return pkg;
-    }
-    const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return '₹1,20,000';
-    if (name.includes('stripe')) return '₹85,000';
-    if (name.includes('figma')) return '₹90,000';
-    return 'TBD';
-  };
-
-  const getMockDetails = (company) => {
-    const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return DRIVE_DETAILS[1];
-    if (name.includes('stripe')) return DRIVE_DETAILS[2];
-    if (name.includes('figma')) return DRIVE_DETAILS[3];
-    if (name.includes('meta')) return DRIVE_DETAILS[3];
-    if (name.includes('amazon')) return DRIVE_DETAILS[4];
-    if (name.includes('microsoft')) return DRIVE_DETAILS[5];
-    return null;
-  };
-
-  const mock = drive ? getMockDetails(drive.company) : null;
   const details = drive ? {
     company: drive.company,
     logo: getCompanyLogo(drive.company),
     title: drive.role,
-    location: drive.location || getLocation(drive.company),
-    duration: drive.duration || drive.type || 'Full-time Permanent',
-    salary: formatSalary(drive.package, drive.company),
-    openings: mock ? mock.openings : 'Multiple Openings',
-    stipend: drive.stipend || getStipend(drive.package, drive.company),
-    about: drive.description || (mock ? mock.about : `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`),
-    responsibilities: mock ? mock.responsibilities : [
-      `Design and develop reliable, secure, and scalable solutions for ${drive.company}'s core business systems.`,
-      'Collaborate with product design and engineering teams to identify requirements and refine user flows.',
-      'Participate in peer reviews, system triage, and unit testing to ensure high technical standards.'
+    location: drive.location || 'TBD',
+    duration: drive.duration || (drive.type === 'Placement' ? 'Full-Time' : 'Internship'),
+    salary: formatDriveSalary(drive.type, drive.package, drive.stipend),
+    openings: drive.org_size ? `Based on Organisation Size: ${drive.org_size}` : 'Multiple Openings',
+    stipend: drive.stipend || '—',
+    about: drive.description || `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`,
+    responsibilities: [
+      `Design and develop reliable and scalable solutions for ${drive.company}.`,
+      'Collaborate with engineering teams to identify requirements and refine user flows.',
+      'Participate in reviews, system testing, and code quality improvement.'
     ],
-    requirements: mock ? mock.requirements : [
-      drive.eligibility ? `Minimum academic CGPA requirement of ${drive.eligibility} / 10.` : 'Strong academic background in engineering, design, or business streams.',
-      'Core technical understanding of data structures, algorithms, and application architectures.',
-      'Excellent verbal and written communication skills to articulate system engineering challenges.'
+    requirements: [
+      drive.eligibility ? `Minimum academic CGPA requirement of ${parseFloat(drive.eligibility).toFixed(2)} / 10.` : 'Strong academic background.',
+      'Core technical understanding of data structures and algorithms.',
+      'Excellent verbal and written communication skills.'
     ],
-    techStack: mock ? mock.techStack : ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
-    perks: mock ? mock.perks : ['Competitive Compensation', 'Premium Health Coverage', 'Flexible Working Hours', 'Professional Mentorship'],
+    techStack: ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
+    perks: ['Competitive Compensation', 'Professional Mentorship', 'Modern Workspace & Culture'],
     timeline: drive.selection_process ? (
       drive.selection_process.split('\n').filter(Boolean).map((stepText, idx) => {
         const parts = stepText.split('–');
@@ -311,11 +283,11 @@ export default function DriveApplication() {
         const stepDesc = (parts[1] || 'Recruitment interview step').trim();
         return { step: stepName, date: `Step ${idx + 1}`, desc: stepDesc };
       })
-    ) : (mock ? mock.timeline : [
-      { step: 'Application Phase', date: 'Active Now', desc: 'Submit your resume and statement of purpose.' },
-      { step: 'Technical Screening', date: 'TBD', desc: 'Skill assessments and system design assignments.' },
-      { step: 'Final Interviews', date: 'TBD', desc: 'Panel discussions with the hiring managers.' }
-    ]),
+    ) : [
+      { step: 'Application Phase', date: 'Active Now', desc: 'Submit your resume and statement of SOP.' },
+      { step: 'Technical Screening', date: 'TBD', desc: 'Skill assessments and coding rounds.' },
+      { step: 'Final Selection', date: 'TBD', desc: 'Panel interviews and offer rollouts.' }
+    ],
     aboutCompany: drive.about_company || '',
     website: drive.website || '',
     eligibleCourses: drive.eligible_courses ? drive.eligible_courses.split('\n').filter(Boolean) : [],
@@ -670,9 +642,9 @@ export default function DriveApplication() {
               <div className="space-y-6 relative z-10">
                 <div>
                   <p className="text-caption text-primary-fixed uppercase tracking-widest mb-1 font-bold">
-                    Target Stipend
+                    {drive?.type === 'Placement' ? 'Target Package' : 'Target Stipend'}
                   </p>
-                  <p className="text-headline-lg font-black">{details.stipend}</p>
+                  <p className="text-headline-lg font-black">{details.salary}</p>
                 </div>
                 {details.otherBenefits && (
                   <div>

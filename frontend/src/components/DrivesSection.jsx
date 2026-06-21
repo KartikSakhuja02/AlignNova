@@ -89,31 +89,20 @@ const getCompanyLogo = (company) => {
   return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=200&auto=format&fit=crop';
 };
 
-const formatSalary = (pkg, company) => {
-  if (pkg) {
-    if (!isNaN(pkg)) return `₹${pkg} LPA`;
-    return pkg;
+const formatDriveSalary = (type, packageVal, stipendVal) => {
+  const t = type?.toLowerCase() || '';
+  if (t === 'placement') {
+    return packageVal ? `₹${packageVal} LPA` : 'TBD';
+  } else if (t === 'internship') {
+    return stipendVal ? `₹${stipendVal} / month` : 'TBD';
+  } else if (t.includes('ppo')) {
+    const stipendStr = stipendVal ? `₹${stipendVal} / month` : 'TBD';
+    const packageStr = packageVal ? `₹${packageVal} LPA PPO` : 'TBD';
+    return `${stipendStr} + ${packageStr}`;
   }
-  const name = company?.toLowerCase() || '';
-  if (name.includes('google')) return '₹1,20,000/mo';
-  if (name.includes('stripe')) return '₹85,000/mo';
-  if (name.includes('figma')) return '₹90,000/mo';
+  if (packageVal) return `₹${packageVal} LPA`;
+  if (stipendVal) return `₹${stipendVal} / month`;
   return 'TBD';
-};
-
-const getLocation = (company) => {
-  const name = company?.toLowerCase() || '';
-  if (name.includes('google')) return 'Bengaluru, India';
-  if (name.includes('stripe')) return 'Bengaluru, India';
-  if (name.includes('figma')) return 'Remote';
-  return 'Bengaluru, India';
-};
-
-const getLocationIcon = (company) => {
-  const name = company?.toLowerCase() || '';
-  if (name.includes('figma')) return 'public';
-  if (name.includes('stripe')) return 'home_work';
-  return 'location_on';
 };
 
 export default function DrivesSection() {
@@ -176,9 +165,9 @@ export default function DrivesSection() {
               type={drive.type || 'Full-time'}
               company={drive.company}
               role={drive.role}
-              salary={formatSalary(drive.package, drive.company)}
-              location={getLocation(drive.company)}
-              locationIcon={getLocationIcon(drive.company)}
+              salary={formatDriveSalary(drive.type, drive.package, drive.stipend)}
+              location={drive.location || 'TBD'}
+              locationIcon={drive.location?.toLowerCase().includes('remote') ? 'public' : 'location_on'}
             />
           ))}
         </div>
