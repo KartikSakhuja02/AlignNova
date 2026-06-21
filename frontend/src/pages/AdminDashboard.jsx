@@ -1187,10 +1187,10 @@ export default function AdminDashboard() {
                         statusText = 'text-orange-700';
                         statusIcon = 'description';
                       } else {
-                        statusLabel = 'Incomplete';
-                        statusBg = 'bg-slate-50 border-slate-200';
-                        statusText = 'text-slate-500';
-                        statusIcon = 'help_outline';
+                        statusLabel = 'Education Missing';
+                        statusBg = 'bg-amber-50 border-amber-200';
+                        statusText = 'text-amber-700';
+                        statusIcon = 'school';
                       }
 
                       return (

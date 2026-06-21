@@ -246,7 +246,38 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.projects = projects
         
         # Automatically compute eligibility based on updated fields
-        if user.full_name and user.email and user.resume_name:
+        has_required_details = bool(user.full_name and user.email and user.resume_name)
+        has_eligible_education = False
+        
+        if has_required_details and user.education:
+            try:
+                import json
+                edu_list = json.loads(user.education)
+                if isinstance(edu_list, list):
+                    has_10 = False
+                    has_12 = False
+                    has_coll = False
+                    for item in edu_list:
+                        inst = (item.get("institution") or "").strip()
+                        deg = (item.get("degree") or "").strip().lower()
+                        dtl = (item.get("detail") or "").strip()
+                        if not inst or not deg or not dtl:
+                            continue
+                        
+                        # Match 10th
+                        if any(x in deg for x in ["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"]):
+                            has_10 = True
+                        # Match 12th
+                        elif any(x in deg for x in ["12", "senior", "hsc", "intermediate", "diploma", "junior college", "class xii", "class 12"]):
+                            has_12 = True
+                        # Match College / University
+                        elif any(x in deg for x in ["b.tech", "btech", "b.e", "be", "b.sc", "bsc", "bca", "mca", "mtech", "m.tech", "bachelor", "master", "graduation", "university", "college", "degree"]):
+                            has_coll = True
+                    has_eligible_education = has_10 and has_12 and has_coll
+            except Exception:
+                pass
+
+        if has_required_details and has_eligible_education:
             user.is_eligible = 1
         else:
             user.is_eligible = 0

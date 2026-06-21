@@ -620,7 +620,7 @@ export default function Profile() {
             <div>
               <h4 className="font-bold text-body-lg text-amber-900">Account Not Fully Activated</h4>
               <p className="text-body-md text-amber-800/90 mt-1">
-                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email) and upload a <strong>PDF Resume</strong> in the resume section below.
+                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
               </p>
             </div>
           </div>
@@ -905,7 +905,7 @@ export default function Profile() {
             <h3 className="text-headline-md font-bold text-on-surface mb-2">Step 1: Activate Your Profile</h3>
             <p className="text-body-md text-on-surface-variant mb-8 leading-relaxed">
               Welcome to AlignNova! To begin applying for placement drives, you must first activate your profile.
-              Start by clicking <strong>Edit Profile</strong> on this page to complete your <strong>Full Name</strong>, <strong>University Email</strong>, and a professional <strong>Headline</strong> to let recruiters know who you are.
+              Click <strong>Edit Profile</strong> on this page to complete your <strong>Full Name</strong> and <strong>Email</strong>. Also make sure to add your <strong>Education details (Class 10th, Class 12th, and College/University with GPA/Marks)</strong>, which are required for recruiter shortlisting.
             </p>
             <div className="flex gap-3 w-full">
               <button onClick={() => setTutorialStep(0)}
