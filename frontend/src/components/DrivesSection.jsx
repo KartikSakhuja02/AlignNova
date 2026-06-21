@@ -111,7 +111,9 @@ export default function DrivesSection() {
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    fetch('/api/drives')
+    const token = localStorage.getItem('alignnova_token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    fetch('/api/drives', { headers })
       .then((res) => {
         if (res.ok) return res.json();
         throw new Error('Failed to load drives');

@@ -164,6 +164,7 @@ export default function DriveApplication() {
   });
   const [submitStatus, setSubmitStatus] = useState('idle'); // 'idle' | 'submitting' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
+  const [errorStatus, setErrorStatus] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -176,9 +177,15 @@ export default function DriveApplication() {
   }, [user]);
 
   useEffect(() => {
-    fetch(`/api/drives/${driveId}`)
+    const localToken = localStorage.getItem('alignnova_token');
+    const headers = localToken ? { Authorization: `Bearer ${localToken}` } : {};
+    fetch(`/api/drives/${driveId}`, { headers })
       .then((res) => {
         if (res.ok) return res.json();
+        setErrorStatus(res.status);
+        if (res.status === 403) {
+          throw new Error('Not eligible to view this opportunity');
+        }
         throw new Error('Drive not found');
       })
       .then((data) => {
@@ -316,13 +323,17 @@ export default function DriveApplication() {
     );
   }
 
-  if (!details) {
+  if (!details || errorStatus === 403) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
         <span className="material-symbols-outlined text-[48px] text-error mb-4">error</span>
-        <h2 className="text-headline-md font-bold text-on-surface mb-2">Drive Not Found</h2>
+        <h2 className="text-headline-md font-bold text-on-surface mb-2">
+          {errorStatus === 403 ? 'Access Restricted' : 'Drive Not Found'}
+        </h2>
         <p className="text-body-md text-on-surface-variant mb-6 text-center max-w-sm">
-          The placement drive details could not be found or has expired.
+          {errorStatus === 403
+            ? 'You are not eligible to view or apply for this placement drive based on your profile credentials.'
+            : 'The placement drive details could not be found or has expired.'}
         </p>
         <button onClick={() => navigate('/drives')} className="px-6 py-3 bg-primary text-white font-semibold rounded-xl">
           Back to Drives

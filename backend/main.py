@@ -302,6 +302,30 @@ def extract_gpas_and_percentages(education_str):
     return result
 
 
+def get_user_from_auth_header(request: Request):
+    auth = request.headers.get('Authorization')
+    if not auth:
+        return None
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != 'bearer':
+        return None
+    token = parts[1]
+    try:
+        payload_token = decode_token(token)
+        return payload_token
+    except Exception:
+        return None
+
+
+def get_current_db_user_from_request(request: Request):
+    token_payload = get_user_from_auth_header(request)
+    if not token_payload or not token_payload.get("sub"):
+        return None
+    from backend.database import get_user
+    return get_user(token_payload["sub"])
+
+
+
 def check_student_eligibility(user_dict, drive_dict) -> tuple:
     import json
     if user_dict.get("role") != "student":
@@ -400,6 +424,87 @@ def check_student_eligibility(user_dict, drive_dict) -> tuple:
     return True, explanation
 
 
+def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool = False):
+    def broadcast_task():
+        try:
+            from backend.database import SessionLocal, User, has_sent_opportunity_alert, record_opportunity_alert
+            proto = request_headers.get("x-forwarded-proto", "http")
+            host = request_headers.get("x-forwarded-host") or request_headers.get("host")
+            base_url = f"{proto}://{host}" if host else "http://localhost:5173"
+            
+            with SessionLocal() as db:
+                students = db.query(User).filter(User.role == "student").all()
+                for student in students:
+                    if not student.email or not student.email.strip():
+                        continue
+                    
+                    student_dict = {
+                        "id": student.id,
+                        "username": student.username,
+                        "full_name": student.full_name,
+                        "email": student.email,
+                        "role": student.role,
+                        "course": student.course or "",
+                        "education": student.education or "[]",
+                        "uni_performance": student.uni_performance or "{}",
+                    }
+                    
+                    is_eligible, explanation = check_student_eligibility(student_dict, drive_dict)
+                    if is_eligible:
+                        already_sent = has_sent_opportunity_alert(drive_dict["id"], student.id)
+                        
+                        should_send = False
+                        if not is_update:
+                            should_send = True
+                        else:
+                            if already_sent:
+                                should_send = True
+                            else:
+                                should_send = True
+                                
+                        if should_send:
+                            p_or_s = "TBD"
+                            if drive_dict.get("type") == "Internship":
+                                p_or_s = f"₹{drive_dict.get('stipend')} / month" if drive_dict.get("stipend") else "TBD"
+                            elif drive_dict.get("type") == "Internship + PPO":
+                                stipend_str = f"₹{drive_dict.get('stipend')} / month" if drive_dict.get("stipend") else "TBD"
+                                ppo_str = f"₹{drive_dict.get('package')} LPA PPO" if drive_dict.get('package') else "TBD"
+                                p_or_s = f"{stipend_str} + {ppo_str}"
+                            else:
+                                p_or_s = f"₹{drive_dict.get('package')} LPA" if drive_dict.get("package") else "TBD"
+                                
+                            deadline_str = drive_dict.get("drive_date") or "TBD"
+                            if drive_dict.get("drive_date"):
+                                try:
+                                    from datetime import datetime
+                                    dt = datetime.strptime(drive_dict.get("drive_date"), "%Y-%m-%d")
+                                    deadline_str = dt.strftime("%b %d, %Y")
+                                except Exception:
+                                    pass
+                                    
+                            send_opportunity_alert_email(
+                                to_email=student.email,
+                                student_name=student.full_name or student.username,
+                                company=drive_dict.get("company", ""),
+                                role=drive_dict.get("role", ""),
+                                type_str=drive_dict.get("type") or "Placement",
+                                location=drive_dict.get("location") or "TBD",
+                                package_or_stipend=p_or_s,
+                                deadline=deadline_str,
+                                fit_explanation=explanation,
+                                base_url=base_url
+                            )
+                            
+                            if not already_sent:
+                                record_opportunity_alert(drive_dict["id"], student.id)
+                                
+        except Exception as e:
+            print(f"[run_broadcast_task] Error in background alert broadcast: {e}")
+            
+    import threading
+    threading.Thread(target=broadcast_task, daemon=True).start()
+
+
 @app.post('/api/drives')
 def post_drive(request: Request, payload: dict):
     # only admin may create drives
@@ -432,85 +537,34 @@ def post_drive(request: Request, payload: dict):
         min_12th_percent=payload.get('min_12th_percent', '')
     )
 
-    def broadcast_task():
-        try:
-            from backend.database import SessionLocal, User
-            proto = request.headers.get("x-forwarded-proto", "http")
-            host = request.headers.get("x-forwarded-host") or request.headers.get("host")
-            base_url = f"{proto}://{host}" if host else "http://localhost:5173"
-            
-            with SessionLocal() as db:
-                students = db.query(User).filter(User.role == "student").all()
-                for student in students:
-                    if not student.email or not student.email.strip():
-                        continue
-                    
-                    student_dict = {
-                        "id": student.id,
-                        "username": student.username,
-                        "full_name": student.full_name,
-                        "email": student.email,
-                        "role": student.role,
-                        "course": student.course or "",
-                        "education": student.education or "[]",
-                        "uni_performance": student.uni_performance or "{}",
-                    }
-                    
-                    is_eligible, explanation = check_student_eligibility(student_dict, drive)
-                    if is_eligible:
-                        p_or_s = "TBD"
-                        if drive.get("type") == "Internship":
-                            p_or_s = f"₹{drive.get('stipend')} / month" if drive.get("stipend") else "TBD"
-                        elif drive.get("type") == "Internship + PPO":
-                            stipend_str = f"₹{drive.get('stipend')} / month" if drive.get("stipend") else "TBD"
-                            ppo_str = f"₹{drive.get('package')} LPA PPO" if drive.get("package") else "TBD"
-                            p_or_s = f"{stipend_str} + {ppo_str}"
-                        else:
-                            p_or_s = f"₹{drive.get('package')} LPA" if drive.get("package") else "TBD"
-                            
-                        deadline_str = drive.get("drive_date") or "TBD"
-                        if drive.get("drive_date"):
-                            try:
-                                from datetime import datetime
-                                dt = datetime.strptime(drive.get("drive_date"), "%Y-%m-%d")
-                                deadline_str = dt.strftime("%b %d, %Y")
-                            except Exception:
-                                pass
-                                
-                        send_opportunity_alert_email(
-                            to_email=student.email,
-                            student_name=student.full_name or student.username,
-                            company=drive.get("company", ""),
-                            role=drive.get("role", ""),
-                            type_str=drive.get("type") or "Placement",
-                            location=drive.get("location") or "TBD",
-                            package_or_stipend=p_or_s,
-                            deadline=deadline_str,
-                            fit_explanation=explanation,
-                            base_url=base_url
-                        )
-        except Exception as e:
-            print(f"[broadcast_task] Error in background alert broadcast: {e}")
-            
-    import threading
-    threading.Thread(target=broadcast_task, daemon=True).start()
+    run_broadcast_task(drive, dict(request.headers), is_update=False)
 
     return drive
 
 
 @app.get('/api/drives')
-def get_drives():
-    return list_drives()
+def get_drives(request: Request):
+    drives = list_drives()
+    user = get_current_db_user_from_request(request)
+    if user and user.get("role") == "student":
+        eligible_drives = []
+        for d in drives:
+            is_eligible, _ = check_student_eligibility(user, d)
+            if is_eligible:
+                eligible_drives.append(d)
+        return eligible_drives
+    return drives
 
 
 @app.get('/api/drives/{drive_id}')
-def get_drive_detail(drive_id: int):
+def get_drive_detail(drive_id: int, request: Request):
     from backend.database import SessionLocal, Drive
     with SessionLocal() as db:
         drive = db.query(Drive).filter(Drive.id == drive_id).first()
         if not drive:
             raise HTTPException(status_code=404, detail='drive_not_found')
-        return {
+            
+        drive_dict = {
             "id": drive.id,
             "company": drive.company,
             "role": drive.role,
@@ -536,6 +590,15 @@ def get_drive_detail(drive_id: int):
             "min_10th_percent": drive.min_10th_percent or "",
             "min_12th_percent": drive.min_12th_percent or ""
         }
+        
+        user = get_current_db_user_from_request(request)
+        if user and user.get("role") == "student":
+            is_eligible, _ = check_student_eligibility(user, drive_dict)
+            if not is_eligible:
+                raise HTTPException(status_code=403, detail='not_eligible')
+                
+        return drive_dict
+
 
 
 @app.put('/api/drives/{drive_id}')
@@ -591,7 +654,7 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
         db.commit()
         db.refresh(drive)
         
-        return {
+        ret = {
             "id": drive.id,
             "company": drive.company,
             "role": drive.role,
@@ -617,6 +680,8 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "min_10th_percent": drive.min_10th_percent,
             "min_12th_percent": drive.min_12th_percent
         }
+        run_broadcast_task(ret, dict(request.headers), is_update=True)
+        return ret
 
 
 @app.delete('/api/drives/{drive_id}')

@@ -86,6 +86,15 @@ class Application(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class OpportunityAlertSent(Base):
+    __tablename__ = "opportunity_alerts_sent"
+    id = Column(Integer, primary_key=True, index=True)
+    drive_id = Column(Integer, nullable=False, index=True)
+    student_id = Column(Integer, nullable=False, index=True)
+    sent_at = Column(DateTime, default=datetime.utcnow)
+
+
+
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     try:
@@ -460,3 +469,25 @@ def create_user(username: str, hashed_password: str, role: str = "student", full
         db.commit()
         db.refresh(user)
         return get_user(username)
+
+
+def has_sent_opportunity_alert(drive_id: int, student_id: int) -> bool:
+    with SessionLocal() as db:
+        record = db.query(OpportunityAlertSent).filter(
+            OpportunityAlertSent.drive_id == drive_id,
+            OpportunityAlertSent.student_id == student_id
+        ).first()
+        return record is not None
+
+
+def record_opportunity_alert(drive_id: int, student_id: int):
+    with SessionLocal() as db:
+        existing = db.query(OpportunityAlertSent).filter(
+            OpportunityAlertSent.drive_id == drive_id,
+            OpportunityAlertSent.student_id == student_id
+        ).first()
+        if not existing:
+            record = OpportunityAlertSent(drive_id=drive_id, student_id=student_id)
+            db.add(record)
+            db.commit()
+
