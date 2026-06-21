@@ -3,6 +3,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { COURSE_OPTIONS } from '../utils/constants';
 
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -579,7 +580,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                 name="eligibility" value={form.eligibility} onChange={(e) => setForm({...form, eligibility: e.target.value})}
                 type="number" step="0.01" min="0" max="10"
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                placeholder="e.g. 8.50"
+                placeholder="8.50"
               />
             </div>
 
@@ -592,7 +593,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   name="package" value={form.package} onChange={(e) => setForm({...form, package: e.target.value})}
                   required
                   className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                  placeholder="e.g. 12.50"
+                  placeholder="12.50"
                 />
               </div>
             )}
@@ -605,7 +606,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     name="stipend" value={form.stipend} onChange={(e) => setForm({...form, stipend: e.target.value})}
                     required
                     className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                    placeholder="e.g. 25000"
+                    placeholder="25000"
                   />
                 </div>
                 <div className="space-y-1">
@@ -614,7 +615,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     name="duration" value={form.duration} onChange={(e) => setForm({...form, duration: e.target.value})}
                     required
                     className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
-                    placeholder="e.g. 6 Months"
+                    placeholder="6 Months"
                   />
                 </div>
               </>
@@ -686,12 +687,32 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
-                  <textarea
-                    name="eligible_courses" value={form.eligible_courses} onChange={(e) => setForm({...form, eligible_courses: e.target.value})}
-                    rows={3}
-                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                  />
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
+                    {COURSE_OPTIONS.map((course) => {
+                      const selected = (form.eligible_courses || '').split('\n').filter(Boolean).includes(course);
+                      return (
+                        <label key={course} className="flex items-start gap-2.5 p-1.5 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer select-none text-body-md text-on-surface">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const current = (form.eligible_courses || '').split('\n').filter(Boolean);
+                              let next;
+                              if (e.target.checked) {
+                                next = [...current, course];
+                              } else {
+                                next = current.filter((c) => c !== course);
+                              }
+                              setForm({ ...form, eligible_courses: next.join('\n') });
+                            }}
+                            className="mt-1 rounded text-primary focus:ring-primary/20"
+                          />
+                          <span>{course}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
@@ -843,22 +864,38 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
                 { label: 'Email Address', key: 'email', type: 'email', placeholder: 'student@example.com', required: true },
                 { label: 'Username', key: 'username', type: 'text', placeholder: 'Unique login username', required: true },
                 { label: 'Temporary Password', key: 'password', type: 'password', placeholder: 'Min 6 characters', required: true },
-                { label: 'Enrollment ID', key: 'enrollment_id', type: 'text', placeholder: 'e.g. CS2024001', required: false },
-                { label: 'Course / Stream', key: 'course', type: 'text', placeholder: 'e.g. B.Tech. - CSE', required: false },
+                { label: 'Enrollment ID', key: 'enrollment_id', type: 'text', placeholder: 'CS2024001', required: false },
+                { label: 'Course / Stream', key: 'course', type: 'select', placeholder: 'B.Tech. - CSE', required: false },
               ].map(({ label, key, type, placeholder, required }) => (
                 <div key={key} className={`space-y-1 ${key === 'enrollment_id' || key === 'course' ? 'md:col-span-2' : ''}`}>
                   <label className="text-label-md text-on-surface font-semibold">
                     {label} {required && <span className="text-error">*</span>}
                   </label>
-                  <input
-                    type={type}
-                    value={form[key]}
-                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    required={required}
-                    minLength={key === 'password' ? 6 : undefined}
-                    className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                  />
+                  {key === 'course' ? (
+                    <select
+                      value={form[key]}
+                      onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                      required={required}
+                      className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all outline-none appearance-none"
+                    >
+                      <option value="">Select Course / Stream</option>
+                      {COURSE_OPTIONS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={type}
+                      value={form[key]}
+                      onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                      placeholder={placeholder}
+                      required={required}
+                      minLength={key === 'password' ? 6 : undefined}
+                      className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -1441,7 +1478,7 @@ export default function AdminDashboard() {
                             name="company" value={form.company} onChange={handleFormChange}
                             required
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="e.g. Microsoft India"
+                            placeholder="Microsoft India"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1461,7 +1498,7 @@ export default function AdminDashboard() {
                             name="role" value={form.role} onChange={handleFormChange}
                             required
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="e.g. Software Engineer I"
+                            placeholder="Software Engineer I"
                           />
                         </div>
                         <div className="space-y-2">
@@ -1470,7 +1507,7 @@ export default function AdminDashboard() {
                             name="eligibility" value={form.eligibility} onChange={handleFormChange}
                             type="number" step="0.01" min="0" max="10"
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                            placeholder="e.g. 8.50"
+                            placeholder="8.50"
                           />
                         </div>
 
@@ -1485,7 +1522,7 @@ export default function AdminDashboard() {
                                 name="package" value={form.package} onChange={handleFormChange}
                                 required
                                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                placeholder="e.g. 12.50"
+                                placeholder="12.50"
                               />
                             </div>
                           </div>
@@ -1501,7 +1538,7 @@ export default function AdminDashboard() {
                                   name="stipend" value={form.stipend} onChange={handleFormChange}
                                   required
                                   className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none pl-8 pr-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                  placeholder="e.g. 25000"
+                                  placeholder="25000"
                                 />
                               </div>
                             </div>
@@ -1511,7 +1548,7 @@ export default function AdminDashboard() {
                                 name="duration" value={form.duration} onChange={handleFormChange}
                                 required
                                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
-                                placeholder="e.g. 6 Months"
+                                placeholder="6 Months"
                               />
                             </div>
                           </>
@@ -1551,7 +1588,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="location" value={form.location} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. Pune (Koregaon Park)"
+                                  placeholder="Pune (Koregaon Park)"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1559,7 +1596,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="website" value={form.website} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. https://www.omniscient.co.in/"
+                                  placeholder="https://www.omniscient.co.in/"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1567,7 +1604,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="org_size" value={form.org_size} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. 10,000+"
+                                  placeholder="10,000+"
                                 />
                               </div>
                               <div className="space-y-1">
@@ -1575,7 +1612,7 @@ export default function AdminDashboard() {
                                 <input
                                   name="contact_person" value={form.contact_person} onChange={handleFormChange}
                                   className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                  placeholder="e.g. Dr. Swati More"
+                                  placeholder="Dr. Swati More"
                                 />
                               </div>
                             </div>
@@ -1586,17 +1623,66 @@ export default function AdminDashboard() {
                                 name="description" value={form.description} onChange={handleFormChange}
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Specify role description, tech stack requirements (e.g. Java, Angular, React)..."
+                                placeholder="Specify role description, tech stack requirements (Java, Angular, React)..."
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses / Degrees</label>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
+                                {COURSE_OPTIONS.map((course) => {
+                                  const selected = (form.eligible_courses || '').split('\n').filter(Boolean).includes(course);
+                                  return (
+                                    <label key={course} className="flex items-start gap-2.5 p-1.5 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer select-none text-body-md text-on-surface">
+                                      <input
+                                        type="checkbox"
+                                        checked={selected}
+                                        onChange={(e) => {
+                                          const current = (form.eligible_courses || '').split('\n').filter(Boolean);
+                                          let next;
+                                          if (e.target.checked) {
+                                            next = [...current, course];
+                                          } else {
+                                            next = current.filter((c) => c !== course);
+                                          }
+                                          setForm({ ...form, eligible_courses: next.join('\n') });
+                                        }}
+                                        className="mt-1 rounded text-primary focus:ring-primary/20"
+                                      />
+                                      <span>{course}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
                               <textarea
-                                name="eligible_courses" value={form.eligible_courses} onChange={handleFormChange}
+                                name="selection_process" value={form.selection_process} onChange={handleFormChange}
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="B.Tech. - CSE&#10;B.Tech. - IT&#10;M.Tech. - CSE"
+                                placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
+                              <textarea
+                                name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
+                                rows={2}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="Join us on 1st January 2027. Work from Office Koregaon Park."
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
+                              <textarea
+                                name="about_company" value={form.about_company} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="Company background, treasury details, domain expertise..."
                               />
                             </div>
 

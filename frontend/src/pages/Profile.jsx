@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { COURSE_OPTIONS } from '../utils/constants';
 
 // ─── Edit Profile Form Component ─────────────────────────────────────────────
 
@@ -189,7 +190,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                   { name: 'linkedin_url', label: 'LinkedIn URL', icon: 'link', type: 'text', placeholder: 'linkedin.com/in/username' },
                   { name: 'website_url', label: 'Portfolio/Website', icon: 'language', type: 'text', placeholder: 'portfolio.com' },
                   { name: 'enrollment_id', label: 'Enrollment ID', icon: 'badge', type: 'text' },
-                  { name: 'course', label: 'Course / Stream', icon: 'school', type: 'text', placeholder: 'e.g. B.Tech. - CSE' },
+                  { name: 'course', label: 'Course / Stream', icon: 'school', type: 'text', placeholder: 'B.Tech. - CSE' },
                   { name: 'phone', label: 'Phone Number', icon: 'phone', type: 'tel' },
                   { name: 'email', label: 'Email Address', icon: 'mail', type: 'email' },
                 ].map(({ name, label, icon, type, placeholder }) => (
@@ -197,9 +198,25 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                     <label className="text-label-md font-bold text-on-surface-variant ml-1">{label}</label>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">{icon}</span>
-                      <input name={name} value={form[name]} onChange={handleChange} placeholder={placeholder || ''}
-                        className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface"
-                        type={type} />
+                      {name === 'course' ? (
+                        <select
+                          name={name}
+                          value={form[name]}
+                          onChange={handleChange}
+                          className="w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface outline-none appearance-none"
+                        >
+                          <option value="">Select Course / Stream</option>
+                          {COURSE_OPTIONS.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input name={name} value={form[name]} onChange={handleChange} placeholder={placeholder || ''}
+                          className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-xl font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-on-surface"
+                          type={type} />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -222,7 +239,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
               <div className="flex gap-2">
                 <input value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-                  placeholder="e.g. React, Python, SQL…"
+                  placeholder="React, Python, SQL…"
                   className="flex-1 px-4 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl text-body-md focus:outline-none focus:border-primary transition-all text-on-surface" />
                 <button type="button" onClick={addSkill}
                   className="px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:opacity-90 transition-opacity">
@@ -302,9 +319,9 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {[
                         { field: 'institution', label: 'Institution', cls: 'font-headline-md text-headline-md', placeholder: 'School/College Name' },
-                        { field: 'degree', label: 'Degree / Major (e.g., B.Tech CSE, Class 10, Class 12)', cls: 'font-body-lg text-body-lg', placeholder: 'e.g. Class 10, Class 12, B.Tech CSE' },
-                        { field: 'timeline', label: 'Timeline', cls: 'font-body-md text-body-md', placeholder: 'e.g. 2020 - 2024' },
-                        { field: 'detail', label: 'GPA / Marks (e.g. 8.50, 9.00)', cls: 'font-body-md text-body-md', placeholder: 'e.g. 8.50' },
+                        { field: 'degree', label: 'Degree / Major (B.Tech CSE, Class 10, Class 12)', cls: 'font-body-lg text-body-lg', placeholder: 'Class 10, Class 12, B.Tech CSE' },
+                        { field: 'timeline', label: 'Timeline', cls: 'font-body-md text-body-md', placeholder: '2020 - 2024' },
+                        { field: 'detail', label: 'GPA / Marks (8.50, 9.00)', cls: 'font-body-md text-body-md', placeholder: '8.50' },
                       ].map(({ field, label, cls, placeholder }) => (
                         <div key={field} className="space-y-1.5">
                           <label className="text-caption font-bold text-outline">{label}</label>
@@ -395,7 +412,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                       <div className="space-y-1.5">
                         <label className="text-caption font-bold text-outline">Tech Tags (comma-separated)</label>
                         <input value={proj.tags} onChange={(e) => handleProjectChange(idx, 'tags', e.target.value)}
-                          placeholder="e.g. React, Python, Docker"
+                          placeholder="React, Python, Docker"
                           className="w-full px-4 py-2 bg-transparent border-b border-outline-variant font-body-md text-body-md focus:border-primary outline-none transition-all text-on-surface" type="text" />
                       </div>
                     </div>

@@ -360,9 +360,6 @@ export default function DriveApplication() {
                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-caption uppercase tracking-wider">
                   Active Drive
                 </span>
-                <span className="px-3 py-1 rounded-full bg-secondary-container/20 text-on-secondary-container font-semibold text-caption uppercase tracking-wider">
-                  Tier 1 Company
-                </span>
               </div>
               <h2 className="text-headline-lg font-black text-on-surface mb-2 tracking-tight">
                 {details.title}
