@@ -95,16 +95,16 @@ const formatSalary = (pkg, company) => {
     return pkg;
   }
   const name = company?.toLowerCase() || '';
-  if (name.includes('google')) return '$8,500/mo';
-  if (name.includes('stripe')) return '$7,800/mo';
-  if (name.includes('figma')) return '$9,200/mo';
+  if (name.includes('google')) return '₹1,20,000/mo';
+  if (name.includes('stripe')) return '₹85,000/mo';
+  if (name.includes('figma')) return '₹90,000/mo';
   return 'TBD';
 };
 
 const getLocation = (company) => {
   const name = company?.toLowerCase() || '';
-  if (name.includes('google')) return 'Mountain View, CA';
-  if (name.includes('stripe')) return 'San Francisco, CA';
+  if (name.includes('google')) return 'Bengaluru, India';
+  if (name.includes('stripe')) return 'Bengaluru, India';
   if (name.includes('figma')) return 'Remote';
   return 'Bengaluru, India';
 };

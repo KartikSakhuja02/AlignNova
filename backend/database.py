@@ -41,6 +41,7 @@ class User(Base):
     skills = Column(String, nullable=True, default="[]")
     languages = Column(String, nullable=True, default="[]")
     projects = Column(String, nullable=True, default="[]")
+    course = Column(String, nullable=True, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -54,6 +55,19 @@ class Drive(Base):
     package = Column(String, nullable=True)
     drive_date = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Rich details fields
+    location = Column(String, nullable=True, default="")
+    stipend = Column(String, nullable=True, default="")
+    description = Column(String, nullable=True, default="")
+    other_benefits = Column(String, nullable=True, default="")
+    duration = Column(String, nullable=True, default="")
+    eligible_courses = Column(String, nullable=True, default="")
+    selection_process = Column(String, nullable=True, default="")
+    about_company = Column(String, nullable=True, default="")
+    website = Column(String, nullable=True, default="")
+    org_size = Column(String, nullable=True, default="")
+    contact_person = Column(String, nullable=True, default="")
 
 
 class Application(Base):
@@ -87,7 +101,8 @@ def init_db() -> None:
                 "is_eligible": "INTEGER DEFAULT 0",
                 "skills": "TEXT DEFAULT '[]'",
                 "languages": "TEXT DEFAULT '[]'",
-                "projects": "TEXT DEFAULT '[]'"
+                "projects": "TEXT DEFAULT '[]'",
+                "course": "VARCHAR(255) DEFAULT ''"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -95,6 +110,28 @@ def init_db() -> None:
                         conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
                         conn.commit()
                         print(f"Database migration: Added {col_name} column to users table.")
+        
+        if "drives" in inspector.get_table_names():
+            columns = [col["name"] for col in inspector.get_columns("drives")]
+            new_cols = {
+                "location": "VARCHAR(255) DEFAULT ''",
+                "stipend": "VARCHAR(255) DEFAULT ''",
+                "description": "TEXT DEFAULT ''",
+                "other_benefits": "TEXT DEFAULT ''",
+                "duration": "VARCHAR(255) DEFAULT ''",
+                "eligible_courses": "TEXT DEFAULT ''",
+                "selection_process": "TEXT DEFAULT ''",
+                "about_company": "TEXT DEFAULT ''",
+                "website": "VARCHAR(255) DEFAULT ''",
+                "org_size": "VARCHAR(255) DEFAULT ''",
+                "contact_person": "VARCHAR(255) DEFAULT ''"
+            }
+            for col_name, col_type in new_cols.items():
+                if col_name not in columns:
+                    with engine.connect() as conn:
+                        conn.execute(text(f"ALTER TABLE drives ADD COLUMN {col_name} {col_type}"))
+                        conn.commit()
+                        print(f"Database migration: Added {col_name} column to drives table.")
     except Exception as e:
         print(f"Database migration warning: {e}")
 
@@ -112,6 +149,7 @@ def get_user(username: str):
             "email": user.email,
             "phone": user.phone,
             "enrollment_id": user.enrollment_id,
+            "course": user.course or "",
             "location": user.location,
             "linkedin_url": user.linkedin_url,
             "website_url": user.website_url,
@@ -144,6 +182,7 @@ def get_user_by_email(email: str):
             "email": user.email,
             "phone": user.phone,
             "enrollment_id": user.enrollment_id,
+            "course": user.course or "",
             "location": user.location,
             "linkedin_url": user.linkedin_url,
             "website_url": user.website_url,
@@ -162,7 +201,7 @@ def get_user_by_email(email: str):
         }
 
 
-def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None):
+def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None):
     with SessionLocal() as db:
         user = db.query(User).filter(User.username == username).first()
         if not user:
@@ -175,6 +214,8 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
             user.phone = phone
         if enrollment_id is not None:
             user.enrollment_id = enrollment_id
+        if course is not None:
+            user.course = course
         if location is not None:
             user.location = location
         if linkedin_url is not None:
@@ -229,9 +270,19 @@ def update_password(username: str, new_hashed_password: str) -> bool:
         return True
 
 
-def create_drive(company: str, role: str, type: str | None = None, eligibility: str | None = None, package: str | None = None, drive_date: str | None = None):
+def create_drive(
+    company: str, role: str, type: str | None = None, eligibility: str | None = None, package: str | None = None, drive_date: str | None = None,
+    location: str | None = None, stipend: str | None = None, description: str | None = None, other_benefits: str | None = None, duration: str | None = None,
+    eligible_courses: str | None = None, selection_process: str | None = None, about_company: str | None = None, website: str | None = None,
+    org_size: str | None = None, contact_person: str | None = None
+):
     with SessionLocal() as db:
-        drive = Drive(company=company, role=role, type=type, eligibility=eligibility, package=package, drive_date=drive_date)
+        drive = Drive(
+            company=company, role=role, type=type, eligibility=eligibility, package=package, drive_date=drive_date,
+            location=location or "", stipend=stipend or "", description=description or "", other_benefits=other_benefits or "",
+            duration=duration or "", eligible_courses=eligible_courses or "", selection_process=selection_process or "",
+            about_company=about_company or "", website=website or "", org_size=org_size or "", contact_person=contact_person or ""
+        )
         db.add(drive)
         db.commit()
         db.refresh(drive)
@@ -243,13 +294,32 @@ def create_drive(company: str, role: str, type: str | None = None, eligibility: 
             "eligibility": drive.eligibility,
             "package": drive.package,
             "drive_date": drive.drive_date,
+            "location": drive.location,
+            "stipend": drive.stipend,
+            "description": drive.description,
+            "other_benefits": drive.other_benefits,
+            "duration": drive.duration,
+            "eligible_courses": drive.eligible_courses,
+            "selection_process": drive.selection_process,
+            "about_company": drive.about_company,
+            "website": drive.website,
+            "org_size": drive.org_size,
+            "contact_person": drive.contact_person
         }
 
 
 def list_drives():
     with SessionLocal() as db:
         rows = db.query(Drive).order_by(Drive.created_at.desc()).all()
-        return [{"id": r.id, "company": r.company, "role": r.role, "type": r.type, "eligibility": r.eligibility, "package": r.package, "drive_date": r.drive_date} for r in rows]
+        return [
+            {
+                "id": r.id, "company": r.company, "role": r.role, "type": r.type, "eligibility": r.eligibility, "package": r.package, "drive_date": r.drive_date,
+                "location": r.location, "stipend": r.stipend, "description": r.description, "other_benefits": r.other_benefits, "duration": r.duration,
+                "eligible_courses": r.eligible_courses, "selection_process": r.selection_process, "about_company": r.about_company, "website": r.website,
+                "org_size": r.org_size, "contact_person": r.contact_person
+            }
+            for r in rows
+        ]
 
 
 def create_application(user_id: int, drive_id: int):
@@ -281,6 +351,7 @@ def list_users(role_filter: str = "student"):
                 "email": u.email,
                 "phone": u.phone,
                 "enrollment_id": u.enrollment_id,
+                "course": u.course or "",
                 "role": u.role,
                 "headline": u.headline,
                 "profile_image": u.profile_image,
@@ -293,7 +364,7 @@ def list_users(role_filter: str = "student"):
         ]
 
 
-def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, must_change_password: str = "0"):
+def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, must_change_password: str = "0"):
     with SessionLocal() as db:
         existing = db.query(User).filter(User.username == username).first()
         if existing:
@@ -301,7 +372,7 @@ def create_user(username: str, hashed_password: str, role: str = "student", full
         user = User(
             username=username, hashed_password=hashed_password, role=role,
             full_name=full_name, email=email, phone=phone,
-            enrollment_id=enrollment_id, must_change_password=must_change_password
+            enrollment_id=enrollment_id, course=course or "", must_change_password=must_change_password
         )
         db.add(user)
         db.commit()

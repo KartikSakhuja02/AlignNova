@@ -146,6 +146,7 @@ def post_profile(request: Request, payload: dict):
         email=payload.get('email'),
         phone=payload.get('phone'),
         enrollment_id=payload.get('enrollment_id'),
+        course=payload.get('course'),
         location=payload.get('location'),
         linkedin_url=payload.get('linkedin_url'),
         website_url=payload.get('website_url'),
@@ -238,7 +239,15 @@ def post_drive(request: Request, payload: dict):
         raise HTTPException(status_code=401, detail='invalid_token')
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
-    drive = create_drive(payload.get('company', ''), payload.get('role', ''), type=payload.get('type'), eligibility=payload.get('eligibility'), package=payload.get('package'), drive_date=payload.get('drive_date'))
+    drive = create_drive(
+        payload.get('company', ''), payload.get('role', ''), type=payload.get('type'),
+        eligibility=payload.get('eligibility'), package=payload.get('package'), drive_date=payload.get('drive_date'),
+        location=payload.get('location'), stipend=payload.get('stipend'), description=payload.get('description'),
+        other_benefits=payload.get('other_benefits'), duration=payload.get('duration'),
+        eligible_courses=payload.get('eligible_courses'), selection_process=payload.get('selection_process'),
+        about_company=payload.get('about_company'), website=payload.get('website'),
+        org_size=payload.get('org_size'), contact_person=payload.get('contact_person')
+    )
     return drive
 
 
@@ -261,7 +270,18 @@ def get_drive_detail(drive_id: int):
             "type": drive.type or "Full-time",
             "eligibility": drive.eligibility or "Open to all",
             "package": drive.package or "TBD",
-            "drive_date": drive.drive_date or "TBD"
+            "drive_date": drive.drive_date or "TBD",
+            "location": drive.location or "",
+            "stipend": drive.stipend or "",
+            "description": drive.description or "",
+            "other_benefits": drive.other_benefits or "",
+            "duration": drive.duration or "",
+            "eligible_courses": drive.eligible_courses or "",
+            "selection_process": drive.selection_process or "",
+            "about_company": drive.about_company or "",
+            "website": drive.website or "",
+            "org_size": drive.org_size or "",
+            "contact_person": drive.contact_person or ""
         }
 
 
@@ -455,6 +475,7 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
             payload.username, hashed, role='student',
             full_name=payload.full_name, email=payload.email,
             enrollment_id=payload.enrollment_id,
+            course=payload.course,
             must_change_password="1"
         )
     except ValueError:

@@ -66,7 +66,8 @@ def get_current_user_from_token(token: str) -> UserPublic:
         is_eligible=user.get("is_eligible", 0),
         skills=user.get("skills", "[]"),
         languages=user.get("languages", "[]"),
-        projects=user.get("projects", "[]")
+        projects=user.get("projects", "[]"),
+        course=user.get("course", "")
     )
 
 
@@ -113,5 +114,6 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
         is_eligible=user.get('is_eligible', 0),
         skills=user.get('skills', "[]"),
         languages=user.get('languages', "[]"),
-        projects=user.get('projects', "[]")
+        projects=user.get('projects', "[]"),
+        course=user.get('course', "")
     )

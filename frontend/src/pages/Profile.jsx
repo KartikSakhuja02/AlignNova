@@ -16,6 +16,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
     email: profile.email || '',
     phone: profile.phone || '',
     enrollment_id: profile.enrollment_id || '',
+    course: profile.course || '',
     profile_image: profile.profile_image || '',
     skills: profile.skills || [],
     languages: profile.languages || [],
@@ -164,6 +165,7 @@ function EditProfileForm({ profile, onCancel, onSave }) {
                   { name: 'linkedin_url', label: 'LinkedIn URL', icon: 'link', type: 'text', placeholder: 'linkedin.com/in/username' },
                   { name: 'website_url', label: 'Portfolio/Website', icon: 'language', type: 'text', placeholder: 'portfolio.com' },
                   { name: 'enrollment_id', label: 'Enrollment ID', icon: 'badge', type: 'text' },
+                  { name: 'course', label: 'Course / Stream', icon: 'school', type: 'text', placeholder: 'e.g. B.Tech. - CSE' },
                   { name: 'phone', label: 'Phone Number', icon: 'phone', type: 'tel' },
                   { name: 'email', label: 'Email Address', icon: 'mail', type: 'email' },
                 ].map(({ name, label, icon, type, placeholder }) => (
@@ -415,7 +417,7 @@ export default function Profile() {
   const { token, setUser } = useAuth();
 
   const [profile, setProfile] = useState({
-    full_name: '', email: '', phone: '', enrollment_id: '', location: '',
+    full_name: '', email: '', phone: '', enrollment_id: '', course: '', location: '',
     linkedin_url: '', website_url: '', headline: '', bio: '',
     education: [], experience: [], profile_image: '',
     resume_name: '', resume_url: '', is_eligible: 0,
@@ -651,6 +653,12 @@ export default function Profile() {
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>badge</span>
                   <span className="text-label-md">ID: {profile.enrollment_id}</span>
+                </div>
+              )}
+              {profile.course && (
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>school</span>
+                  <span className="text-label-md">Course: {profile.course}</span>
                 </div>
               )}
               {profile.email && (

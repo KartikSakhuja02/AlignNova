@@ -7,9 +7,9 @@ const DRIVE_DETAILS = {
     company: 'Google',
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAYzgDV2COw0g8kEqpitWhpX6DW_NXf7tugV1qwVhTkJrvlgS_gNzucdw3vmRp65DnmSo_titItbBekU6cAE1UFG9HZg1fBqBocu9cetphGlP4WL7KRu9OqKCcIl_8gmnVhaHUV22vONAy3dIy6Pibd3RWcohIuJ6bB1-B98KOquZO_9DqO3BEmuO82YwmztGs9MW3vOuOhWri9ePHFh3_ZKRcHfVQl_wpu07NxSLOCuGfU0qf2FJ-M',
     title: 'Software Engineering Intern',
-    location: 'Mountain View, CA (Remote Eligible)',
-    duration: '12 Weeks Summer 2024',
-    salary: '$8,500 - $10,000 / mo',
+    location: 'Bengaluru, India (Remote Eligible)',
+    duration: '12 Weeks Summer 2026',
+    salary: '₹1,00,000 - ₹1,50,000 / mo',
     openings: '50+ Openings',
     about: 'Google’s mission is to organize the world’s information and make it universally accessible and useful. As a Software Engineering Intern, you’ll work on projects that handle data at a scale that very few companies in the world do. You’ll be part of a culture that values curiosity, technical excellence, and collaboration. Our interns don’t just "shadow" engineers; they write code that goes into production and impacts billions of users worldwide.',
     responsibilities: [
@@ -23,22 +23,22 @@ const DRIVE_DETAILS = {
       'Solid understanding of Data Structures, Algorithms, and Software Design principles.'
     ],
     techStack: ['C++', 'Java', 'Python', 'Go', 'Distributed Systems', 'Machine Learning'],
-    stipend: '$9,250',
+    stipend: '₹1,20,000',
     perks: ['Relocation Housing Stipend', 'Complimentary On-site Meals', 'Return Offer Potential', 'Personal Mentorship'],
     timeline: [
-      { step: 'Application Period', date: 'Aug 15 - Sep 15, 2023', desc: 'Submit your resume and details.' },
-      { step: 'Online Assessment', date: 'Sep 20 - Sep 25, 2023', desc: '2-hour coding and logic challenge.' },
-      { step: 'Technical Interviews', date: 'Oct 5 - Oct 20, 2023', desc: 'Two rounds of 45-min virtual coding sessions.' },
-      { step: 'Final Offers', date: 'Nov 1, 2023', desc: 'Internship confirmation and paperwork.' }
+      { step: 'Application Period', date: 'Aug 15 - Sep 15, 2025', desc: 'Submit your resume and details.' },
+      { step: 'Online Assessment', date: 'Sep 20 - Sep 25, 2025', desc: '2-hour coding and logic challenge.' },
+      { step: 'Technical Interviews', date: 'Oct 5 - Oct 20, 2025', desc: 'Two rounds of 45-min virtual coding sessions.' },
+      { step: 'Final Offers', date: 'Nov 1, 2025', desc: 'Internship confirmation and paperwork.' }
     ]
   },
   2: {
     company: 'Stripe',
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvvIDD6_zQQ6Kgn2tsYHLu3g8aojCKBP0EZn2QqABdSUAQcENkumn8iaJD9tLuiEml83QCnYeCpc5C8-7FJL_MrQfC3Mo6lptPb_tH899b7v2ttkw9k9rqgk8iHDZbKynbMUzBTFeRrBNC8hBikXmJ2yM2YphSQwSbevds6_lFNN4aCkXge6EKjzuzMsITnDq8Yiq8P3XAWah92c5cNavDt_QGSqUd7Tg-283mxK8Wfl-57zKXLdKZmkDfcQG3LHcJoDxTRZhWGI4',
     title: 'Product Design Intern',
-    location: 'San Francisco, CA (Hybrid)',
-    duration: '12 Weeks Summer 2024',
-    salary: '$7,800 - $9,200 / mo',
+    location: 'Bengaluru, India (Hybrid)',
+    duration: '12 Weeks Summer 2026',
+    salary: '₹80,000 - ₹95,000 / mo',
     openings: '12 Openings',
     about: 'Stripe builds financial infrastructure for the internet. As a Product Design Intern, you will work closely with developers and product leads to design features that enable online merchants to scale globally. You will participate in research, user testing, high fidelity mockups, and layout design.',
     responsibilities: [
@@ -52,22 +52,22 @@ const DRIVE_DETAILS = {
       'Proficiency in Figma and interactive prototyping tools.'
     ],
     techStack: ['Figma', 'UI/UX Design', 'Interaction Design', 'CSS Grid', 'Typography', 'Framer'],
-    stipend: '$8,500',
-    perks: ['Wellness Stipend', 'Modern SF Office & Free Lunches', 'Design Mentorship', 'Equity Options Plan'],
+    stipend: '₹85,000',
+    perks: ['Wellness Stipend', 'Modern Bengaluru Office & Free Lunches', 'Design Mentorship', 'Equity Options Plan'],
     timeline: [
-      { step: 'Application Period', date: 'Aug 10 - Sep 10, 2023', desc: 'Submit your resume and design portfolio.' },
-      { step: 'Design Challenge', date: 'Sep 15 - Sep 20, 2023', desc: 'Practical UI assignment (takes ~4 hours).' },
-      { step: 'Portfolio Review Round', date: 'Oct 1 - Oct 10, 2023', desc: 'Walk through your past projects with designers.' },
-      { step: 'Offers Issued', date: 'Oct 25, 2023', desc: 'Design internship onboarding.' }
+      { step: 'Application Period', date: 'Aug 10 - Sep 10, 2025', desc: 'Submit your resume and design portfolio.' },
+      { step: 'Design Challenge', date: 'Sep 15 - Sep 20, 2025', desc: 'Practical UI assignment (takes ~4 hours).' },
+      { step: 'Portfolio Review Round', date: 'Oct 1 - Oct 10, 2025', desc: 'Walk through your past projects with designers.' },
+      { step: 'Offers Issued', date: 'Oct 25, 2025', desc: 'Design internship onboarding.' }
     ]
   },
   3: {
     company: 'Meta',
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCJSf9m_RDTo7egDvDqWmvv5fhx-nyDafJFol41wleuii6QPbVoVmkUAyDiPLigrrVaRNy27CJndfoLfJOQ0xNC4cf0OEu7zyC8Yjahq1XcFOLsn76EUE-8YBlytb57TIIzkfr_YLdXLn0Eg72n4patbldvN6YBtRsQaGN8zcA83DpNN5HXBmFbb_8wb52Llcqb81nF3xxTGTnxPLBTzjYxO7oZntlcH7cr6txWbOCQjHDS5k93pEkByLM82UlzEwXmjW1gy9kF09o',
     title: 'Data Scientist (New Grad)',
-    location: 'London, UK (Relocation Offered)',
+    location: 'Bengaluru, India (Relocation Offered)',
     duration: 'Full-time Permanent',
-    salary: '£85,000 / Per Annum',
+    salary: '₹24,00,000 / Per Annum',
     openings: '30+ Openings',
     about: 'At Meta, we build technologies that help people connect, find communities and grow businesses. Our Data Scientists use statistical models, database metrics, and experiments to guide product direction and prioritize updates affecting billions of people.',
     responsibilities: [
@@ -81,22 +81,22 @@ const DRIVE_DETAILS = {
       'Deep understanding of probability, regression modeling, and hypothesis testing.'
     ],
     techStack: ['SQL', 'Python', 'R', 'A/B Testing', 'Presto', 'Hive', 'Data Viz'],
-    stipend: '£7,083',
-    perks: ['Full UK Relocation Paid', 'Free Gourmet Dinners', 'Gym Membership Subsidy', 'Comprehensive Health Plan'],
+    stipend: '₹2,00,000',
+    perks: ['Full India Relocation Paid', 'Free Gourmet Dinners', 'Gym Membership Subsidy', 'Comprehensive Health Plan'],
     timeline: [
-      { step: 'Application Submissions', date: 'Sep 1 - Oct 1, 2023', desc: 'Submit application with transcripts.' },
-      { step: 'SQL/Stats Assessment', date: 'Oct 5 - Oct 10, 2023', desc: 'Online statistical case questions.' },
-      { step: 'Technical Round', date: 'Oct 15 - Oct 25, 2023', desc: 'Live SQL queries and product thinking.' },
-      { step: 'Final Loop', date: 'Nov 5, 2023', desc: 'Three rounds of virtual interviews.' }
+      { step: 'Application Submissions', date: 'Sep 1 - Oct 1, 2025', desc: 'Submit application with transcripts.' },
+      { step: 'SQL/Stats Assessment', date: 'Oct 5 - Oct 10, 2025', desc: 'Online statistical case questions.' },
+      { step: 'Technical Round', date: 'Oct 15 - Oct 25, 2025', desc: 'Live SQL queries and product thinking.' },
+      { step: 'Final Loop', date: 'Nov 5, 2025', desc: 'Three rounds of virtual interviews.' }
     ]
   },
   4: {
     company: 'Amazon Web Services',
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAl5kFgTRHWBieneCyd40apKBqyGDdIKFokX33rqoRKi_8j43Mcx4m4HuvJO6NZqKnMT9nddiXqm5_bFGgtm9bk9pWlSf2572RlNRiTAWS_Py_HNOUhbcIxObYy6YBRT4fg3DaUsgbeEH4VboQ9UgWi0oxDRdljFlPt5j_i-udRoA-y2apWoa5eZ9eeNZumyr8f9atB0rO2jp7tnq1WdHf1DUu4wgNfHAlLryvZZ6LP7bZNPFB6KYWLCXxsrXoOZtCCAbogR7nfCTU',
     title: 'Cloud Support Engineer',
-    location: 'Seattle, WA',
+    location: 'Hyderabad, India',
     duration: 'Full-time Permanent',
-    salary: '$115,000 / Per Annum',
+    salary: '₹18,00,000 / Per Annum',
     openings: '40+ Openings',
     about: 'Amazon Web Services (AWS) provides trusted cloud infrastructure used by startups, enterprises, and governments. Cloud Support Engineers work directly with customers to troubleshoot application deployments, database scaling, and security architectures.',
     responsibilities: [
@@ -110,22 +110,22 @@ const DRIVE_DETAILS = {
       'Knowledge of cloud computing concepts and virtualization.'
     ],
     techStack: ['AWS Services', 'Linux Systems', 'TCP/IP Networking', 'Python Scripts', 'Bash', 'Docker'],
-    stipend: '$9,580',
-    perks: ['Seattle Sign-on Bonus', 'Stock Options Allocation', 'Health & Dental Plans', 'AWS Certifications Paid'],
+    stipend: '₹1,50,000',
+    perks: ['Hyderabad Sign-on Bonus', 'Stock Options Allocation', 'Health & Dental Plans', 'AWS Certifications Paid'],
     timeline: [
-      { step: 'Submit Application', date: 'Aug 20 - Sep 15, 2023', desc: 'Upload resume and certifications.' },
-      { step: 'Networking Assessment', date: 'Sep 22 - Sep 27, 2023', desc: 'Online routing, system triage tests.' },
-      { step: 'Technical Round', date: 'Oct 8 - Oct 15, 2023', desc: 'Deep dive Linux and routing interviews.' },
-      { step: 'Final Decision', date: 'Oct 30, 2023', desc: 'Offers finalized.' }
+      { step: 'Submit Application', date: 'Aug 20 - Sep 15, 2025', desc: 'Upload resume and certifications.' },
+      { step: 'Networking Assessment', date: 'Sep 22 - Sep 27, 2025', desc: 'Online routing, system triage tests.' },
+      { step: 'Technical Round', date: 'Oct 8 - Oct 15, 2025', desc: 'Deep dive Linux and routing interviews.' },
+      { step: 'Final Decision', date: 'Oct 30, 2025', desc: 'Offers finalized.' }
     ]
   },
   5: {
     company: 'Microsoft',
     logo: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAlArAEVo7czm_pf0a3pKC18-FBBdLe9LZL-agFlxgL_0IGuMaNcnOmMtkBjKRykaPugQ-pFBOi9zZ_VFag_Hnt46lhBj7lvdGe1gBIGOSnH15twcmQ2PJ4Z9dJsq0AthOe1sxio_OqDeDnEAq95p-t1fBrf9q8_L9MGF5fhX0oNOklkE_wkQ4HOiyIi8wg0GiRtgsxaAeN-ADVE-NgRlTiOt5RBoe4U4Veqq0ea8bE1d-tMoB6pR56leKoYwhuaoX-yO3_8EJOflY',
     title: 'Security Analyst Intern',
-    location: 'Redmond, WA',
-    duration: '12 Weeks Summer 2024',
-    salary: '$7,000 - $8,500 / Month',
+    location: 'Hyderabad, India',
+    duration: '12 Weeks Summer 2026',
+    salary: '₹75,000 - ₹90,000 / Month',
     openings: '15 Openings',
     about: 'Microsoft Security operates threat intelligence and endpoint protection used by billions. As a Security Analyst Intern, you will participate in incident response monitoring, security tool scripting, and vulnerability testing.',
     responsibilities: [
@@ -139,13 +139,13 @@ const DRIVE_DETAILS = {
       'Experience with security analysis tools (Wireshark, Nmap).'
     ],
     techStack: ['Security Analysis', 'PowerShell', 'Python', 'OWASP Standards', 'Linux Syslog', 'SIEM Tools'],
-    stipend: '$7,750',
-    perks: ['Subsidized Intern Housing', 'Redmond Campus Bus Pass', 'Vocal Coaching Seminars', 'Technical Mentors'],
+    stipend: '₹80,000',
+    perks: ['Subsidized Intern Housing', 'Hyderabad Campus Bus Pass', 'Vocal Coaching Seminars', 'Technical Mentors'],
     timeline: [
-      { step: 'Application Submissions', date: 'Sep 10 - Oct 10, 2023', desc: 'Submit application with cybersecurity coursework details.' },
-      { step: 'Cyber Trivia Assessment', date: 'Oct 15 - Oct 20, 2023', desc: 'Scenario based triage questions.' },
-      { step: 'Case Study Interview', date: 'Nov 1 - Nov 10, 2023', desc: 'Present anomaly diagnosis to analysts.' },
-      { step: 'Intern Selection', date: 'Dec 1, 2023', desc: 'Summer security placements confirmed.' }
+      { step: 'Application Submissions', date: 'Sep 10 - Oct 10, 2025', desc: 'Submit application with cybersecurity coursework details.' },
+      { step: 'Cyber Trivia Assessment', date: 'Oct 15 - Oct 20, 2025', desc: 'Scenario based triage questions.' },
+      { step: 'Case Study Interview', date: 'Nov 1 - Nov 10, 2025', desc: 'Present anomaly diagnosis to analysts.' },
+      { step: 'Intern Selection', date: 'Dec 1, 2025', desc: 'Summer security placements confirmed.' }
     ]
   }
 };
@@ -244,16 +244,16 @@ export default function DriveApplication() {
       return pkg;
     }
     const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return '$8,500 - $10,000 / mo';
-    if (name.includes('stripe')) return '$7,800 - $9,200 / mo';
-    if (name.includes('figma')) return '$9,200/mo';
+    if (name.includes('google')) return '₹1,00,000 - ₹1,50,000 / mo';
+    if (name.includes('stripe')) return '₹80,000 - ₹95,000 / mo';
+    if (name.includes('figma')) return '₹90,000 / mo';
     return 'TBD';
   };
 
   const getLocation = (company) => {
     const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return 'Mountain View, CA';
-    if (name.includes('stripe')) return 'San Francisco, CA';
+    if (name.includes('google')) return 'Bengaluru, India';
+    if (name.includes('stripe')) return 'Bengaluru, India';
     if (name.includes('figma')) return 'Remote';
     return 'Bengaluru, India';
   };
@@ -264,9 +264,9 @@ export default function DriveApplication() {
       return pkg;
     }
     const name = company?.toLowerCase() || '';
-    if (name.includes('google')) return '$9,250';
-    if (name.includes('stripe')) return '$8,500';
-    if (name.includes('figma')) return '$9,200';
+    if (name.includes('google')) return '₹1,20,000';
+    if (name.includes('stripe')) return '₹85,000';
+    if (name.includes('figma')) return '₹90,000';
     return 'TBD';
   };
 
@@ -286,12 +286,12 @@ export default function DriveApplication() {
     company: drive.company,
     logo: getCompanyLogo(drive.company),
     title: drive.role,
-    location: getLocation(drive.company),
-    duration: drive.type || 'Full-time Permanent',
+    location: drive.location || getLocation(drive.company),
+    duration: drive.duration || drive.type || 'Full-time Permanent',
     salary: formatSalary(drive.package, drive.company),
     openings: mock ? mock.openings : 'Multiple Openings',
-    stipend: mock ? mock.stipend : (drive.package ? `₹${drive.package} LPA` : 'TBD'),
-    about: mock ? mock.about : `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`,
+    stipend: drive.stipend || getStipend(drive.package, drive.company),
+    about: drive.description || (mock ? mock.about : `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`),
     responsibilities: mock ? mock.responsibilities : [
       `Design and develop reliable, secure, and scalable solutions for ${drive.company}'s core business systems.`,
       'Collaborate with product design and engineering teams to identify requirements and refine user flows.',
@@ -304,11 +304,24 @@ export default function DriveApplication() {
     ],
     techStack: mock ? mock.techStack : ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
     perks: mock ? mock.perks : ['Competitive Compensation', 'Premium Health Coverage', 'Flexible Working Hours', 'Professional Mentorship'],
-    timeline: mock ? mock.timeline : [
+    timeline: drive.selection_process ? (
+      drive.selection_process.split('\n').filter(Boolean).map((stepText, idx) => {
+        const parts = stepText.split('–');
+        const stepName = (parts[0] || '').trim();
+        const stepDesc = (parts[1] || 'Recruitment interview step').trim();
+        return { step: stepName, date: `Step ${idx + 1}`, desc: stepDesc };
+      })
+    ) : (mock ? mock.timeline : [
       { step: 'Application Phase', date: 'Active Now', desc: 'Submit your resume and statement of purpose.' },
       { step: 'Technical Screening', date: 'TBD', desc: 'Skill assessments and system design assignments.' },
       { step: 'Final Interviews', date: 'TBD', desc: 'Panel discussions with the hiring managers.' }
-    ]
+    ]),
+    aboutCompany: drive.about_company || '',
+    website: drive.website || '',
+    eligibleCourses: drive.eligible_courses ? drive.eligible_courses.split('\n').filter(Boolean) : [],
+    otherBenefits: drive.other_benefits || '',
+    orgSize: drive.org_size || '',
+    contactPerson: drive.contact_person || ''
   } : null;
 
   if (loading) {
@@ -483,6 +496,23 @@ export default function DriveApplication() {
               </div>
             </div>
 
+            {/* Eligible Courses Section */}
+            {details.eligibleCourses && details.eligibleCourses.length > 0 && (
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm animate-fadeIn">
+                <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3 border-b border-slate-50 pb-4">
+                  <span className="material-symbols-outlined text-primary">school</span>
+                  Eligible Courses & Streams
+                </h3>
+                <div className="flex flex-wrap gap-2.5">
+                  {details.eligibleCourses.map((course, idx) => (
+                    <span key={idx} className="px-3.5 py-2 rounded-xl bg-primary-container/10 border border-primary-container/20 text-primary font-bold text-caption tracking-wide uppercase">
+                      {course}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Application Submission Form */}
             <div id="apply-form-section" className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm scroll-mt-24">
               <h3 className="text-headline-md font-bold text-on-surface mb-2 flex items-center gap-3 border-b border-slate-50 pb-4">
@@ -644,6 +674,14 @@ export default function DriveApplication() {
                   </p>
                   <p className="text-headline-lg font-black">{details.stipend}</p>
                 </div>
+                {details.otherBenefits && (
+                  <div>
+                    <p className="text-[10px] text-primary-fixed uppercase tracking-widest mb-1 font-bold">
+                      Additional Terms / Benefits
+                    </p>
+                    <p className="text-body-md leading-relaxed font-semibold">{details.otherBenefits}</p>
+                  </div>
+                )}
                 <div className="h-[1px] bg-white/10"></div>
                 <div className="space-y-4">
                   {details.perks.map((perk, i) => (
@@ -655,6 +693,51 @@ export default function DriveApplication() {
                 </div>
               </div>
             </div>
+
+            {/* Organisation Profile Card */}
+            {(details.website || details.orgSize || details.contactPerson || details.aboutCompany) && (
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6 animate-fadeIn">
+                <h3 className="text-headline-md font-bold border-b border-slate-50 pb-4">
+                  Organisation Profile
+                </h3>
+                {details.aboutCompany && (
+                  <p className="text-body-md text-on-surface-variant font-medium leading-relaxed">
+                    {details.aboutCompany}
+                  </p>
+                )}
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  {details.website && (
+                    <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">public</span>
+                      <div>
+                        <p className="text-[10px] text-outline uppercase tracking-wider font-bold">Website</p>
+                        <a href={details.website} target="_blank" rel="noopener noreferrer" className="text-body-md font-bold text-primary hover:underline break-all">
+                          {details.website}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {details.orgSize && (
+                    <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">groups</span>
+                      <div>
+                        <p className="text-[10px] text-outline uppercase tracking-wider font-bold">Organisation Size</p>
+                        <p className="text-body-md font-bold text-on-surface">{details.orgSize}</p>
+                      </div>
+                    </div>
+                  )}
+                  {details.contactPerson && (
+                    <div className="flex items-start gap-3">
+                      <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">badge</span>
+                      <div>
+                        <p className="text-[10px] text-outline uppercase tracking-wider font-bold">Contact Person</p>
+                        <p className="text-body-md font-bold text-on-surface">{details.contactPerson}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Timeline Progress Tracker */}
             <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">

@@ -22,6 +22,7 @@ class UserPublic(BaseModel):
     skills: Optional[str] = "[]"
     languages: Optional[str] = "[]"
     projects: Optional[str] = "[]"
+    course: Optional[str] = ""
 
 class CreateStudentPayload(BaseModel):
     full_name: str
@@ -30,6 +31,7 @@ class CreateStudentPayload(BaseModel):
     password: str
     department: Optional[str] = None
     enrollment_id: Optional[str] = None
+    course: Optional[str] = ""
 
 class SetPasswordPayload(BaseModel):
     token: str

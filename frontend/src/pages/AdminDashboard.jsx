@@ -307,6 +307,7 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
     username: '',
     password: '',
     enrollment_id: '',
+    course: '',
   });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
@@ -314,7 +315,7 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
 
   useEffect(() => {
     if (visible) {
-      setForm({ full_name: '', email: '', username: '', password: '', enrollment_id: '' });
+      setForm({ full_name: '', email: '', username: '', password: '', enrollment_id: '', course: '' });
       setError('');
       setSuccess(false);
     }
@@ -394,8 +395,9 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
                 { label: 'Username', key: 'username', type: 'text', placeholder: 'Unique login username', required: true },
                 { label: 'Temporary Password', key: 'password', type: 'password', placeholder: 'Min 6 characters', required: true },
                 { label: 'Enrollment ID', key: 'enrollment_id', type: 'text', placeholder: 'e.g. CS2024001', required: false },
+                { label: 'Course / Stream', key: 'course', type: 'text', placeholder: 'e.g. B.Tech. - CSE', required: false },
               ].map(({ label, key, type, placeholder, required }) => (
-                <div key={key} className={`space-y-1 ${key === 'enrollment_id' ? 'md:col-span-2' : ''}`}>
+                <div key={key} className={`space-y-1 ${key === 'enrollment_id' || key === 'course' ? 'md:col-span-2' : ''}`}>
                   <label className="text-label-md text-on-surface font-semibold">
                     {label} {required && <span className="text-error">*</span>}
                   </label>
@@ -514,7 +516,12 @@ export default function AdminDashboard() {
   const [form, setForm] = useState({
     company: '', role: '', type: 'Full-Time Graduate',
     eligibility: '', package: '', drive_date: '',
+    location: '', stipend: '', description: '',
+    other_benefits: '', duration: '', eligible_courses: '',
+    selection_process: '', about_company: '', website: '',
+    org_size: '', contact_person: '',
   });
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [formError, setFormError] = useState('');
@@ -566,11 +573,23 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           company: form.company, role: form.role, type: form.type,
           eligibility: form.eligibility, package: form.package, drive_date: form.drive_date,
+          location: form.location, stipend: form.stipend, description: form.description,
+          other_benefits: form.other_benefits, duration: form.duration,
+          eligible_courses: form.eligible_courses, selection_process: form.selection_process,
+          about_company: form.about_company, website: form.website,
+          org_size: form.org_size, contact_person: form.contact_person,
         }),
       });
       if (!res.ok) throw new Error('Failed to launch drive');
       setShowModal(true);
-      setForm({ company: '', role: '', type: 'Full-Time Graduate', eligibility: '', package: '', drive_date: '' });
+      setForm({
+        company: '', role: '', type: 'Full-Time Graduate',
+        eligibility: '', package: '', drive_date: '',
+        location: '', stipend: '', description: '',
+        other_benefits: '', duration: '', eligible_courses: '',
+        selection_process: '', about_company: '', website: '',
+        org_size: '', contact_person: '',
+      });
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -611,7 +630,8 @@ export default function AdminDashboard() {
       (s.full_name || '').toLowerCase().includes(q) ||
       (s.username || '').toLowerCase().includes(q) ||
       (s.email || '').toLowerCase().includes(q) ||
-      (s.enrollment_id || '').toLowerCase().includes(q)
+      (s.enrollment_id || '').toLowerCase().includes(q) ||
+      (s.course || '').toLowerCase().includes(q)
     );
   });
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / STUDENTS_PER_PAGE));
@@ -808,6 +828,129 @@ export default function AdminDashboard() {
                       />
                     </div>
                   </div>
+
+                  {/* Collapsible Rich Details Section */}
+                  <div className="border border-outline-variant rounded-xl overflow-hidden mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="w-full flex items-center justify-between px-5 py-4 bg-surface-container-low hover:bg-surface-container-high transition-colors text-label-md font-bold text-on-surface outline-none"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary">settings_applications</span>
+                        Placement Specification / Details (Optional)
+                      </span>
+                      <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none' }}>
+                        keyboard_arrow_down
+                      </span>
+                    </button>
+                    
+                    {showAdvanced && (
+                      <div className="p-5 bg-white border-t border-outline-variant space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Location</label>
+                            <input
+                              name="location" value={form.location} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. Pune (Koregaon Park)"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Monthly Stipend</label>
+                            <input
+                              name="stipend" value={form.stipend} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. Stipend: INR 21,100"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Internship Duration</label>
+                            <input
+                              name="duration" value={form.duration} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. 6 Months"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Company Website</label>
+                            <input
+                              name="website" value={form.website} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. https://www.omniscient.co.in/"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Organisation Size</label>
+                            <input
+                              name="org_size" value={form.org_size} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. 10,000+"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Contact Person</label>
+                            <input
+                              name="contact_person" value={form.contact_person} onChange={handleFormChange}
+                              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                              placeholder="e.g. Dr. Swati More"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Job Description & Preferred Technical Skills</label>
+                          <textarea
+                            name="description" value={form.description} onChange={handleFormChange}
+                            rows={3}
+                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                            placeholder="Specify role description, tech stack requirements (e.g. Java, Angular, React)..."
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Eligible Courses (One per line)</label>
+                          <textarea
+                            name="eligible_courses" value={form.eligible_courses} onChange={handleFormChange}
+                            rows={3}
+                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                            placeholder="B.Tech. - CSE&#10;B.Tech. - IT&#10;M.Tech. - CSE"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
+                          <textarea
+                            name="selection_process" value={form.selection_process} onChange={handleFormChange}
+                            rows={3}
+                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                            placeholder="1st Round – Aptitude Test&#10;2nd Round- Group Discussions&#10;3rd Round – Technical Round"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
+                          <textarea
+                            name="other_benefits" value={form.other_benefits} onChange={handleFormChange}
+                            rows={2}
+                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                            placeholder="e.g. Join us on 1st January 2027. Work from Office Koregaon Park."
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">About the Organisation</label>
+                          <textarea
+                            name="about_company" value={form.about_company} onChange={handleFormChange}
+                            rows={3}
+                            className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                            placeholder="Company background, treasury details, domain expertise..."
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="pt-2 flex items-center justify-end gap-4">
                     <button
                       type="button"
@@ -969,8 +1112,8 @@ export default function AdminDashboard() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container-low">
                   <tr>
-                    {['Student Name', 'Email', 'Enrollment ID', 'Account Status', 'Joined', 'Actions'].map((h, i) => (
-                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 5 ? 'text-right' : ''}`}>
+                    {['Student Name', 'Email', 'Enrollment ID', 'Course', 'Account Status', 'Joined', 'Actions'].map((h, i) => (
+                      <th key={h} className={`px-6 py-4 text-label-md text-outline font-bold uppercase tracking-wider ${i === 6 ? 'text-right' : ''}`}>
                         {h}
                       </th>
                     ))}
@@ -1083,6 +1226,15 @@ export default function AdminDashboard() {
                               </span>
                             ) : (
                               <span className="text-outline text-caption">Not set</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-5">
+                            {s.course ? (
+                              <span className="px-2 py-1 bg-secondary-container/20 text-secondary text-caption font-semibold rounded-lg">
+                                {s.course}
+                              </span>
+                            ) : (
+                              <span className="text-outline text-caption">—</span>
                             )}
                           </td>
                           {/* Account Status Column */}
