@@ -659,8 +659,28 @@ def _build_opportunity_alert_html(
     deadline: str,
     fit_explanation: str,
     apply_url: str,
-    logo_white_url: str
+    logo_white_url: str,
+    updated_requirements_str: str = ""
 ) -> str:
+    req_update_block = ""
+    if updated_requirements_str:
+        bullets = "".join(f"<li style='margin-bottom: 6px;'>{item.strip('- ')}</li>" for item in updated_requirements_str.strip().split("\n") if item.strip())
+        req_update_block = f"""
+      <div style="background-color: #fffbeb; padding: 20px; border-radius: 12px; margin-bottom: 32px; border: 1px solid #fef3c7;">
+        <table role="presentation" style="border-collapse: collapse; margin-bottom: 8px;">
+          <tr>
+            <td style="color: #b45309; font-size: 16px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;">🎉 Requirement Update</td>
+          </tr>
+        </table>
+        <p style="font-size: 14px; line-height: 1.5; color: #78350f; margin: 0 0 8px 0; font-family: 'Plus Jakarta Sans', sans-serif;">
+          Good news! You are now eligible for this opportunity because the application criteria were recently updated:
+        </p>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #78350f; line-height: 1.5; font-family: 'Plus Jakarta Sans', sans-serif;">
+          {bullets}
+        </ul>
+      </div>
+      """
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -699,6 +719,7 @@ def _build_opportunity_alert_html(
           </table>
         </div>
       </div>
+      {req_update_block}
       <div style="background-color: rgba(226, 223, 255, 0.3); padding: 20px; border-radius: 12px; margin-bottom: 32px;">
         <table role="presentation" style="border-collapse: collapse; margin-bottom: 12px;">
           <tr>
@@ -772,7 +793,8 @@ def send_opportunity_alert_email(
     package_or_stipend: str,
     deadline: str,
     fit_explanation: str,
-    base_url: str = None
+    base_url: str = None,
+    updated_requirements_str: str = ""
 ) -> bool:
     """
     Send the opportunity alert email.
@@ -796,11 +818,15 @@ def send_opportunity_alert_email(
         deadline=deadline,
         fit_explanation=fit_explanation,
         apply_url=apply_url,
-        logo_white_url=logo_white_url
+        logo_white_url=logo_white_url,
+        updated_requirements_str=updated_requirements_str
     )
+    
+    plain_update_str = f"\n\nRequirement Update:\nYou are now eligible because the criteria were updated:\n{updated_requirements_str}" if updated_requirements_str else ""
+    
     plain   = (
         f"Hi {student_name},\n\n"
-        f"You are eligible for a new placement drive: {company} - {role} ({type_str}).\n\n"
+        f"You are eligible for a new placement drive: {company} - {role} ({type_str}).{plain_update_str}\n\n"
         f"Why you're a fit:\n{fit_explanation}\n\n"
         f"Details:\n"
         f"- Location: {location}\n"

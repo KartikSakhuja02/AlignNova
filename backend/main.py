@@ -424,7 +424,7 @@ def check_student_eligibility(user_dict, drive_dict) -> tuple:
     return True, explanation
 
 
-def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool = False):
+def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool = False, changes: list = None):
     def broadcast_task():
         try:
             from backend.database import SessionLocal, User, has_sent_opportunity_alert, record_opportunity_alert
@@ -482,6 +482,10 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
                                 except Exception:
                                     pass
                                     
+                            req_changes_str = ""
+                            if is_update and not already_sent and changes:
+                                req_changes_str = "\n".join(f"- {c}" for c in changes)
+
                             send_opportunity_alert_email(
                                 to_email=student.email,
                                 student_name=student.full_name or student.username,
@@ -492,7 +496,8 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
                                 package_or_stipend=p_or_s,
                                 deadline=deadline_str,
                                 fit_explanation=explanation,
-                                base_url=base_url
+                                base_url=base_url,
+                                updated_requirements_str=req_changes_str
                             )
                             
                             if not already_sent:
@@ -624,6 +629,38 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
         if not drive:
             raise HTTPException(status_code=404, detail='drive_not_found')
             
+        # Compare before updating
+        changes = []
+        def clean_val(v):
+            return str(v or '').strip()
+
+        old_cgpa = clean_val(drive.eligibility)
+        new_cgpa = clean_val(payload.get('eligibility', drive.eligibility))
+        if old_cgpa != new_cgpa:
+            changes.append(f"Minimum CGPA requirement changed from {old_cgpa or 'None'} to {new_cgpa or 'None'}")
+
+        old_10 = clean_val(drive.min_10th_percent)
+        new_10 = clean_val(payload.get('min_10th_percent', drive.min_10th_percent))
+        if old_10 != new_10:
+            changes.append(f"Minimum Class 10th percentage changed from {old_10 or 'None'}% to {new_10 or 'None'}%")
+
+        old_12 = clean_val(drive.min_12th_percent)
+        new_12 = clean_val(payload.get('min_12th_percent', drive.min_12th_percent))
+        if old_12 != new_12:
+            changes.append(f"Minimum Class 12th percentage changed from {old_12 or 'None'}% to {new_12 or 'None'}%")
+
+        old_backlogs = drive.no_active_backlogs or 0
+        new_backlogs = payload.get('no_active_backlogs', drive.no_active_backlogs or 0)
+        if old_backlogs != new_backlogs:
+            old_str = "No active backlogs allowed" if old_backlogs else "Active backlogs allowed"
+            new_str = "No active backlogs allowed" if new_backlogs else "Active backlogs allowed"
+            changes.append(f"Backlog requirement changed from '{old_str}' to '{new_str}'")
+
+        old_courses = clean_val(drive.eligible_courses)
+        new_courses = clean_val(payload.get('eligible_courses', drive.eligible_courses))
+        if old_courses != new_courses:
+            changes.append("Eligible courses / specializations list was updated")
+
         # Update fields
         drive.company = payload.get('company', drive.company)
         drive.role = payload.get('role', drive.role)
@@ -680,7 +717,7 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "min_10th_percent": drive.min_10th_percent,
             "min_12th_percent": drive.min_12th_percent
         }
-        run_broadcast_task(ret, dict(request.headers), is_update=True)
+        run_broadcast_task(ret, dict(request.headers), is_update=True, changes=changes)
         return ret
 
 
