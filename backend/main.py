@@ -11,7 +11,7 @@ import os
 
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
 from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email
-from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload
+from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload, TestEmailPayload
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 from backend.access_token import create_access_token, get_current_user_from_token, decode_token, create_set_password_token, create_reset_password_token
 
@@ -57,19 +57,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     plain_password = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
     return pwd_context.verify(plain_password, hashed_password)
 
-
-@app.post("/api/signup")
-def signup(data: UserPublic):
-    existing = get_user(data.username)
-    if existing:
-        raise HTTPException(status_code=400, detail="username_taken")
-    hashed = hash_password(data.password)
-    try:
-        user = create_user(data.username, hashed, role=data.role, full_name=data.full_name, email=data.email, phone=data.phone)
-    except ValueError:
-        raise HTTPException(status_code=400, detail="username_taken")
-    token = create_access_token({"sub": user["username"], "role": user.get("role")})
-    return {"access_token": token, "token_type": "bearer", "role": user.get("role")}
 
 
 @app.post("/api/login")
@@ -595,8 +582,6 @@ def admin_create_student(payload: CreateStudentPayload, request: Request):
 
 
 # ── Admin: Test Email (synchronous — returns exact error) ─────────────────────
-class TestEmailPayload(BaseModel):
-    to_email: str
 
 
 @app.post('/api/admin/test-email')

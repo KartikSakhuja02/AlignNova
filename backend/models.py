@@ -39,3 +39,6 @@ class SetPasswordPayload(BaseModel):
 
 class RequestActivationPayload(BaseModel):
     email: str
+
+class TestEmailPayload(BaseModel):
+    to_email: str
