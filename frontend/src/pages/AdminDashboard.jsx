@@ -14,6 +14,38 @@ const parseRounds = (selStr) => {
   });
 };
 
+const parseTimelineRounds = (selStr) => {
+  if (!selStr) return [];
+  return selStr.split('\n').filter(Boolean).map((line, idx) => {
+    if (line.includes('|')) {
+      const parts = line.split('|');
+      return {
+        name: (parts[0] || '').trim(),
+        date: (parts[1] || '').trim() || `Step ${idx + 1}`,
+        desc: (parts[2] || '').trim()
+      };
+    } else {
+      const parts = line.split(/[–-]/);
+      if (parts.length > 1) {
+        const name = (parts[0] || '').trim();
+        const desc = (parts.slice(1).join('–') || '').trim();
+        return {
+          name: name,
+          date: `Step ${idx + 1}`,
+          desc: desc
+        };
+      } else {
+        return {
+          name: line.trim(),
+          date: `Step ${idx + 1}`,
+          desc: 'Recruitment interview step'
+        };
+      }
+    }
+  });
+};
+
+
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -323,7 +355,7 @@ function RecruitersView() {
   );
 }
 
-function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, driveSearch, setDriveSearch }) {
+function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, onManageTimeline, driveSearch, setDriveSearch }) {
   const filteredDrives = drives.filter((d) => {
     const q = driveSearch.toLowerCase();
     if (!q) return true;
@@ -427,10 +459,17 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
                       )}
                     </td>
                     <td className="px-6 py-5 text-caption text-outline">{driveDateStr}</td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-5 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => onManageTimeline(d)}
+                        className="p-2 hover:bg-surface-container-high rounded-lg text-primary transition-colors"
+                        title="Manage timeline"
+                      >
+                        <span className="material-symbols-outlined">calendar_today</span>
+                      </button>
                       <button
                         onClick={() => onEditDrive(d)}
-                        className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors"
+                        className="p-2 hover:bg-surface-container-high rounded-lg text-outline transition-colors ml-1"
                         title="Edit drive"
                       >
                         <span className="material-symbols-outlined">edit</span>
@@ -1187,6 +1226,291 @@ function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
   );
 }
 
+// ─── Manage Timeline Modal ───────────────────────────────────────────────────
+
+function ManageTimelineModal({ visible, drive, token, onClose, onSaved }) {
+  const [rounds, setRounds] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (drive && visible) {
+      setRounds(parseTimelineRounds(drive.selection_process));
+      setError('');
+    }
+  }, [drive, visible]);
+
+  if (!visible || !drive) return null;
+
+  const handleAddRound = () => {
+    setRounds([...rounds, { name: '', date: '', desc: '' }]);
+  };
+
+  const handleDeleteRound = (index) => {
+    setRounds(rounds.filter((_, idx) => idx !== index));
+  };
+
+  const handleMoveUp = (index) => {
+    if (index === 0) return;
+    const newRounds = [...rounds];
+    const temp = newRounds[index];
+    newRounds[index] = newRounds[index - 1];
+    newRounds[index - 1] = temp;
+    setRounds(newRounds);
+  };
+
+  const handleMoveDown = (index) => {
+    if (index === rounds.length - 1) return;
+    const newRounds = [...rounds];
+    const temp = newRounds[index];
+    newRounds[index] = newRounds[index + 1];
+    newRounds[index + 1] = temp;
+    setRounds(newRounds);
+  };
+
+  const handleRoundChange = (index, field, value) => {
+    const newRounds = rounds.map((r, idx) => {
+      if (idx === index) {
+        return { ...r, [field]: value };
+      }
+      return r;
+    });
+    setRounds(newRounds);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+
+    for (let i = 0; i < rounds.length; i++) {
+      if (!rounds[i].name.trim()) {
+        setError(`Round #${i + 1} Name cannot be empty.`);
+        setSaving(false);
+        return;
+      }
+      if (!rounds[i].date.trim()) {
+        setError(`Round #${i + 1} Schedule Date/Timeline cannot be empty.`);
+        setSaving(false);
+        return;
+      }
+    }
+
+    const serialized = rounds
+      .map(r => `${r.name.trim().replace(/\r?\n|\r/g, ' ')} | ${r.date.trim().replace(/\r?\n|\r/g, ' ')} | ${r.desc.trim().replace(/\r?\n|\r/g, ' ')}`)
+      .join('\n');
+
+    const payload = {
+      company: drive.company || '',
+      role: drive.role || '',
+      type: drive.type || 'Placement',
+      eligibility: drive.eligibility || '',
+      package: drive.package || '',
+      drive_date: drive.drive_date || '',
+      location: drive.location || '',
+      stipend: drive.stipend || '',
+      description: drive.description || '',
+      other_benefits: drive.other_benefits || '',
+      duration: drive.duration || '',
+      eligible_courses: drive.eligible_courses || '',
+      about_company: drive.about_company || '',
+      website: drive.website || '',
+      org_size: drive.org_size || '',
+      contact_person: drive.contact_person || '',
+      responsibilities: drive.responsibilities || '',
+      requirements: drive.requirements || '',
+      tech_stack: drive.tech_stack || '',
+      no_active_backlogs: drive.no_active_backlogs || 0,
+      min_10th_percent: drive.min_10th_percent || '',
+      min_12th_percent: drive.min_12th_percent || '',
+      selection_process: serialized
+    };
+
+    try {
+      const res = await fetch(`/api/drives/${drive.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || 'Failed to update selection process timeline');
+      }
+
+      onSaved();
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden my-8 animate-in fade-in zoom-in duration-200">
+        {/* Modal Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>calendar_today</span>
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-title-lg">Manage Drive Timeline</h2>
+              <p className="text-white/80 text-caption font-semibold">{drive.company} • {drive.role}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <form onSubmit={handleSave} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-label-md">
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
+              {error}
+            </div>
+          )}
+
+          {rounds.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-outline-variant/60 rounded-2xl bg-slate-50/30">
+              <span className="material-symbols-outlined text-[48px] text-outline mb-2">event_busy</span>
+              <p className="text-body-md text-on-surface-variant font-semibold">No timeline rounds defined yet.</p>
+              <p className="text-caption text-outline mt-1">Add rounds below to structure the selection process timeline for candidates.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {rounds.map((round, idx) => (
+                <div 
+                  key={idx} 
+                  className="border border-outline-variant rounded-2xl p-4 bg-slate-50/30 hover:border-primary/20 transition-all flex flex-col gap-4 relative group"
+                >
+                  {/* Round Card Header */}
+                  <div className="flex items-center justify-between border-b border-outline-variant/40 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-caption font-bold flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="font-bold text-label-md text-on-surface">Selection Round #{idx + 1}</span>
+                    </div>
+
+                    {/* Ordering / Actions */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(idx)}
+                        disabled={idx === 0}
+                        className="p-1.5 hover:bg-surface-container-high disabled:opacity-30 rounded-lg text-outline transition-colors"
+                        title="Move Up"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_upward</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(idx)}
+                        disabled={idx === rounds.length - 1}
+                        className="p-1.5 hover:bg-surface-container-high disabled:opacity-30 rounded-lg text-outline transition-colors"
+                        title="Move Down"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_downward</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRound(idx)}
+                        className="p-1.5 hover:bg-error-container/30 rounded-lg text-error transition-colors ml-2"
+                        title="Delete Round"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Round Card Fields */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-caption text-on-surface-variant font-bold uppercase tracking-wider block">Round Name</label>
+                      <input
+                        type="text"
+                        value={round.name}
+                        onChange={(e) => handleRoundChange(idx, 'name', e.target.value)}
+                        placeholder="e.g. Online Assessment, Technical Interview 1"
+                        required
+                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-3.5 py-2 text-body-md bg-white transition-all"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-caption text-on-surface-variant font-bold uppercase tracking-wider block">Schedule Date / Timeline</label>
+                      <input
+                        type="text"
+                        value={round.date}
+                        onChange={(e) => handleRoundChange(idx, 'date', e.target.value)}
+                        placeholder="e.g. Oct 20 - Oct 25, 2025 or TBD"
+                        required
+                        className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-3.5 py-2 text-body-md bg-white transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-caption text-on-surface-variant font-bold uppercase tracking-wider block">Description / Special Instructions</label>
+                    <textarea
+                      rows="2"
+                      value={round.desc}
+                      onChange={(e) => handleRoundChange(idx, 'desc', e.target.value)}
+                      placeholder="e.g. 2-hour coding test containing 3 algorithmic problems on HackerRank."
+                      className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-3.5 py-2 text-body-md bg-white transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Round Button */}
+          <button
+            type="button"
+            onClick={handleAddRound}
+            className="w-full py-3.5 border border-dashed border-primary/40 text-primary text-label-md font-semibold hover:bg-primary/5 transition-colors rounded-xl flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
+            Add Selection Round
+          </button>
+
+          {/* Modal Actions */}
+          <div className="flex gap-3 pt-4 border-t border-outline-variant">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {saving ? (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>save</span>
+              )}
+              {saving ? 'Saving...' : 'Save Timeline'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -1229,6 +1553,8 @@ export default function AdminDashboard() {
   const [showEditDrive, setShowEditDrive] = useState(false);
   const [driveToEdit, setDriveToEdit] = useState(null);
   const [driveSearch, setDriveSearch] = useState('');
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [driveForTimeline, setDriveForTimeline] = useState(null);
 
   const [loadingStats, setLoadingStats] = useState(true);
   const [statsData, setStatsData] = useState([]);
@@ -2071,6 +2397,7 @@ export default function AdminDashboard() {
               loadingDrives={loadingDrives}
               onEditDrive={(d) => { setDriveToEdit(d); setShowEditDrive(true); }}
               onDeleteDrive={handleDeleteDrive}
+              onManageTimeline={(d) => { setDriveForTimeline(d); setShowTimelineModal(true); }}
               driveSearch={driveSearch}
               setDriveSearch={setDriveSearch}
             />
@@ -2355,6 +2682,13 @@ export default function AdminDashboard() {
         drive={driveToEdit}
         token={token}
         onClose={() => { setShowEditDrive(false); setDriveToEdit(null); }}
+        onSaved={() => fetchDrives()}
+      />
+      <ManageTimelineModal
+        visible={showTimelineModal}
+        drive={driveForTimeline}
+        token={token}
+        onClose={() => { setShowTimelineModal(false); setDriveForTimeline(null); }}
         onSaved={() => fetchDrives()}
       />
       <AddStudentModal

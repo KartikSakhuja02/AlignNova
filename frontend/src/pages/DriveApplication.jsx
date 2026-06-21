@@ -294,10 +294,19 @@ export default function DriveApplication() {
     perks: ['Competitive Compensation', 'Professional Mentorship', 'Modern Workspace & Culture'],
     timeline: drive.selection_process ? (
       drive.selection_process.split('\n').filter(Boolean).map((stepText, idx) => {
-        const parts = stepText.split('–');
-        const stepName = (parts[0] || '').trim();
-        const stepDesc = (parts[1] || 'Recruitment interview step').trim();
-        return { step: stepName, date: `Step ${idx + 1}`, desc: stepDesc };
+        if (stepText.includes('|')) {
+          const parts = stepText.split('|');
+          return {
+            step: (parts[0] || '').trim(),
+            date: (parts[1] || '').trim() || `Step ${idx + 1}`,
+            desc: (parts[2] || 'Recruitment interview step').trim()
+          };
+        } else {
+          const parts = stepText.split(/[–-]/);
+          const stepName = (parts[0] || '').trim();
+          const stepDesc = (parts[1] || 'Recruitment interview step').trim();
+          return { step: stepName, date: `Step ${idx + 1}`, desc: stepDesc };
+        }
       })
     ) : [
       { step: 'Application Phase', date: 'Active Now', desc: 'Submit your profile details and official resume.' },
