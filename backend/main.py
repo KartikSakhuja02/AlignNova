@@ -10,10 +10,10 @@ import hashlib
 import os
 
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
-from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status
+from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email
 from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload
 from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
-from backend.access_token import create_access_token, get_current_user_from_token, decode_token, create_set_password_token
+from backend.access_token import create_access_token, get_current_user_from_token, decode_token, create_set_password_token, create_reset_password_token
 
 load_dotenv()
 
@@ -568,7 +568,8 @@ def set_password(payload: SetPasswordPayload):
     except JWTError:
         raise HTTPException(status_code=400, detail='invalid_or_expired_token')
 
-    if data.get('purpose') != 'set_password':
+    purpose = data.get('purpose')
+    if purpose not in ('set_password', 'reset_password'):
         raise HTTPException(status_code=400, detail='invalid_token_purpose')
 
     username = data.get('sub')
@@ -593,8 +594,38 @@ def set_password(payload: SetPasswordPayload):
         'access_token': access_token,
         'token_type': 'bearer',
         'role': user.get('role', 'student'),
-        'message': 'password_set'
+        'message': 'password_set',
+        'purpose': purpose
     }
+
+
+class ForgotPasswordPayload(BaseModel):
+    email: str
+
+
+@app.post('/api/forgot-password')
+def forgot_password(payload: ForgotPasswordPayload, request: Request):
+    """Handle forgot password: create 1-hour JWT token and send reset email."""
+    email = payload.email.strip().lower()
+    user = get_user_by_email(email)
+    
+    if user:
+        reset_token = create_reset_password_token(user['username'])
+        
+        # Retrieve base URL respecting proxy headers if present (e.g. Render/Vercel)
+        proto = request.headers.get("x-forwarded-proto", "http")
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+        base_url = f"{proto}://{host}" if host else str(request.base_url).rstrip("/")
+        
+        send_reset_password_email(
+            to_email=user['email'],
+            student_name=user.get('full_name') or user['username'],
+            reset_token=reset_token,
+            base_url=base_url
+        )
+        
+    # Always return a generic success message to prevent email enumeration
+    return {'ok': True, 'message': 'If an account exists, a reset link has been sent.'}
 
 
 # ── Request Activation / Forgot Password (resends setup links) ────────────────

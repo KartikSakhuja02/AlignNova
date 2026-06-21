@@ -24,6 +24,14 @@ def create_set_password_token(username: str) -> str:
         SECRET_KEY, algorithm=ALGORITHM
     )
 
+def create_reset_password_token(username: str) -> str:
+    """Generate a single-use JWT for the forgot-password flow (1-hour expiry)."""
+    expire = datetime.now(timezone.utc) + timedelta(hours=1)
+    return jwt.encode(
+        {"sub": username, "purpose": "reset_password", "exp": expire},
+        SECRET_KEY, algorithm=ALGORITHM
+    )
+
 def decode_token(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 

@@ -17,6 +17,7 @@ import DriveApplication from './pages/DriveApplication';
 import AdminDashboard from './pages/AdminDashboard';
 import SetPassword from './pages/SetPassword';
 import RequestActivation from './pages/RequestActivation';
+import ForgotPassword from './pages/ForgotPassword';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -84,6 +85,7 @@ export default function App() {
 
           {/* Public: Request Activation Link / Forgot Password */}
           <Route path="/request-activation" element={<RequestActivation />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Admin routes */}
           <Route element={<RequireAdmin />}>

@@ -9,6 +9,16 @@ export default function SetPassword() {
   const { login } = useAuth();
 
   const token = searchParams.get('token') || '';
+  const isReset = (() => {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      return JSON.parse(jsonPayload).purpose === 'reset_password';
+    } catch (e) {
+      return false;
+    }
+  })();
 
   const [step, setStep] = useState('form'); // 'form' | 'success' | 'expired'
   const [password, setPassword] = useState('');
@@ -64,7 +74,8 @@ export default function SetPassword() {
       
       // Redirect after 2s
       setTimeout(() => {
-        navigate(data.role === 'admin' ? '/admin' : '/profile?tutorial=true', { replace: true });
+        const dest = data.role === 'admin' ? '/admin' : (isReset ? '/' : '/profile?tutorial=true');
+        navigate(dest, { replace: true });
       }, 2000);
     } catch (err) {
       setError(err.message || 'Failed to set password. Please try again.');
@@ -133,9 +144,11 @@ export default function SetPassword() {
               check_circle
             </span>
           </div>
-          <h1 className="text-headline-lg font-bold text-on-surface mb-3">Account Activated! 🎉</h1>
+          <h1 className="text-headline-lg font-bold text-on-surface mb-3">
+            {isReset ? "Password Reset! 🎉" : "Account Activated! 🎉"}
+          </h1>
           <p className="text-on-surface-variant text-body-md leading-relaxed mb-4">
-            Your password has been successfully configured.
+            Your password has been successfully {isReset ? "updated" : "configured"}.
           </p>
           <p className="text-outline text-caption">Redirecting you to the dashboard...</p>
           <div className="mt-6 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
@@ -164,9 +177,14 @@ export default function SetPassword() {
           
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Secure Your Account</h1>
+            <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">
+              {isReset ? "Reset Your Password" : "Secure Your Account"}
+            </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-[340px] mx-auto">
-              Welcome to AlignNova. Create a strong password to access your placement dashboard.
+              {isReset 
+                ? "Choose a strong password to secure and access your AlignNova account."
+                : "Welcome to AlignNova. Create a strong password to access your placement dashboard."
+              }
             </p>
           </div>
 
@@ -286,12 +304,14 @@ export default function SetPassword() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Activating Account...
+                  {isReset ? "Resetting Password..." : "Activating Account..."}
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">rocket_launch</span>
-                  Activate My Account
+                  <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">
+                    {isReset ? "lock_reset" : "rocket_launch"}
+                  </span>
+                  {isReset ? "Reset Password" : "Activate My Account"}
                 </>
               )}
             </button>

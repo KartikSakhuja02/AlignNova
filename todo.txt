@@ -1,0 +1,7 @@
+institute intelligence update based on db
+more flexible internship drive details to be put
+update admin dashboard side bar
+closable side bar
+notification sending option by admin, notifications in both admin and user
+gmail to eligible students, whenever any internship/placement drive is hosted.
+(proper format)

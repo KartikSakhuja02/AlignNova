@@ -408,3 +408,243 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
 
     threading.Thread(target=_send, daemon=True).start()
     return True
+
+
+def _build_reset_password_html(student_name: str, reset_url: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reset Your Password | Alignova</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {{
+            darkMode: "class",
+            theme: {{
+                extend: {{
+                    "colors": {{
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary": "#684000",
+                        "surface-dim": "#cfdaf2",
+                        "primary-container": "#4f46e5",
+                        "outline": "#777587",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-surface-variant": "#464555",
+                        "surface-container": "#e7eeff",
+                        "surface-variant": "#d8e3fb",
+                        "secondary": "#006c49",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "secondary-container": "#6cf8bb",
+                        "on-primary-container": "#dad7ff",
+                        "surface": "#f9f9ff",
+                        "primary-fixed": "#e2dfff",
+                        "tertiary-container": "#885500",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#3525cd",
+                        "on-primary-fixed": "#0f0069",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-background": "#111c2d",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-secondary": "#ffffff",
+                        "surface-tint": "#4d44e3",
+                        "inverse-on-surface": "#ecf1ff",
+                        "inverse-primary": "#c3c0ff",
+                        "outline-variant": "#c7c4d8",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#dee8ff",
+                        "background": "#f9f9ff",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#263143",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-bright": "#f9f9ff",
+                        "on-secondary-container": "#00714d",
+                        "on-tertiary-container": "#ffd4a4",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary-fixed": "#002113",
+                        "error": "#ba1a1a",
+                        "on-surface": "#111c2d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#d8e3fb"
+                    }},
+                    "borderRadius": {{
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    }},
+                    "spacing": {{
+                        "gutter": "1.5rem",
+                        "p-sm": "1rem",
+                        "p-md": "1.5rem",
+                        "p-lg": "2rem",
+                        "p-xl": "3rem",
+                        "margin-page": "2rem",
+                        "container-max": "1280px"
+                    }},
+                    "fontFamily": {{
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "caption": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"]
+                    }},
+                    "fontSize": {{
+                        "headline-lg": ["32px", {{"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "700"}}],
+                        "headline-md": ["24px", {{"lineHeight": "1.4", "fontWeight": "700"}}],
+                        "body-md": ["16px", {{"lineHeight": "1.5", "fontWeight": "400"}}],
+                        "display-lg": ["48px", {{"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}}],
+                        "caption": ["12px", {{"lineHeight": "1.4", "fontWeight": "500"}}],
+                        "label-md": ["14px", {{"lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "600"}}],
+                        "headline-lg-mobile": ["24px", {{"lineHeight": "1.3", "fontWeight": "700"}}],
+                        "body-lg": ["18px", {{"lineHeight": "1.6", "fontWeight": "400"}}]
+                    }}
+                }},
+            }},
+        }}
+    </script>
+<style>
+        .material-symbols-outlined {{
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }}
+        body {{
+            background-color: #f9f9ff;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }}
+        .email-container {{
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+            border: 1px solid #F1F5F9;
+        }}
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<div class="email-container">
+<!-- Color-block Header -->
+<div class="bg-[#4f46e5] p-p-xl flex flex-col items-center justify-center text-center">
+<img alt="Alignova Logo" class="h-12 w-auto mb-4" src="https://lh3.googleusercontent.com/aida/AP1WRLtawblBVTGVcbxugRT_8IY0NV0YtmE4pqf60GQg82KkLD6t1GGs0Lr5ircuMVkUEpzudUUFLXoKlKofbgMNH3yOhLRgTJhO12Mc6R6mpjW50Z9sZWJaArMORE31dz6khWqQ0ExPtkNuMjlJ0hrzD_v0ZaQDT1Vo-0sdBmGhOMOhHmV_fdwNdBnXV0sVUDmhG4ufAdAjlaRL_mrhPyj0w0nnXXu2WIJkYHQyZ-cd6B6_oJEO49Iu9Hr65sA"/>
+<div class="text-white font-headline-md text-headline-md tracking-tight">
+                Alignova
+            </div>
+<div class="text-white/80 font-label-md text-caption uppercase tracking-widest mt-1">
+                Executive Precision
+            </div>
+</div>
+<!-- Email Body -->
+<div class="p-p-xl bg-surface-container-lowest">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-6">
+                Reset Your Password
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 leading-relaxed">
+                Hello {student_name},<br/><br/>
+                We received a request to reset the password for your AlignNova account. Click the button below to choose a new password.
+            </p>
+<!-- CTA Button -->
+<div class="mb-10">
+<a class="inline-block bg-[#4f46e5] text-white font-label-md text-label-md px-10 py-4 rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform duration-200 ease-in-out no-underline" href="{reset_url}">
+                    Reset Password
+                </a>
+</div>
+<!-- Security Note -->
+<div class="p-p-md bg-surface-container-low rounded-xl border border-outline-variant/30">
+<p class="font-caption text-caption text-on-surface-variant flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[18px]">info</span>
+<span>If you didn't request this, you can safely ignore this email. The link will expire in 1 hour.</span>
+</p>
+</div>
+</div>
+<!-- Minimal Footer -->
+<div class="p-p-lg bg-surface border-t border-outline-variant/20 text-center">
+<div class="flex justify-center gap-6 mb-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">public</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">mail</span>
+</a>
+</div>
+<p class="font-caption text-caption text-on-surface-variant/60 mb-2">
+                © 2026 Alignova Executive Career Placement. All rights reserved.
+            </p>
+<p class="font-caption text-caption text-on-surface-variant/60">
+                123 Corporate Plaza, Finance District, NY 10004
+            </p>
+<div class="mt-6 flex justify-center gap-4">
+<a class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-tighter hover:text-primary" href="#">Privacy Policy</a>
+<span class="text-outline-variant">•</span>
+<a class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-tighter hover:text-primary" href="#">Terms of Service</a>
+<span class="text-outline-variant">•</span>
+<a class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-tighter hover:text-primary" href="#">Unsubscribe</a>
+</div>
+</div>
+</div>
+<!-- Atmospheric subtle background detail -->
+<div class="fixed inset-0 -z-10 pointer-events-none opacity-40">
+<div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full"></div>
+<div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full"></div>
+</div>
+</body></html>"""
+
+
+def send_reset_password_email(to_email: str, student_name: str, reset_token: str, base_url: str = None) -> bool:
+    """
+    Send the reset password email.
+    Runs in a background thread — never blocks the API response.
+    """
+    if not EMAIL_PROXY_URL and not BREVO_API_KEY and not RESEND_API_KEY:
+        print("[email] No provider configured — skipping reset password email.")
+        return False
+
+    active_base_url = (base_url or APP_BASE_URL).rstrip("/")
+    reset_url = f"{active_base_url}/set-password?token={reset_token}"
+    subject = "🔑 Reset Your Password — AlignNova"
+    html    = _build_reset_password_html(student_name, reset_url)
+    plain   = (
+        f"Reset Your Password\n\n"
+        f"Hello {student_name},\n"
+        f"We received a request to reset your password. Click here to choose a new password:\n{reset_url}\n\n"
+        f"The link will expire in 1 hour.\n— AlignNova Team"
+    )
+
+    def _send():
+        try:
+            if EMAIL_PROXY_URL:
+                print(f"[email] Sending reset password email via Vercel Proxy to {to_email} ...")
+                _send_via_proxy(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent reset password email via Vercel Proxy to {to_email}")
+            elif BREVO_API_KEY:
+                print(f"[email] Sending reset password email via Brevo to {to_email} ...")
+                _send_via_brevo(to_email, subject, html, plain, student_name)
+                print(f"[email] ✓ Sent reset password email via Brevo to {to_email}")
+            else:
+                print(f"[email] Sending reset password email via Resend to {to_email} ...")
+                _send_via_resend(to_email, subject, html, plain)
+                print(f"[email] ✓ Sent reset password email via Resend to {to_email}")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()
+            print(f"[email] ✗ API error {e.code}: {body}")
+        except Exception as exc:
+            print(f"[email] ✗ Failed to send reset password email to {to_email}: {type(exc).__name__}: {exc}")
+
+    threading.Thread(target=_send, daemon=True).start()
+    return True
+

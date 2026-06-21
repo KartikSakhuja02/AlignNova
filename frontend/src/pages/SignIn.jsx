@@ -127,7 +127,7 @@ export default function SignIn() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => navigate('/request-activation')}
+                  onClick={() => navigate('/forgot-password')}
                   className="font-label-md text-label-md text-primary hover:underline outline-none"
                 >
                   Forgot?
