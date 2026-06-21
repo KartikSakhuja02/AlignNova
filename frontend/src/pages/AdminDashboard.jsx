@@ -464,6 +464,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     selection_process: '', about_company: '', website: '',
     org_size: '', contact_person: '',
     responsibilities: '', requirements: '', tech_stack: '',
+    no_active_backlogs: 0,
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -492,6 +493,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
         responsibilities: drive.responsibilities || '',
         requirements: drive.requirements || '',
         tech_stack: drive.tech_stack || '',
+        no_active_backlogs: drive.no_active_backlogs || 0,
       });
       setError('');
     }
@@ -594,6 +596,19 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                 className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
                 placeholder="Min CGPA"
               />
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <input
+                type="checkbox"
+                name="no_active_backlogs"
+                id="edit_no_active_backlogs"
+                checked={form.no_active_backlogs === 1}
+                onChange={(e) => setForm(prev => ({ ...prev, no_active_backlogs: e.target.checked ? 1 : 0 }))}
+                className="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer"
+              />
+              <label htmlFor="edit_no_active_backlogs" className="text-label-md text-on-surface font-semibold select-none cursor-pointer">
+                No Active Backlogs Required
+              </label>
             </div>
 
             {(form.type === 'Placement' || form.type === 'Internship + PPO') && (
@@ -1163,6 +1178,7 @@ export default function AdminDashboard() {
     selection_process: '', about_company: '', website: '',
     org_size: '', contact_person: '',
     responsibilities: '', requirements: '', tech_stack: '',
+    no_active_backlogs: 0,
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
@@ -1352,6 +1368,7 @@ export default function AdminDashboard() {
       org_size: form.org_size, contact_person: form.contact_person,
       responsibilities: form.responsibilities, requirements: form.requirements,
       tech_stack: form.tech_stack,
+      no_active_backlogs: form.no_active_backlogs,
     };
     if (form.type === 'Placement') {
       payload.stipend = '';
@@ -1377,6 +1394,7 @@ export default function AdminDashboard() {
         selection_process: '', about_company: '', website: '',
         org_size: '', contact_person: '',
         responsibilities: '', requirements: '', tech_stack: '',
+        no_active_backlogs: 0,
       });
     } catch (err) {
       setFormError(err.message);
@@ -1615,6 +1633,19 @@ export default function AdminDashboard() {
                             className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
                             placeholder="Min CGPA"
                           />
+                        </div>
+                        <div className="flex items-center gap-2 pt-6">
+                          <input
+                            type="checkbox"
+                            name="no_active_backlogs"
+                            id="no_active_backlogs"
+                            checked={form.no_active_backlogs === 1}
+                            onChange={(e) => setForm(prev => ({ ...prev, no_active_backlogs: e.target.checked ? 1 : 0 }))}
+                            className="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer"
+                          />
+                          <label htmlFor="no_active_backlogs" className="text-label-md text-on-surface font-semibold select-none cursor-pointer">
+                            No Active Backlogs Required
+                          </label>
                         </div>
 
                         {(form.type === 'Placement' || form.type === 'Internship + PPO') && (

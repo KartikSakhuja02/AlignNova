@@ -245,7 +245,8 @@ def post_drive(request: Request, payload: dict):
         about_company=payload.get('about_company'), website=payload.get('website'),
         org_size=payload.get('org_size'), contact_person=payload.get('contact_person'),
         responsibilities=payload.get('responsibilities'), requirements=payload.get('requirements'),
-        tech_stack=payload.get('tech_stack')
+        tech_stack=payload.get('tech_stack'),
+        no_active_backlogs=payload.get('no_active_backlogs', 0)
     )
     return drive
 
@@ -283,7 +284,8 @@ def get_drive_detail(drive_id: int):
             "contact_person": drive.contact_person or "",
             "responsibilities": drive.responsibilities or "",
             "requirements": drive.requirements or "",
-            "tech_stack": drive.tech_stack or ""
+            "tech_stack": drive.tech_stack or "",
+            "no_active_backlogs": drive.no_active_backlogs or 0
         }
 
 
@@ -331,6 +333,8 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
         drive.responsibilities = payload.get('responsibilities', drive.responsibilities)
         drive.requirements = payload.get('requirements', drive.requirements)
         drive.tech_stack = payload.get('tech_stack', drive.tech_stack)
+        if 'no_active_backlogs' in payload:
+            drive.no_active_backlogs = payload.get('no_active_backlogs')
         
         db.add(drive)
         db.commit()
@@ -357,7 +361,8 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "contact_person": drive.contact_person,
             "responsibilities": drive.responsibilities,
             "requirements": drive.requirements,
-            "tech_stack": drive.tech_stack
+            "tech_stack": drive.tech_stack,
+            "no_active_backlogs": drive.no_active_backlogs
         }
 
 

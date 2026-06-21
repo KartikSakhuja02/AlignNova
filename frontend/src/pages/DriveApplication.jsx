@@ -271,13 +271,16 @@ export default function DriveApplication() {
           'Collaborate with engineering teams to identify requirements and refine user flows.',
           'Participate in reviews, system testing, and code quality improvement.'
         ],
-    requirements: drive.requirements
-      ? drive.requirements.split('\n').filter(Boolean)
-      : [
-          drive.eligibility ? `Minimum academic CGPA requirement of ${parseFloat(drive.eligibility).toFixed(2)} / 10.` : 'Strong academic background.',
-          'Core technical understanding of data structures and algorithms.',
-          'Excellent verbal and written communication skills.'
-        ],
+    requirements: [
+      ...(drive.no_active_backlogs ? ["No active backlogs allowed."] : []),
+      ...(drive.requirements
+        ? drive.requirements.split('\n').filter(Boolean)
+        : [
+            drive.eligibility ? `Minimum academic CGPA requirement of ${parseFloat(drive.eligibility).toFixed(2)} / 10.` : 'Strong academic background.',
+            'Core technical understanding of data structures and algorithms.',
+            'Excellent verbal and written communication skills.'
+          ])
+    ],
     techStack: drive.tech_stack
       ? drive.tech_stack.split(',').map(s => s.trim()).filter(Boolean)
       : ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],

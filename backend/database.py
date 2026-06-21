@@ -71,6 +71,8 @@ class Drive(Base):
     responsibilities = Column(String, nullable=True, default="")
     requirements = Column(String, nullable=True, default="")
     tech_stack = Column(String, nullable=True, default="")
+    no_active_backlogs = Column(Integer, nullable=True, default=0)
+
 
 
 class Application(Base):
@@ -130,7 +132,8 @@ def init_db() -> None:
                 "contact_person": "VARCHAR(255) DEFAULT ''",
                 "responsibilities": "TEXT DEFAULT ''",
                 "requirements": "TEXT DEFAULT ''",
-                "tech_stack": "TEXT DEFAULT ''"
+                "tech_stack": "TEXT DEFAULT ''",
+                "no_active_backlogs": "INTEGER DEFAULT 0"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -312,7 +315,8 @@ def create_drive(
     location: str | None = None, stipend: str | None = None, description: str | None = None, other_benefits: str | None = None, duration: str | None = None,
     eligible_courses: str | None = None, selection_process: str | None = None, about_company: str | None = None, website: str | None = None,
     org_size: str | None = None, contact_person: str | None = None,
-    responsibilities: str | None = None, requirements: str | None = None, tech_stack: str | None = None
+    responsibilities: str | None = None, requirements: str | None = None, tech_stack: str | None = None,
+    no_active_backlogs: int | None = 0
 ):
     with SessionLocal() as db:
         drive = Drive(
@@ -320,7 +324,8 @@ def create_drive(
             location=location or "", stipend=stipend or "", description=description or "", other_benefits=other_benefits or "",
             duration=duration or "", eligible_courses=eligible_courses or "", selection_process=selection_process or "",
             about_company=about_company or "", website=website or "", org_size=org_size or "", contact_person=contact_person or "",
-            responsibilities=responsibilities or "", requirements=requirements or "", tech_stack=tech_stack or ""
+            responsibilities=responsibilities or "", requirements=requirements or "", tech_stack=tech_stack or "",
+            no_active_backlogs=no_active_backlogs if no_active_backlogs is not None else 0
         )
         db.add(drive)
         db.commit()
@@ -346,7 +351,8 @@ def create_drive(
             "contact_person": drive.contact_person,
             "responsibilities": drive.responsibilities,
             "requirements": drive.requirements,
-            "tech_stack": drive.tech_stack
+            "tech_stack": drive.tech_stack,
+            "no_active_backlogs": drive.no_active_backlogs
         }
 
 
@@ -359,7 +365,7 @@ def list_drives():
                 "location": r.location, "stipend": r.stipend, "description": r.description, "other_benefits": r.other_benefits, "duration": r.duration,
                 "eligible_courses": r.eligible_courses, "selection_process": r.selection_process, "about_company": r.about_company, "website": r.website,
                 "org_size": r.org_size, "contact_person": r.contact_person, "responsibilities": r.responsibilities, "requirements": r.requirements,
-                "tech_stack": r.tech_stack
+                "tech_stack": r.tech_stack, "no_active_backlogs": r.no_active_backlogs
             }
             for r in rows
         ]
