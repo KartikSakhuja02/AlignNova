@@ -449,6 +449,8 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddPartner, setShowAddPartner] = useState(false);
+  const [partnerToDelete, setPartnerToDelete] = useState(null);
+  const [deletingPartner, setDeletingPartner] = useState(false);
 
   const fetchPartners = useCallback(async () => {
     setLoading(true);
@@ -471,20 +473,24 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
     fetchPartners();
   }, [fetchPartners]);
 
-  const handleDeletePartner = async (id) => {
-    if (!window.confirm("Are you sure you want to remove this corporate partner?")) return;
+  const handleDeletePartnerConfirm = async () => {
+    if (!partnerToDelete) return;
+    setDeletingPartner(true);
     try {
-      const res = await fetch(`/api/admin/partners/${id}`, {
+      const res = await fetch(`/api/admin/partners/${partnerToDelete.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
-        setPartners(partners.filter(p => p.id !== id));
+        setPartners(partners.filter(p => p.id !== partnerToDelete.id));
+        setPartnerToDelete(null);
       } else {
         alert("Failed to delete partner");
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setDeletingPartner(false);
     }
   };
 
@@ -546,9 +552,19 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
               <div key={partner.id} className="bg-white rounded-2xl border border-outline-variant shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between group">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-title-lg shadow-inner ${colorClass}`}>
-                      {logo}
-                    </div>
+                    {partner.profile_image ? (
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-outline-variant flex items-center justify-center shadow-inner bg-white flex-shrink-0">
+                        <img 
+                          src={partner.profile_image} 
+                          alt={`${partner.company} Logo`} 
+                          className="w-full h-full object-contain" 
+                        />
+                      </div>
+                    ) : (
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-title-lg shadow-inner flex-shrink-0 ${colorClass}`}>
+                        {logo}
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-bold text-on-surface text-body-lg group-hover:text-primary transition-colors">{partner.company || 'Corporate Partner'}</h3>
                       <p className="text-caption text-on-surface-variant">{partner.full_name}</p>
@@ -566,7 +582,7 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
                   </span>
                   <button 
                     type="button"
-                    onClick={() => handleDeletePartner(partner.id)}
+                    onClick={() => setPartnerToDelete(partner)}
                     className="p-1.5 hover:bg-error-container/30 rounded-lg text-error transition-colors"
                     title="Remove corporate partner"
                   >
@@ -584,6 +600,12 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
         token={token}
         onClose={() => setShowAddPartner(false)}
         onAdded={() => fetchPartners()}
+      />
+      <ConfirmDeletePartnerModal 
+        partner={partnerToDelete}
+        onCancel={() => setPartnerToDelete(null)}
+        onConfirm={handleDeletePartnerConfirm}
+        deleting={deletingPartner}
       />
     </div>
   );
@@ -1490,6 +1512,60 @@ function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
               )}
               {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConfirmDeletePartnerModal({ partner, onConfirm, onCancel, deleting }) {
+  if (!partner) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
+          </div>
+          <h2 className="text-white font-bold text-title-md">Remove Partner</h2>
+        </div>
+        <div className="p-6">
+          <p className="text-body-md text-on-surface mb-1">
+            Are you sure you want to remove
+          </p>
+          <p className="text-title-md font-extrabold text-on-surface mb-3">
+            {partner.company || partner.full_name}
+          </p>
+          <div className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 mb-6">
+            <p className="text-caption text-error font-semibold flex items-center gap-1.5">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>warning</span>
+              This will permanently revoke recruiter access. Drives linked to this partner will lose their association.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              disabled={deleting}
+              className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={deleting}
+              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {deleting ? (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              ) : (
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '18px' }}>delete</span>
+              )}
+              {deleting ? 'Removing...' : 'Remove'}
             </button>
           </div>
         </div>

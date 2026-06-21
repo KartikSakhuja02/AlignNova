@@ -437,7 +437,7 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
                 if p_id:
                     partner_user = db.query(User).filter(User.id == p_id, User.role == "hr").first()
                     if partner_user and partner_user.profile_image:
-                        partner_logo = partner_user.profile_image
+                        partner_logo = f"{base_url}/api/partners/{p_id}/logo"
 
                 students = db.query(User).filter(User.role == "student").all()
                 for student in students:
@@ -1089,10 +1089,39 @@ def admin_list_partners(request: Request):
                 "full_name": p.full_name,
                 "email": p.email,
                 "company": p.enrollment_id,
+                "profile_image": p.profile_image or "",
                 "created_at": p.created_at.isoformat() if p.created_at else None
             }
             for p in partners
         ]
+
+
+# ── Serve Corporate Partner Logo as raw binary image ────────────────────────
+@app.get("/api/partners/{partner_id}/logo")
+def get_partner_logo(partner_id: int):
+    from backend.database import SessionLocal, User
+    with SessionLocal() as db:
+        partner = db.query(User).filter(User.id == partner_id, User.role == "hr").first()
+        if not partner or not partner.profile_image:
+            raise HTTPException(status_code=404, detail="logo_not_found")
+        
+        img_str = partner.profile_image
+        if "," in img_str:
+            try:
+                header, data_str = img_str.split(",", 1)
+                import base64
+                from fastapi.responses import Response
+                img_data = base64.b64decode(data_str)
+                content_type = "image/jpeg"
+                if "image/png" in header:
+                    content_type = "image/png"
+                elif "image/gif" in header:
+                    content_type = "image/gif"
+                return Response(content=img_data, media_type=content_type)
+            except Exception as e:
+                print(f"[get_partner_logo] Error decoding: {e}")
+                
+        raise HTTPException(status_code=404, detail="invalid_logo_data")
 
 
 # ── Admin: Delete Corporate Partner ───────────────────────────────────────────
