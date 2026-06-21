@@ -4,50 +4,6 @@ import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-// ─── Stat Data ────────────────────────────────────────────────────────────────
-
-const statsData = [
-  {
-    icon: 'person_check',
-    iconColor: 'text-primary',
-    iconBg: 'bg-primary-container/10 group-hover:bg-primary-container/20',
-    trend: '+4.2%',
-    label: 'Student Eligibility',
-    value: '86.4%',
-    sub: '2,410 Students eligible',
-    subColor: 'text-outline',
-  },
-  {
-    icon: 'rocket_launch',
-    iconColor: 'text-secondary',
-    iconBg: 'bg-secondary-container/10 group-hover:bg-secondary-container/20',
-    trend: '+12%',
-    label: 'Placement Rate',
-    value: '72.1%',
-    sub: 'Target: 85% by June',
-    subColor: 'text-outline',
-  },
-  {
-    icon: 'corporate_fare',
-    iconColor: 'text-tertiary',
-    iconBg: 'bg-tertiary-container/10 group-hover:bg-tertiary-container/20',
-    trend: null,
-    label: 'Corporate Partners',
-    value: '142',
-    sub: '12 New this quarter',
-    subColor: 'text-outline',
-  },
-  {
-    icon: 'pending_actions',
-    iconColor: 'text-error',
-    iconBg: 'bg-error-container/20 group-hover:bg-error-container/30',
-    trend: null,
-    label: 'Pending Approvals',
-    value: '28',
-    sub: 'Requires immediate action',
-    subColor: 'text-error font-bold',
-  },
-];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -1091,6 +1047,9 @@ export default function AdminDashboard() {
   const [driveToEdit, setDriveToEdit] = useState(null);
   const [driveSearch, setDriveSearch] = useState('');
 
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsData, setStatsData] = useState([]);
+
   const fetchDrives = useCallback(async () => {
     setLoadingDrives(true);
     try {
@@ -1165,6 +1124,73 @@ export default function AdminDashboard() {
     fetchStudents();
     fetchDrives();
   }, [fetchStudents, fetchDrives]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    setLoadingStats(true);
+
+    fetch("http://localhost:8000/api/dashboard/stats", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (res) => {
+        console.log("Status:", res.status);
+        console.log("URL:", res.url);
+
+        const text = await res.text();
+        console.log("Response Body:", text);
+
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+
+        return JSON.parse(text);
+      })
+      .then((data) => {
+        setStatsData([
+          {
+            icon: "school",
+            iconColor: "text-blue-600",
+            iconBg: "bg-blue-100",
+            label: "Students",
+            value: data.total_students,
+            sub: "Registered Students",
+            subColor: "text-blue-600",
+          },
+          {
+            icon: "campaign",
+            iconColor: "text-green-600",
+            iconBg: "bg-green-100",
+            label: "Drives",
+            value: data.total_drives,
+            sub: "Total Opportunities",
+            subColor: "text-green-600",
+          },
+          {
+            icon: "description",
+            iconColor: "text-purple-600",
+            iconBg: "bg-purple-100",
+            label: "Applications",
+            value: data.total_applications,
+            sub: "Applications Submitted",
+            subColor: "text-purple-600",
+          },
+          {
+            icon: "verified",
+            iconColor: "text-emerald-600",
+            iconBg: "bg-emerald-100",
+            label: "Placement %",
+            value: `${data.placement_percentage}%`,
+            sub: `${data.placed_students} Students Placed`,
+            subColor: "text-emerald-600",
+          },
+        ]);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingStats(false));
+  }, []);
 
   const handleFormChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -1369,9 +1395,20 @@ export default function AdminDashboard() {
                   <h2 className="text-headline-lg font-bold text-on-surface">Institutional Intelligence</h2>
                   <p className="text-body-md text-on-surface-variant">Real-time placement analytics</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {statsData.map((s) => <StatCard key={s.label} {...s} />)}
-                </div>
+                {loadingStats ? (
+                  <div className="flex justify-center py-10">
+                    <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {statsData.map((s) => (
+                      <StatCard key={s.label} {...s} />
+                    ))}
+                  </div>
+                )}
               </section>
 
               {/* ── Section 2+3: Drive Form + Live Feed ── */}

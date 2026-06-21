@@ -9,6 +9,7 @@ from pydantic import BaseModel
 import hashlib
 import os
 
+from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db, get_user, get_user_by_email, create_user, update_profile, create_drive, list_drives, create_application, list_applications, list_users, update_password
 from backend.email_service import send_welcome_email, send_test_email_sync, print_config, get_config_status, send_reset_password_email
 from backend.models import UserPublic, CreateStudentPayload, SetPasswordPayload, RequestActivationPayload, TestEmailPayload
@@ -24,6 +25,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 app = FastAPI(title="AlignNova")
 main = app
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 FRONTEND_DIST = os.path.join(BASE_DIR, "frontend_dist")
@@ -57,7 +66,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     plain_password = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
     return pwd_context.verify(plain_password, hashed_password)
 
+def get_current_user(request: Request):
+    auth = request.headers.get("Authorization")
+    if not auth:
+        raise HTTPException(status_code=401, detail="missing_authorization")
 
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="invalid_authorization")
+
+    return get_current_user_from_token(parts[1])
 
 @app.post("/api/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -100,16 +118,8 @@ def me(request: Request, authorization: Optional[str] = None):
     return user.dict()
 
 
-@app.get('/api/profile')
-def get_profile(request: Request):
-    auth = request.headers.get('Authorization')
-    if not auth:
-        raise HTTPException(status_code=401, detail='missing_authorization')
-    parts = auth.split()
-    if len(parts) != 2 or parts[0].lower() != 'bearer':
-        raise HTTPException(status_code=401, detail='invalid_authorization')
-    token = parts[1]
-    user = get_current_user_from_token(token)
+@app.get("/api/profile")
+def get_profile(user = Depends(get_current_user)):
     return user.dict()
 
 
@@ -788,6 +798,53 @@ def admin_update_profile(request: Request, payload: dict):
         raise HTTPException(status_code=404, detail='user_not_found')
     return updated
 
+@app.get("/api/dashboard/stats")
+def dashboard_stats(request: Request):
+    auth = request.headers.get("Authorization")
+    if not auth:
+        raise HTTPException(status_code=401, detail="missing_authorization")
+
+    parts = auth.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="invalid_authorization")
+
+    token = parts[1]
+
+    try:
+        payload_token = decode_token(token)
+        role = payload_token.get("role")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="invalid_token")
+
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="admin_required")
+
+    from backend.database import SessionLocal, User, Drive, Application
+
+    with SessionLocal() as db:
+        total_students = db.query(User).filter(User.role == "student").count()
+        total_drives = db.query(Drive).count()
+        total_applications = db.query(Application).count()
+
+        placed_students = (
+            db.query(Application)
+            .filter(Application.status == "approved")
+            .count()
+        )
+
+        placement_percentage = (
+            round((placed_students / total_students) * 100, 1)
+            if total_students > 0 else 0
+        )
+
+    return {
+        "total_students": total_students,
+        "total_drives": total_drives,
+        "total_applications": total_applications,
+        "placed_students": placed_students,
+        "placement_percentage": placement_percentage,
+        "active_drives": total_drives
+    }
 
 # ── SPA catch-all ────────────────────────────────────────────────────────────
 # All non-API routes return the React index.html (or serve matching files from frontend_dist) so client-side routing works.
@@ -804,5 +861,3 @@ def spa_catchall(full_path: str):
         return FileResponse(index)
     # Fallback if the frontend hasn't been built yet
     return JSONResponse({'detail': 'Frontend not built. Run: cd frontend && npm run build'}, status_code=503)
-
-
