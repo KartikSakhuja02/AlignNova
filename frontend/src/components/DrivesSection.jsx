@@ -162,7 +162,7 @@ export default function DrivesSection() {
             <DriveCard
               key={drive.id}
               id={drive.id}
-              logo={getCompanyLogo(drive.company)}
+              logo={drive.company_logo || getCompanyLogo(drive.company)}
               altText={`${drive.company} Logo`}
               type={drive.type || 'Full-time'}
               company={drive.company}

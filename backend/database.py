@@ -75,6 +75,7 @@ class Drive(Base):
     no_active_backlogs = Column(Integer, nullable=True, default=0)
     min_10th_percent = Column(String, nullable=True, default="")
     min_12th_percent = Column(String, nullable=True, default="")
+    partner_id = Column(Integer, nullable=True)
 
 
 class Application(Base):
@@ -147,7 +148,8 @@ def init_db() -> None:
                 "tech_stack": "TEXT DEFAULT ''",
                 "no_active_backlogs": "INTEGER DEFAULT 0",
                 "min_10th_percent": "VARCHAR(255) DEFAULT ''",
-                "min_12th_percent": "VARCHAR(255) DEFAULT ''"
+                "min_12th_percent": "VARCHAR(255) DEFAULT ''",
+                "partner_id": "INTEGER DEFAULT NULL"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -352,7 +354,8 @@ def create_drive(
     org_size: str | None = None, contact_person: str | None = None,
     responsibilities: str | None = None, requirements: str | None = None, tech_stack: str | None = None,
     no_active_backlogs: int | None = 0,
-    min_10th_percent: str | None = None, min_12th_percent: str | None = None
+    min_10th_percent: str | None = None, min_12th_percent: str | None = None,
+    partner_id: int | None = None
 ):
     with SessionLocal() as db:
         drive = Drive(
@@ -363,7 +366,8 @@ def create_drive(
             responsibilities=responsibilities or "", requirements=requirements or "", tech_stack=tech_stack or "",
             no_active_backlogs=no_active_backlogs if no_active_backlogs is not None else 0,
             min_10th_percent=min_10th_percent or "",
-            min_12th_percent=min_12th_percent or ""
+            min_12th_percent=min_12th_percent or "",
+            partner_id=partner_id
         )
         db.add(drive)
         db.commit()
@@ -392,7 +396,8 @@ def create_drive(
             "tech_stack": drive.tech_stack,
             "no_active_backlogs": drive.no_active_backlogs,
             "min_10th_percent": drive.min_10th_percent,
-            "min_12th_percent": drive.min_12th_percent
+            "min_12th_percent": drive.min_12th_percent,
+            "partner_id": drive.partner_id
         }
 
 
@@ -406,7 +411,8 @@ def list_drives():
                 "eligible_courses": r.eligible_courses, "selection_process": r.selection_process, "about_company": r.about_company, "website": r.website,
                 "org_size": r.org_size, "contact_person": r.contact_person, "responsibilities": r.responsibilities, "requirements": r.requirements,
                 "tech_stack": r.tech_stack, "no_active_backlogs": r.no_active_backlogs,
-                "min_10th_percent": r.min_10th_percent, "min_12th_percent": r.min_12th_percent
+                "min_10th_percent": r.min_10th_percent, "min_12th_percent": r.min_12th_percent,
+                "partner_id": r.partner_id
             }
             for r in rows
         ]

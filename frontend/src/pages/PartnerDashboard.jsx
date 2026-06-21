@@ -1,13 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function PartnerDashboard() {
-  const { token, user, logout } = useAuth();
+  const { token, user, setUser, logout } = useAuth();
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [showLogoPromptModal, setShowLogoPromptModal] = useState(false);
+
+  useEffect(() => {
+    if (user && !user.profile_image) {
+      const dismissed = sessionStorage.getItem('dismissed-logo-prompt');
+      if (!dismissed) {
+        setShowLogoPromptModal(true);
+      }
+    }
+  }, [user]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError('');
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 400;
+        let { width, height } = img;
+        if (width > height) {
+          if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+        } else {
+          if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+        
+        fetch('/api/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ profile_image: compressed })
+        })
+          .then(async (res) => {
+            if (!res.ok) throw new Error('Failed to update logo');
+            return res.json();
+          })
+          .then((updated) => {
+            setUser(updated);
+            setShowLogoPromptModal(false);
+          })
+          .catch((err) => {
+            setUploadError(err.message);
+          })
+          .finally(() => {
+            setUploading(false);
+          });
+      };
+    };
+  };
 
   useEffect(() => {
     if (!token) return;
@@ -51,9 +115,13 @@ export default function PartnerDashboard() {
       {/* Sidebar Navigation */}
       <aside className="bg-white h-screen w-64 fixed left-0 top-0 border-r border-outline-variant shadow-sm flex flex-col py-6 z-50">
         <div className="px-6 mb-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-[24px]">auto_awesome</span>
-          </div>
+          {user?.profile_image ? (
+            <img src={user.profile_image} alt="Logo" className="w-10 h-10 object-contain rounded-lg border border-outline-variant" />
+          ) : (
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <span className="material-symbols-outlined text-primary text-[24px]">auto_awesome</span>
+            </div>
+          )}
           <div>
             <h1 className="font-headline-md text-[18px] font-bold text-primary leading-tight">AlignNova</h1>
             <p className="text-[10px] text-on-surface-variant uppercase font-semibold tracking-wider">Partner Portal</p>
@@ -122,15 +190,72 @@ export default function PartnerDashboard() {
                 <p className="font-bold text-label-md text-on-surface group-hover:text-primary transition-colors">{user?.full_name || 'Alex Thorne'}</p>
                 <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">{user?.enrollment_id || 'Corporate Partner'}</p>
               </div>
-              <div className="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
-                {user?.full_name ? getInitials(user.full_name) : 'AT'}
-              </div>
+              {user?.profile_image ? (
+                <img src={user.profile_image} alt="Logo" className="w-10 h-10 rounded-full border border-primary/20 object-contain" />
+              ) : (
+                <div className="w-10 h-10 rounded-full border-2 border-primary/20 overflow-hidden bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">
+                  {user?.full_name ? getInitials(user.full_name) : 'AT'}
+                </div>
+              )}
             </div>
           </div>
         </header>
 
         {/* Dashboard Content */}
         <div className="pt-24 pb-12 px-8 max-w-[1400px] w-full mx-auto space-y-8 flex-1">
+          {/* Complete Profile Logo Banner */}
+          {!user?.profile_image && (
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-600/5 to-transparent border border-amber-500/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-amber-500/20 text-amber-700 rounded-xl flex items-center justify-center flex-shrink-0 animate-pulse">
+                  <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>campaign</span>
+                </div>
+                <div>
+                  <h4 className="font-bold text-body-lg text-on-surface">Upload Your Company Logo</h4>
+                  <p className="text-body-md text-on-surface-variant mt-1">
+                    Please upload your organization's official brand logo as your profile photo. This logo will automatically represent your company in all automated candidate opportunity alerts, matching emails, and on student-facing dashboards.
+                  </p>
+                  {uploadError && (
+                    <p className="text-caption text-error font-semibold mt-2 flex items-center gap-1">
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>error</span>
+                      {uploadError}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-label-md font-semibold shadow-md active:scale-95 transition-all flex items-center gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload_file</span>
+                      Upload Logo
+                    </>
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
@@ -416,6 +541,82 @@ export default function PartnerDashboard() {
           </div>
         </div>
       </main>
+
+      {/* Logo Prompt Modal */}
+      {showLogoPromptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-background/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl border border-outline-variant max-w-md w-full shadow-2xl p-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => {
+                setShowLogoPromptModal(false);
+                sessionStorage.setItem('dismissed-logo-prompt', 'true');
+              }}
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-amber-500/10 text-amber-700 rounded-full flex items-center justify-center mb-4 animate-bounce">
+                <span className="material-symbols-outlined text-[32px]">business</span>
+              </div>
+              <h3 className="text-headline-md font-bold text-on-surface">Complete Corporate Profile</h3>
+              <p className="text-body-md text-on-surface-variant mt-2 px-2">
+                Welcome to AlignNova! Please upload your company's official brand logo as your profile photo. 
+                This logo will automatically represent your company in all automated candidate opportunity alerts, matching emails, and on student-facing dashboards.
+              </p>
+
+              <div className="w-full mt-6 p-6 border-2 border-dashed border-outline-variant/60 hover:border-primary/60 rounded-xl bg-surface-container-lowest transition-colors flex flex-col items-center justify-center cursor-pointer"
+                   onClick={() => fileInputRef.current?.click()}>
+                <span className="material-symbols-outlined text-outline text-[40px] mb-2">upload_file</span>
+                <span className="text-label-md font-bold text-primary">Click to select file</span>
+                <span className="text-caption text-on-surface-variant mt-1">Supports PNG, JPG (Max 400x400 px)</span>
+              </div>
+
+              {uploadError && (
+                <p className="text-caption text-error font-semibold mt-3 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px]">error</span>
+                  {uploadError}
+                </p>
+              )}
+
+              <div className="w-full flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowLogoPromptModal(false);
+                    sessionStorage.setItem('dismissed-logo-prompt', 'true');
+                  }}
+                  className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
+                >
+                  Skip for Now
+                </button>
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>upload</span>
+                      Select Logo
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

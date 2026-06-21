@@ -660,8 +660,19 @@ def _build_opportunity_alert_html(
     fit_explanation: str,
     apply_url: str,
     logo_white_url: str,
-    updated_requirements_str: str = ""
+    updated_requirements_str: str = "",
+    company_logo_url: str = None
 ) -> str:
+    logo_cell = ""
+    if company_logo_url:
+        logo_cell = f"""
+              <td style="vertical-align: middle; padding-right: 16px; width: 64px;">
+                <div style="width: 56px; height: 56px; background-color: #ffffff; border-radius: 12px; border: 1px solid #c7c4d8; text-align: center; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                  <img src="{company_logo_url}" alt="{company} Logo" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" />
+                </div>
+              </td>
+        """
+
     req_update_block = ""
     if updated_requirements_str:
         bullets = "".join(f"<li style='margin-bottom: 6px;'>{item.strip('- ')}</li>" for item in updated_requirements_str.strip().split("\n") if item.strip())
@@ -710,6 +721,7 @@ def _build_opportunity_alert_html(
         <div style="background-color: #e7eeff; padding: 24px; border-radius: 12px; border: 1px solid #c7c4d8;">
           <table role="presentation" style="width: 100%; border-collapse: collapse;">
             <tr>
+              {logo_cell}
               <td style="vertical-align: middle;">
                 <div style="font-size: 14px; font-weight: 600; color: #006c49; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">New Opportunity</div>
                 <h3 style="font-size: 20px; font-weight: 700; color: #111c2d; margin: 0 0 4px 0;">{role}</h3>
@@ -794,7 +806,8 @@ def send_opportunity_alert_email(
     deadline: str,
     fit_explanation: str,
     base_url: str = None,
-    updated_requirements_str: str = ""
+    updated_requirements_str: str = "",
+    company_logo_url: str = None
 ) -> bool:
     """
     Send the opportunity alert email.
@@ -819,7 +832,8 @@ def send_opportunity_alert_email(
         fit_explanation=fit_explanation,
         apply_url=apply_url,
         logo_white_url=logo_white_url,
-        updated_requirements_str=updated_requirements_str
+        updated_requirements_str=updated_requirements_str,
+        company_logo_url=company_logo_url
     )
     
     plain_update_str = f"\n\nRequirement Update:\nYou are now eligible because the criteria were updated:\n{updated_requirements_str}" if updated_requirements_str else ""

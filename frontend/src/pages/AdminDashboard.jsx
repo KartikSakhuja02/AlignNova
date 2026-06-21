@@ -729,7 +729,7 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
 
 // ─── Edit Drive Modal ────────────────────────────────────────────────────────
 
-function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
+function EditDriveModal({ visible, drive, token, partners = [], onClose, onSaved }) {
   const [form, setForm] = useState({
     company: '', role: '', type: 'Placement',
     eligibility: '', package: '', drive_date: '',
@@ -741,6 +741,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     no_active_backlogs: 0,
     min_10th_percent: '',
     min_12th_percent: '',
+    partner_id: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -772,6 +773,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
         no_active_backlogs: drive.no_active_backlogs || 0,
         min_10th_percent: drive.min_10th_percent || '',
         min_12th_percent: drive.min_12th_percent || '',
+        partner_id: drive.partner_id || '',
       });
       setError('');
     }
@@ -784,6 +786,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     
     const payload = {
       ...form,
+      partner_id: form.partner_id || null,
       eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
       min_10th_percent: form.min_10th_percent && !isNaN(form.min_10th_percent) ? parseFloat(form.min_10th_percent).toFixed(2) : form.min_10th_percent,
       min_12th_percent: form.min_12th_percent && !isNaN(form.min_12th_percent) ? parseFloat(form.min_12th_percent).toFixed(2) : form.min_12th_percent,
@@ -841,6 +844,41 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1 col-span-1 md:col-span-2">
+              <label className="text-label-md text-on-surface font-semibold flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[18px] text-primary">business_center</span>
+                Associated Corporate Partner (Optional)
+              </label>
+              <select
+                name="partner_id"
+                value={form.partner_id || ''}
+                onChange={(e) => {
+                  const pId = e.target.value;
+                  if (pId) {
+                    const selectedPartner = partners.find(p => p.id === parseInt(pId));
+                    if (selectedPartner) {
+                      setForm(prev => ({
+                        ...prev,
+                        partner_id: selectedPartner.id,
+                        company: selectedPartner.company || prev.company,
+                        website: selectedPartner.website || prev.website || '',
+                        contact_person: selectedPartner.full_name || prev.contact_person || ''
+                      }));
+                    }
+                  } else {
+                    setForm(prev => ({ ...prev, partner_id: '' }));
+                  }
+                }}
+                className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-2.5 text-body-md bg-surface-container-lowest transition-all"
+              >
+                <option value="">-- Generic (No Partner Link) --</option>
+                {partners.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.company} ({p.full_name})
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="space-y-1">
               <label className="text-label-md text-on-surface font-semibold">Company Name</label>
               <input
@@ -1764,6 +1802,7 @@ export default function AdminDashboard() {
     no_active_backlogs: 0,
     min_10th_percent: '',
     min_12th_percent: '',
+    partner_id: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
@@ -1789,6 +1828,20 @@ export default function AdminDashboard() {
   const [driveSearch, setDriveSearch] = useState('');
   const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [driveForTimeline, setDriveForTimeline] = useState(null);
+
+  const [partners, setPartners] = useState([]);
+  const fetchPartners = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch('/api/admin/partners', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPartners(data);
+      }
+    } catch { /* ignore */ }
+  }, [token]);
 
   const [loadingStats, setLoadingStats] = useState(true);
   const [statsData, setStatsData] = useState([]);
@@ -1868,14 +1921,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchStudents();
     fetchDrives();
-  }, [fetchStudents, fetchDrives]);
+    fetchPartners();
+  }, [fetchStudents, fetchDrives, fetchPartners]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     setLoadingStats(true);
 
-    fetch("http://localhost:8000/api/dashboard/stats", {
+    fetch("/api/dashboard/stats", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -1960,6 +2014,7 @@ export default function AdminDashboard() {
       no_active_backlogs: form.no_active_backlogs,
       min_10th_percent: form.min_10th_percent && !isNaN(form.min_10th_percent) ? parseFloat(form.min_10th_percent).toFixed(2) : form.min_10th_percent,
       min_12th_percent: form.min_12th_percent && !isNaN(form.min_12th_percent) ? parseFloat(form.min_12th_percent).toFixed(2) : form.min_12th_percent,
+      partner_id: form.partner_id || null,
     };
     if (form.type === 'Placement') {
       payload.stipend = '';
@@ -1988,6 +2043,7 @@ export default function AdminDashboard() {
         no_active_backlogs: 0,
         min_10th_percent: '',
         min_12th_percent: '',
+        partner_id: '',
       });
     } catch (err) {
       setFormError(err.message);
@@ -2189,6 +2245,41 @@ export default function AdminDashboard() {
 
                     <form onSubmit={handleLaunchDrive} className="space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2 col-span-1 md:col-span-2">
+                          <label className="text-label-md text-on-surface font-semibold flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[18px] text-primary">business_center</span>
+                            Select Corporate Partner (Optional)
+                          </label>
+                          <select
+                            name="partner_id"
+                            value={form.partner_id || ''}
+                            onChange={(e) => {
+                              const pId = e.target.value;
+                              if (pId) {
+                                const selectedPartner = partners.find(p => p.id === parseInt(pId));
+                                if (selectedPartner) {
+                                  setForm(prev => ({
+                                    ...prev,
+                                    partner_id: selectedPartner.id,
+                                    company: selectedPartner.company || prev.company,
+                                    website: selectedPartner.website || prev.website || '',
+                                    contact_person: selectedPartner.full_name || prev.contact_person || ''
+                                  }));
+                                }
+                              } else {
+                                setForm(prev => ({ ...prev, partner_id: '' }));
+                              }
+                            }}
+                            className="w-full border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none px-4 py-3 text-body-md bg-surface-container-lowest transition-all"
+                          >
+                            <option value="">-- Generic (No Partner Link) --</option>
+                            {partners.map(p => (
+                              <option key={p.id} value={p.id}>
+                                {p.company} ({p.full_name})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <div className="space-y-2">
                           <label className="text-label-md text-on-surface font-semibold">Company Name</label>
                           <input
@@ -2921,6 +3012,7 @@ export default function AdminDashboard() {
         visible={showEditDrive}
         drive={driveToEdit}
         token={token}
+        partners={partners}
         onClose={() => { setShowEditDrive(false); setDriveToEdit(null); }}
         onSaved={() => fetchDrives()}
       />

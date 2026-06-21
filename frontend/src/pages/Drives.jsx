@@ -224,7 +224,7 @@ export default function Drives() {
 
   const mappedDrives = dbDrives.map((d) => ({
     id: d.id,
-    logo: getCompanyLogo(d.company),
+    logo: d.company_logo || getCompanyLogo(d.company),
     logoAlt: `${d.company} Logo`,
     logoBg: getLogoBg(d.company),
     logoBorder: getLogoBorder(d.company),

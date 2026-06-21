@@ -263,7 +263,7 @@ export default function DriveApplication() {
 
   const details = drive ? {
     company: drive.company,
-    logo: getCompanyLogo(drive.company),
+    logo: drive.company_logo || getCompanyLogo(drive.company),
     title: drive.role,
     location: drive.location || 'TBD',
     duration: drive.duration || (drive.type === 'Placement' ? 'Full-Time' : 'Internship'),

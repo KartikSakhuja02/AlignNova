@@ -423,7 +423,6 @@ def check_student_eligibility(user_dict, drive_dict) -> tuple:
     
     return True, explanation
 
-
 def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool = False, changes: list = None):
     def broadcast_task():
         try:
@@ -433,6 +432,13 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
             base_url = f"{proto}://{host}" if host else "http://localhost:5173"
             
             with SessionLocal() as db:
+                partner_logo = ""
+                p_id = drive_dict.get("partner_id")
+                if p_id:
+                    partner_user = db.query(User).filter(User.id == p_id, User.role == "hr").first()
+                    if partner_user and partner_user.profile_image:
+                        partner_logo = partner_user.profile_image
+
                 students = db.query(User).filter(User.role == "student").all()
                 for student in students:
                     if not student.email or not student.email.strip():
@@ -485,7 +491,7 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
                             req_changes_str = ""
                             if is_update and not already_sent and changes:
                                 req_changes_str = "\n".join(f"- {c}" for c in changes)
-
+ 
                             send_opportunity_alert_email(
                                 to_email=student.email,
                                 student_name=student.full_name or student.username,
@@ -497,7 +503,8 @@ def run_broadcast_task(drive_dict: dict, request_headers: dict, is_update: bool 
                                 deadline=deadline_str,
                                 fit_explanation=explanation,
                                 base_url=base_url,
-                                updated_requirements_str=req_changes_str
+                                updated_requirements_str=req_changes_str,
+                                company_logo_url=partner_logo or None
                             )
                             
                             if not already_sent:
@@ -539,7 +546,8 @@ def post_drive(request: Request, payload: dict):
         tech_stack=payload.get('tech_stack'),
         no_active_backlogs=payload.get('no_active_backlogs', 0),
         min_10th_percent=payload.get('min_10th_percent', ''),
-        min_12th_percent=payload.get('min_12th_percent', '')
+        min_12th_percent=payload.get('min_12th_percent', ''),
+        partner_id=payload.get('partner_id')
     )
 
     run_broadcast_task(drive, dict(request.headers), is_update=False)
@@ -550,6 +558,19 @@ def post_drive(request: Request, payload: dict):
 @app.get('/api/drives')
 def get_drives(request: Request):
     drives = list_drives()
+    from backend.database import SessionLocal, User
+    with SessionLocal() as db:
+        partner_logos = {}
+        for d in drives:
+            p_id = d.get("partner_id")
+            if p_id:
+                if p_id not in partner_logos:
+                    partner = db.query(User).filter(User.id == p_id, User.role == 'hr').first()
+                    partner_logos[p_id] = partner.profile_image if (partner and partner.profile_image) else ""
+                d["company_logo"] = partner_logos[p_id]
+            else:
+                d["company_logo"] = ""
+
     user = get_current_db_user_from_request(request)
     if user and user.get("role") == "student":
         eligible_drives = []
@@ -569,6 +590,12 @@ def get_drive_detail(drive_id: int, request: Request):
         if not drive:
             raise HTTPException(status_code=404, detail='drive_not_found')
             
+        company_logo = ""
+        if drive.partner_id:
+            partner = db.query(User).filter(User.id == drive.partner_id, User.role == 'hr').first()
+            if partner and partner.profile_image:
+                company_logo = partner.profile_image
+
         drive_dict = {
             "id": drive.id,
             "company": drive.company,
@@ -593,7 +620,9 @@ def get_drive_detail(drive_id: int, request: Request):
             "tech_stack": drive.tech_stack or "",
             "no_active_backlogs": drive.no_active_backlogs or 0,
             "min_10th_percent": drive.min_10th_percent or "",
-            "min_12th_percent": drive.min_12th_percent or ""
+            "min_12th_percent": drive.min_12th_percent or "",
+            "partner_id": drive.partner_id,
+            "company_logo": company_logo
         }
         
         user = get_current_db_user_from_request(request)
@@ -686,10 +715,18 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             drive.no_active_backlogs = payload.get('no_active_backlogs')
         drive.min_10th_percent = payload.get('min_10th_percent', drive.min_10th_percent)
         drive.min_12th_percent = payload.get('min_12th_percent', drive.min_12th_percent)
+        if 'partner_id' in payload:
+            drive.partner_id = payload.get('partner_id')
         
         db.add(drive)
         db.commit()
         db.refresh(drive)
+
+        company_logo = ""
+        if drive.partner_id:
+            partner = db.query(User).filter(User.id == drive.partner_id, User.role == 'hr').first()
+            if partner and partner.profile_image:
+                company_logo = partner.profile_image
         
         ret = {
             "id": drive.id,
@@ -715,7 +752,9 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "tech_stack": drive.tech_stack,
             "no_active_backlogs": drive.no_active_backlogs,
             "min_10th_percent": drive.min_10th_percent,
-            "min_12th_percent": drive.min_12th_percent
+            "min_12th_percent": drive.min_12th_percent,
+            "partner_id": drive.partner_id,
+            "company_logo": company_logo
         }
         run_broadcast_task(ret, dict(request.headers), is_update=True, changes=changes)
         return ret
