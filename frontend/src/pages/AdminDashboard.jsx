@@ -1333,7 +1333,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-caption text-primary font-semibold uppercase tracking-wider mb-1">Admin Portal</p>
                   <h1 className="text-headline-lg font-extrabold text-on-surface">
-                    Welcome back, {adminName.split(' ')[0]} 👋
+                    Welcome, {adminName.split(' ')[0]} 👋
                   </h1>
                   <p className="text-body-md text-on-surface-variant mt-1">{adminTitle}</p>
                 </div>
