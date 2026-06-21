@@ -3,7 +3,15 @@ import AdminSidebar from '../components/AdminSidebar';
 import OnboardingEmailPreview from '../components/OnboardingEmailPreview';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { COURSE_OPTIONS } from '../utils/constants';
+import { COURSE_OPTIONS, SELECTION_ROUNDS } from '../utils/constants';
+
+const parseRounds = (selStr) => {
+  if (!selStr) return [];
+  return selStr.split('\n').filter(Boolean).map(line => {
+    const parts = line.split(/[–-]/);
+    return (parts[1] || parts[0] || '').trim();
+  });
+};
 
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -763,13 +771,56 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
-                  <textarea
-                    name="selection_process" value={form.selection_process} onChange={(e) => setForm({...form, selection_process: e.target.value})}
-                    placeholder="Specify selection stages (one per line)..."
-                    rows={3}
-                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                  />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process / Rounds</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = parseRounds(form.selection_process);
+                        const allSelected = current.length === SELECTION_ROUNDS.length;
+                        const next = allSelected ? [] : SELECTION_ROUNDS;
+                        
+                        const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+                        const formatted = next
+                          .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
+                          .join('\n');
+                        setForm({ ...form, selection_process: formatted });
+                      }}
+                      className="text-caption font-bold text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2.5 py-1 rounded transition-colors select-none"
+                    >
+                      {parseRounds(form.selection_process).length === SELECTION_ROUNDS.length ? 'Deselect All' : 'Select All Rounds'}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
+                    {SELECTION_ROUNDS.map((round) => {
+                      const selected = parseRounds(form.selection_process).includes(round);
+                      return (
+                        <label key={round} className="flex items-start gap-2.5 p-1.5 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer select-none text-body-md text-on-surface">
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            onChange={(e) => {
+                              const current = parseRounds(form.selection_process);
+                              let next;
+                              if (e.target.checked) {
+                                next = [...current, round];
+                              } else {
+                                next = current.filter((r) => r !== round);
+                              }
+                              
+                              const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+                              const formatted = next
+                                .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
+                                .join('\n');
+                              setForm({ ...form, selection_process: formatted });
+                            }}
+                            className="mt-1 rounded text-primary focus:ring-primary/20"
+                          />
+                          <span>{round}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Other Benefits & Joining Terms</label>
@@ -1751,13 +1802,56 @@ export default function AdminDashboard() {
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process Details (One step per line)</label>
-                              <textarea
-                                name="selection_process" value={form.selection_process} onChange={handleFormChange}
-                                rows={3}
-                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
-                                placeholder="Specify selection stages (one per line)..."
-                              />
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Selection Process / Rounds</label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current = parseRounds(form.selection_process);
+                                    const allSelected = current.length === SELECTION_ROUNDS.length;
+                                    const next = allSelected ? [] : SELECTION_ROUNDS;
+                                    
+                                    const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+                                    const formatted = next
+                                      .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
+                                      .join('\n');
+                                    setForm({ ...form, selection_process: formatted });
+                                  }}
+                                  className="text-caption font-bold text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2.5 py-1 rounded transition-colors select-none"
+                                >
+                                  {parseRounds(form.selection_process).length === SELECTION_ROUNDS.length ? 'Deselect All' : 'Select All Rounds'}
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-outline-variant rounded-xl p-3 bg-surface-container-lowest">
+                                {SELECTION_ROUNDS.map((round) => {
+                                  const selected = parseRounds(form.selection_process).includes(round);
+                                  return (
+                                    <label key={round} className="flex items-start gap-2.5 p-1.5 rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer select-none text-body-md text-on-surface">
+                                      <input
+                                        type="checkbox"
+                                        checked={selected}
+                                        onChange={(e) => {
+                                          const current = parseRounds(form.selection_process);
+                                          let next;
+                                          if (e.target.checked) {
+                                            next = [...current, round];
+                                          } else {
+                                            next = current.filter((r) => r !== round);
+                                          }
+                                          
+                                          const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
+                                          const formatted = next
+                                            .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
+                                            .join('\n');
+                                          setForm({ ...form, selection_process: formatted });
+                                        }}
+                                        className="mt-1 rounded text-primary focus:ring-primary/20"
+                                      />
+                                      <span>{round}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
                             </div>
 
                             <div className="space-y-1">

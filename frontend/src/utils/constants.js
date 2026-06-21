@@ -13,3 +13,14 @@ export const COURSE_OPTIONS = [
   "B.Tech. - CSE - Cyber Security and Forensic",
   "Integrated B.Tech. - CSE - Artificial Intelligence & Analytics"
 ];
+
+export const SELECTION_ROUNDS = [
+  "Resume Shortlisting",
+  "Aptitude Test",
+  "Technical Test",
+  "Coding Round",
+  "Group Discussion",
+  "Technical Interview",
+  "Managerial Interview",
+  "HR Interview"
+];
