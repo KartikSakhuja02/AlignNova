@@ -68,6 +68,9 @@ class Drive(Base):
     website = Column(String, nullable=True, default="")
     org_size = Column(String, nullable=True, default="")
     contact_person = Column(String, nullable=True, default="")
+    responsibilities = Column(String, nullable=True, default="")
+    requirements = Column(String, nullable=True, default="")
+    tech_stack = Column(String, nullable=True, default="")
 
 
 class Application(Base):
@@ -124,7 +127,10 @@ def init_db() -> None:
                 "about_company": "TEXT DEFAULT ''",
                 "website": "VARCHAR(255) DEFAULT ''",
                 "org_size": "VARCHAR(255) DEFAULT ''",
-                "contact_person": "VARCHAR(255) DEFAULT ''"
+                "contact_person": "VARCHAR(255) DEFAULT ''",
+                "responsibilities": "TEXT DEFAULT ''",
+                "requirements": "TEXT DEFAULT ''",
+                "tech_stack": "TEXT DEFAULT ''"
             }
             for col_name, col_type in new_cols.items():
                 if col_name not in columns:
@@ -305,14 +311,16 @@ def create_drive(
     company: str, role: str, type: str | None = None, eligibility: str | None = None, package: str | None = None, drive_date: str | None = None,
     location: str | None = None, stipend: str | None = None, description: str | None = None, other_benefits: str | None = None, duration: str | None = None,
     eligible_courses: str | None = None, selection_process: str | None = None, about_company: str | None = None, website: str | None = None,
-    org_size: str | None = None, contact_person: str | None = None
+    org_size: str | None = None, contact_person: str | None = None,
+    responsibilities: str | None = None, requirements: str | None = None, tech_stack: str | None = None
 ):
     with SessionLocal() as db:
         drive = Drive(
             company=company, role=role, type=type, eligibility=eligibility, package=package, drive_date=drive_date,
             location=location or "", stipend=stipend or "", description=description or "", other_benefits=other_benefits or "",
             duration=duration or "", eligible_courses=eligible_courses or "", selection_process=selection_process or "",
-            about_company=about_company or "", website=website or "", org_size=org_size or "", contact_person=contact_person or ""
+            about_company=about_company or "", website=website or "", org_size=org_size or "", contact_person=contact_person or "",
+            responsibilities=responsibilities or "", requirements=requirements or "", tech_stack=tech_stack or ""
         )
         db.add(drive)
         db.commit()
@@ -335,7 +343,10 @@ def create_drive(
             "about_company": drive.about_company,
             "website": drive.website,
             "org_size": drive.org_size,
-            "contact_person": drive.contact_person
+            "contact_person": drive.contact_person,
+            "responsibilities": drive.responsibilities,
+            "requirements": drive.requirements,
+            "tech_stack": drive.tech_stack
         }
 
 
@@ -347,7 +358,8 @@ def list_drives():
                 "id": r.id, "company": r.company, "role": r.role, "type": r.type, "eligibility": r.eligibility, "package": r.package, "drive_date": r.drive_date,
                 "location": r.location, "stipend": r.stipend, "description": r.description, "other_benefits": r.other_benefits, "duration": r.duration,
                 "eligible_courses": r.eligible_courses, "selection_process": r.selection_process, "about_company": r.about_company, "website": r.website,
-                "org_size": r.org_size, "contact_person": r.contact_person
+                "org_size": r.org_size, "contact_person": r.contact_person, "responsibilities": r.responsibilities, "requirements": r.requirements,
+                "tech_stack": r.tech_stack
             }
             for r in rows
         ]

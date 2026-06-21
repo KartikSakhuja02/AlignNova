@@ -455,6 +455,7 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
     other_benefits: '', duration: '', eligible_courses: '',
     selection_process: '', about_company: '', website: '',
     org_size: '', contact_person: '',
+    responsibilities: '', requirements: '', tech_stack: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -480,6 +481,9 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
         website: drive.website || '',
         org_size: drive.org_size || '',
         contact_person: drive.contact_person || '',
+        responsibilities: drive.responsibilities || '',
+        requirements: drive.requirements || '',
+        tech_stack: drive.tech_stack || '',
       });
       setError('');
     }
@@ -689,6 +693,33 @@ function EditDriveModal({ visible, drive, token, onClose, onSaved }) {
                     rows={3}
                     placeholder="Specify role description, technical skills, and requirements..."
                     className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Responsibilities (One per line)</label>
+                  <textarea
+                    name="responsibilities" value={form.responsibilities} onChange={(e) => setForm({...form, responsibilities: e.target.value})}
+                    rows={3}
+                    placeholder={`Design and develop reliable and scalable solutions...\nCollaborate with engineering teams...\nParticipate in reviews...`}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Core Requirements (One per line)</label>
+                  <textarea
+                    name="requirements" value={form.requirements} onChange={(e) => setForm({...form, requirements: e.target.value})}
+                    rows={3}
+                    placeholder={`Minimum academic CGPA requirement of 7.00 / 10.\nCore technical understanding of data structures...\nExcellent verbal and written communication...`}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Tech Stack (Comma-separated)</label>
+                  <input
+                    name="tech_stack" value={form.tech_stack} onChange={(e) => setForm({...form, tech_stack: e.target.value})}
+                    placeholder="e.g. React, Python, SQL, FastAPI"
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                    type="text"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1080,6 +1111,7 @@ export default function AdminDashboard() {
     other_benefits: '', duration: '', eligible_courses: '',
     selection_process: '', about_company: '', website: '',
     org_size: '', contact_person: '',
+    responsibilities: '', requirements: '', tech_stack: '',
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
@@ -1267,6 +1299,8 @@ export default function AdminDashboard() {
       eligible_courses: form.eligible_courses, selection_process: form.selection_process,
       about_company: form.about_company, website: form.website,
       org_size: form.org_size, contact_person: form.contact_person,
+      responsibilities: form.responsibilities, requirements: form.requirements,
+      tech_stack: form.tech_stack,
     };
     if (form.type === 'Placement') {
       payload.stipend = '';
@@ -1291,6 +1325,7 @@ export default function AdminDashboard() {
         other_benefits: '', duration: '', eligible_courses: '',
         selection_process: '', about_company: '', website: '',
         org_size: '', contact_person: '',
+        responsibilities: '', requirements: '', tech_stack: '',
       });
     } catch (err) {
       setFormError(err.message);
@@ -1644,6 +1679,33 @@ export default function AdminDashboard() {
                                 rows={3}
                                 className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
                                 placeholder="Specify role description, technical skills, and requirements..."
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Responsibilities (One per line)</label>
+                              <textarea
+                                name="responsibilities" value={form.responsibilities} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder={`Design and develop reliable and scalable solutions...\nCollaborate with engineering teams...\nParticipate in reviews...`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Core Requirements (One per line)</label>
+                              <textarea
+                                name="requirements" value={form.requirements} onChange={handleFormChange}
+                                rows={3}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder={`Minimum academic CGPA requirement of 7.00 / 10.\nCore technical understanding of data structures...\nExcellent verbal and written communication...`}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-caption font-semibold text-on-surface-variant uppercase tracking-wider block">Tech Stack (Comma-separated)</label>
+                              <input
+                                name="tech_stack" value={form.tech_stack} onChange={handleFormChange}
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md bg-surface-container-lowest outline-none focus:border-primary transition-all"
+                                placeholder="e.g. React, Python, SQL, FastAPI"
+                                type="text"
                               />
                             </div>
 

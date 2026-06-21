@@ -264,17 +264,23 @@ export default function DriveApplication() {
     openings: drive.org_size ? `Based on Organisation Size: ${drive.org_size}` : 'Multiple Openings',
     stipend: drive.stipend || '—',
     about: drive.description || `${drive.company} is seeking an exceptional talent for the position of ${drive.role}. This is an elite opportunity to build, scale, and optimize next-generation platforms alongside industry leaders.`,
-    responsibilities: [
-      `Design and develop reliable and scalable solutions for ${drive.company}.`,
-      'Collaborate with engineering teams to identify requirements and refine user flows.',
-      'Participate in reviews, system testing, and code quality improvement.'
-    ],
-    requirements: [
-      drive.eligibility ? `Minimum academic CGPA requirement of ${parseFloat(drive.eligibility).toFixed(2)} / 10.` : 'Strong academic background.',
-      'Core technical understanding of data structures and algorithms.',
-      'Excellent verbal and written communication skills.'
-    ],
-    techStack: ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
+    responsibilities: drive.responsibilities
+      ? drive.responsibilities.split('\n').filter(Boolean)
+      : [
+          `Design and develop reliable and scalable solutions for ${drive.company}.`,
+          'Collaborate with engineering teams to identify requirements and refine user flows.',
+          'Participate in reviews, system testing, and code quality improvement.'
+        ],
+    requirements: drive.requirements
+      ? drive.requirements.split('\n').filter(Boolean)
+      : [
+          drive.eligibility ? `Minimum academic CGPA requirement of ${parseFloat(drive.eligibility).toFixed(2)} / 10.` : 'Strong academic background.',
+          'Core technical understanding of data structures and algorithms.',
+          'Excellent verbal and written communication skills.'
+        ],
+    techStack: drive.tech_stack
+      ? drive.tech_stack.split(',').map(s => s.trim()).filter(Boolean)
+      : ['React', 'Python', 'SQL', 'FastAPI', 'System Architecture', 'Git'],
     perks: ['Competitive Compensation', 'Professional Mentorship', 'Modern Workspace & Culture'],
     timeline: drive.selection_process ? (
       drive.selection_process.split('\n').filter(Boolean).map((stepText, idx) => {
@@ -284,7 +290,7 @@ export default function DriveApplication() {
         return { step: stepName, date: `Step ${idx + 1}`, desc: stepDesc };
       })
     ) : [
-      { step: 'Application Phase', date: 'Active Now', desc: 'Submit your resume and statement of SOP.' },
+      { step: 'Application Phase', date: 'Active Now', desc: 'Submit your profile details and official resume.' },
       { step: 'Technical Screening', date: 'TBD', desc: 'Skill assessments and coding rounds.' },
       { step: 'Final Selection', date: 'TBD', desc: 'Panel interviews and offer rollouts.' }
     ],
@@ -578,22 +584,7 @@ export default function DriveApplication() {
                     )}
                   </div>
 
-                  {/* SOP Essay Block */}
-                  <div className="space-y-2">
-                    <label className="text-label-md text-on-surface-variant uppercase tracking-wider block">
-                      Statement of Purpose
-                    </label>
-                    <textarea
-                      required
-                      name="sop"
-                      value={form.sop}
-                      onChange={handleInputChange}
-                      disabled={submitStatus !== 'idle'}
-                      placeholder="Tell us what excites you about this role and how you align with our mission..."
-                      rows="5"
-                      className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant font-body-md"
-                    />
-                  </div>
+
 
                   {/* Confirm and Submit Actions */}
                   {submitStatus === 'submitting' ? (

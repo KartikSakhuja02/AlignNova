@@ -243,7 +243,9 @@ def post_drive(request: Request, payload: dict):
         other_benefits=payload.get('other_benefits'), duration=payload.get('duration'),
         eligible_courses=payload.get('eligible_courses'), selection_process=payload.get('selection_process'),
         about_company=payload.get('about_company'), website=payload.get('website'),
-        org_size=payload.get('org_size'), contact_person=payload.get('contact_person')
+        org_size=payload.get('org_size'), contact_person=payload.get('contact_person'),
+        responsibilities=payload.get('responsibilities'), requirements=payload.get('requirements'),
+        tech_stack=payload.get('tech_stack')
     )
     return drive
 
@@ -278,7 +280,10 @@ def get_drive_detail(drive_id: int):
             "about_company": drive.about_company or "",
             "website": drive.website or "",
             "org_size": drive.org_size or "",
-            "contact_person": drive.contact_person or ""
+            "contact_person": drive.contact_person or "",
+            "responsibilities": drive.responsibilities or "",
+            "requirements": drive.requirements or "",
+            "tech_stack": drive.tech_stack or ""
         }
 
 
@@ -323,6 +328,9 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
         drive.website = payload.get('website', drive.website)
         drive.org_size = payload.get('org_size', drive.org_size)
         drive.contact_person = payload.get('contact_person', drive.contact_person)
+        drive.responsibilities = payload.get('responsibilities', drive.responsibilities)
+        drive.requirements = payload.get('requirements', drive.requirements)
+        drive.tech_stack = payload.get('tech_stack', drive.tech_stack)
         
         db.add(drive)
         db.commit()
@@ -346,7 +354,10 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
             "about_company": drive.about_company,
             "website": drive.website,
             "org_size": drive.org_size,
-            "contact_person": drive.contact_person
+            "contact_person": drive.contact_person,
+            "responsibilities": drive.responsibilities,
+            "requirements": drive.requirements,
+            "tech_stack": drive.tech_stack
         }
 
 
