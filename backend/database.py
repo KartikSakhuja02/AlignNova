@@ -299,12 +299,13 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
                 import json
                 perf = json.loads(user.uni_performance)
                 if isinstance(perf, dict):
-                    agg_cgpa = str(perf.get("aggregate_cgpa", "")).strip()
-                    if agg_cgpa and float(agg_cgpa) > 0:
-                        sems = perf.get("semesters", [])
-                        filled_sems = [s for s in sems if str(s.get("cgpa", "")).strip()]
-                        if filled_sems and all(str(s.get("marksheet_url", "")).strip() for s in filled_sems):
-                            has_uni_perf = True
+                    if str(perf.get("aggregate_cgpa", "")).strip():
+                        has_uni_perf = True
+                    else:
+                        for sem in perf.get("semesters", []):
+                            if any(str(sem.get(k, "")).strip() for k in ["cgpa", "closed_backlogs", "live_backlogs", "marksheet_url"]):
+                                has_uni_perf = True
+                                break
             except Exception:
                 pass
 

@@ -972,7 +972,7 @@ export default function Profile() {
             <div>
               <h4 className="font-bold text-body-lg text-amber-900">Account Not Fully Activated</h4>
               <p className="text-body-md text-amber-800/90 mt-1">
-                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, complete your <strong>University Performance details (Aggregate CGPA and upload marksheets for filled semesters)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
+                You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
               </p>
             </div>
           </div>
