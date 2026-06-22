@@ -2038,7 +2038,7 @@ export default function AdminDashboard() {
   }, [fetchStudents, fetchDrives, fetchPartners]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    if (!token) return;
 
     setLoadingStats(true);
 
@@ -2102,7 +2102,7 @@ export default function AdminDashboard() {
       })
       .catch(console.error)
       .finally(() => setLoadingStats(false));
-  }, []);
+  }, [token]);
 
   const handleFormChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));

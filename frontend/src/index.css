@@ -5,6 +5,138 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-background: #f9f9ff;
+  --color-surface: #f9f9ff;
+  --color-surface-bright: #f9f9ff;
+  --color-surface-dim: #cfdaf2;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f0f3ff;
+  --color-surface-container: #e7eeff;
+  --color-surface-container-high: #dee8ff;
+  --color-surface-container-highest: #d8e3fb;
+  --color-on-surface: #111c2d;
+  --color-on-surface-variant: #464555;
+  --color-outline: #777587;
+  --color-outline-variant: #c7c4d8;
+  --color-primary: #3525cd;
+  --color-primary-container: #4f46e5;
+  --color-on-primary: #ffffff;
+  --color-secondary: #006c49;
+  --color-secondary-container: #6cf8bb;
+  --color-on-secondary: #ffffff;
+}
+
+.dark {
+  --color-background: #0b0f19;
+  --color-surface: #0f172a;
+  --color-surface-bright: #1e293b;
+  --color-surface-dim: #0b0f19;
+  --color-surface-container-lowest: #1e293b;
+  --color-surface-container-low: #0f172a;
+  --color-surface-container: #1e293b;
+  --color-surface-container-high: #334155;
+  --color-surface-container-highest: #475569;
+  --color-on-surface: #f8fafc;
+  --color-on-surface-variant: #94a3b8;
+  --color-outline: #64748b;
+  --color-outline-variant: #334155;
+  --color-primary: #818cf8;
+  --color-primary-container: #4f46e5;
+  --color-on-primary: #ffffff;
+  --color-secondary: #10b981;
+  --color-secondary-container: #047857;
+  --color-on-secondary: #ffffff;
+}
+
+/* Global overrides for dark mode hardcoded layouts */
+.dark body {
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+}
+
+.dark .bg-white {
+  background-color: var(--color-surface-container-lowest) !important;
+}
+
+.dark .bg-slate-50 {
+  background-color: var(--color-surface-container-low) !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-slate-100\/30,
+.dark .border-outline-variant\/30,
+.dark .border-outline-variant\/20 {
+  border-color: var(--color-outline-variant) !important;
+}
+
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-slate-700,
+.dark .text-on-surface-variant {
+  color: var(--color-on-surface-variant) !important;
+}
+
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-on-surface {
+  color: var(--color-on-surface) !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: var(--color-surface-container-low) !important;
+  color: var(--color-on-surface) !important;
+  border-color: var(--color-outline-variant) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Fix text colors inside various buttons and inputs */
+.dark .text-primary {
+  color: var(--color-primary) !important;
+}
+
+.dark .border-primary {
+  border-color: var(--color-primary) !important;
+}
+
+.dark .bg-primary\/5 {
+  background-color: rgba(129, 140, 248, 0.1) !important;
+}
+
+.dark .bg-primary\/10 {
+  background-color: rgba(129, 140, 248, 0.15) !important;
+}
+
+.dark .bg-primary-container {
+  background-color: var(--color-primary-container) !important;
+}
+
+.dark .text-on-primary-fixed {
+  color: var(--color-on-surface) !important;
+}
+
+.dark .bg-secondary-container\/20 {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.dark .text-secondary {
+  color: var(--color-secondary) !important;
+}
+
+/* Glassmorphism updates */
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.75) !important;
+  border-color: var(--color-outline-variant) !important;
+}
+
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   font-family: 'Material Symbols Outlined';
