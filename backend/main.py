@@ -584,7 +584,7 @@ def get_drives(request: Request):
 
 @app.get('/api/drives/{drive_id}')
 def get_drive_detail(drive_id: int, request: Request):
-    from backend.database import SessionLocal, Drive
+    from backend.database import SessionLocal, Drive, User
     with SessionLocal() as db:
         drive = db.query(Drive).filter(Drive.id == drive_id).first()
         if not drive:
@@ -652,7 +652,7 @@ def update_drive_endpoint(drive_id: int, payload: dict, request: Request):
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
         
-    from backend.database import SessionLocal, Drive
+    from backend.database import SessionLocal, Drive, User
     with SessionLocal() as db:
         drive = db.query(Drive).filter(Drive.id == drive_id).first()
         if not drive:
