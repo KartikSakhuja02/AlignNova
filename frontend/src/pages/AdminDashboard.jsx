@@ -133,6 +133,19 @@ function AdminSettingsView({ profile, token, onSaved }) {
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('alignnova_dark_mode') === 'true');
+
+  const toggleDarkMode = () => {
+    const nextDark = !darkMode;
+    setDarkMode(nextDark);
+    localStorage.setItem('alignnova_dark_mode', nextDark ? 'true' : 'false');
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
   useEffect(() => {
     if (profile) {
       setForm({
@@ -199,13 +212,14 @@ function AdminSettingsView({ profile, token, onSaved }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden max-w-4xl">
-      <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center gap-3">
-        <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-          <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>manage_accounts</span>
+    <div className="space-y-8">
+      <div className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden max-w-4xl">
+        <div className="bg-gradient-to-r from-primary to-primary/80 px-6 py-5 flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '20px' }}>manage_accounts</span>
+          </div>
+          <h2 className="text-white font-bold text-title-lg">Account Settings</h2>
         </div>
-        <h2 className="text-white font-bold text-title-lg">Account Settings</h2>
-      </div>
 
       <form onSubmit={handleSave} className="p-6 space-y-6">
         {/* Avatar */}
@@ -292,6 +306,29 @@ function AdminSettingsView({ profile, token, onSaved }) {
           </button>
         </div>
       </form>
+      </div>
+
+      {/* Preferences / Theme Settings */}
+      <div className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden max-w-4xl">
+        <div className="bg-slate-50 border-b border-outline-variant/60 px-6 py-4 flex items-center gap-3">
+          <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '20px' }}>palette</span>
+          <h3 className="font-bold text-body-lg text-on-surface">Preferences</h3>
+        </div>
+        <div className="p-6">
+          <label className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+            <div>
+              <span className="font-semibold text-label-md text-on-surface">Dark Mode</span>
+              <p className="text-[12px] text-on-surface-variant">Switch the interface to dark colors.</p>
+            </div>
+            <input
+              checked={darkMode}
+              onChange={toggleDarkMode}
+              className="w-10 h-5 rounded-full bg-outline-variant text-primary focus:ring-primary transition-all cursor-pointer accent-primary"
+              type="checkbox"
+            />
+          </label>
+        </div>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,19 @@ export default function Settings() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Notifications');
   
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('alignnova_dark_mode') === 'true');
+
+  const toggleDarkMode = () => {
+    const nextDark = !darkMode;
+    setDarkMode(nextDark);
+    localStorage.setItem('alignnova_dark_mode', nextDark ? 'true' : 'false');
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+  
   // Notification Preferences State
   const [preferences, setPreferences] = useState({
     email: true,
@@ -242,16 +255,19 @@ export default function Settings() {
               Update configuration preferences for your web client experience.
             </p>
             <form onSubmit={handleGeneralSubmit} className="space-y-6">
-              <div>
-                <label className="block text-label-md text-on-surface-variant mb-2">Interface Theme</label>
-                <select
-                  value={generalForm.theme}
-                  onChange={(e) => setGeneralForm((p) => ({ ...p, theme: e.target.value }))}
-                  className="w-full h-12 px-4 border border-outline-variant rounded-xl bg-transparent outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-body-md text-on-surface"
-                >
-                  <option value="light">Light Mode (Default)</option>
-                  <option value="dark">Dark Mode (Experimental)</option>
-                </select>
+              <div className="border-b border-outline-variant/60 pb-4">
+                <label className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
+                  <div className="flex-1 pr-4">
+                    <span className="font-semibold text-label-md text-on-surface">Dark Mode</span>
+                    <p className="text-[12px] text-on-surface-variant font-medium">Switch the interface to dark colors.</p>
+                  </div>
+                  <input
+                    checked={darkMode}
+                    onChange={toggleDarkMode}
+                    className="w-10 h-5 rounded-full bg-outline-variant text-primary focus:ring-primary transition-all cursor-pointer accent-primary"
+                    type="checkbox"
+                  />
+                </label>
               </div>
 
               <div>

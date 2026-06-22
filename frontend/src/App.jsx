@@ -99,6 +99,15 @@ function StudentLayout() {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  React.useEffect(() => {
+    const isDark = localStorage.getItem('alignnova_dark_mode') === 'true';
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
