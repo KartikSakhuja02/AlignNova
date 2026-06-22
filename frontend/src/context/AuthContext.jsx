@@ -36,7 +36,8 @@ export function AuthProvider({ children }) {
         setRole(null);
         setUser(null);
         
-        const isPublicPage = window.location.pathname.startsWith('/signin') ||
+        const isPublicPage = window.location.pathname === '/' ||
+                             window.location.pathname.startsWith('/signin') ||
                              window.location.pathname.startsWith('/set-password') ||
                              window.location.pathname.startsWith('/request-activation') ||
                              window.location.pathname.startsWith('/forgot-password');
@@ -98,7 +99,8 @@ export function AuthProvider({ children }) {
           setRole(null);
           setUser(null);
 
-          const isPublicPage = window.location.pathname.startsWith('/signin') ||
+          const isPublicPage = window.location.pathname === '/' ||
+                               window.location.pathname.startsWith('/signin') ||
                                window.location.pathname.startsWith('/set-password') ||
                                window.location.pathname.startsWith('/request-activation') ||
                                window.location.pathname.startsWith('/forgot-password');

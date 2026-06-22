@@ -362,7 +362,7 @@ export default function DriveApplication() {
       <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-caption text-on-surface-variant select-none">
-          <button onClick={() => navigate('/')} className="hover:text-primary transition-colors">
+          <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors">
             Dashboard
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>

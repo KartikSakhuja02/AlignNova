@@ -16,10 +16,9 @@ export default function SignIn() {
   const isExpired = queryParams.get('expired') === 'true';
 
 
-  // Redirect if already signed in
   useEffect(() => {
     if (isAuthenticated) {
-      const dest = role === 'admin' ? '/admin' : (role === 'hr' ? '/partner' : '/');
+      const dest = role === 'admin' ? '/admin' : (role === 'hr' ? '/partner' : '/dashboard');
       navigate(dest, { replace: true });
     }
   }, [isAuthenticated, role, navigate]);
@@ -56,7 +55,7 @@ export default function SignIn() {
       setStatus('success');
 
       setTimeout(() => {
-        const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : '/');
+        const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : '/dashboard');
         navigate(dest, { replace: true });
       }, 900);
     } catch (err) {

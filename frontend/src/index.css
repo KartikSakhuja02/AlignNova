@@ -113,5 +113,14 @@ body {
   }
 }
 
+@keyframes marquee-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
 
-
+.dashboard-stack {
+  animation: marquee-up 50s linear infinite;
+}
+.dashboard-stack:hover {
+  animation-play-state: paused;
+}

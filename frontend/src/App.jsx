@@ -19,6 +19,7 @@ import SetPassword from './pages/SetPassword';
 import RequestActivation from './pages/RequestActivation';
 import ForgotPassword from './pages/ForgotPassword';
 import PartnerDashboard from './pages/PartnerDashboard';
+import Home from './pages/Home';
 
 // ─── Route Guards ─────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ function RequireAdmin() {
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
   if (role !== 'admin') {
     if (role === 'hr') return <Navigate to="/partner" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <Outlet />;
 }
@@ -48,7 +49,7 @@ function RequireHr() {
   if (!isAuthenticated) return <Navigate to="/signin" replace />;
   if (role !== 'hr') {
     if (role === 'admin') return <Navigate to="/admin" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <Outlet />;
 }
@@ -59,7 +60,7 @@ function RequireGuest() {
   if (isAuthenticated) {
     if (role === 'admin') return <Navigate to="/admin" replace />;
     if (role === 'hr') return <Navigate to="/partner" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <Outlet />;
 }
@@ -102,6 +103,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Public: Home Page */}
+          <Route path="/" element={<Home />} />
+
           {/* Public: Sign In */}
           <Route element={<RequireGuest />}>
             <Route path="/signin" element={<SignIn />} />
@@ -131,7 +135,7 @@ export default function App() {
           {/* Student routes */}
           <Route element={<RequireStudent />}>
             <Route element={<StudentLayout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/drives" element={<Drives />} />
               <Route path="/applications" element={<Applications />} />
               <Route path="/profile" element={<Profile />} />

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 
 const navLinks = [
-  { icon: 'dashboard', label: 'Dashboard', path: '/', fill: true },
+  { icon: 'dashboard', label: 'Dashboard', path: '/dashboard', fill: true },
   { icon: 'work', label: 'Drives', path: '/drives' },
   { icon: 'assignment_turned_in', label: 'Applications', path: '/applications' },
   { icon: 'person', label: 'Profile', path: '/profile' },
