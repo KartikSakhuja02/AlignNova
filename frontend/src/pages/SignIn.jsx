@@ -12,6 +12,9 @@ export default function SignIn() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
 
+  const queryParams = new URLSearchParams(window.location.search);
+  const isExpired = queryParams.get('expired') === 'true';
+
 
   // Redirect if already signed in
   useEffect(() => {
@@ -92,6 +95,15 @@ export default function SignIn() {
             <h2 className="font-headline-lg text-headline-lg text-on-surface">Sign In</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">Enter your university credentials to continue.</p>
           </header>
+
+          {isExpired && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-error-container text-on-error-container rounded-xl font-semibold text-label-md border border-error/15 fade-in mb-6">
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                info
+              </span>
+              <span>Session expired. Please sign in again.</span>
+            </div>
+          )}
 
           {/* Sign In Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
