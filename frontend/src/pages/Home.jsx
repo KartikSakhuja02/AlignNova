@@ -91,7 +91,7 @@ export default function Home() {
             {/* Hero Section */}
             <div className="mb-12">
               <div className="mb-6">
-                <img src={logo} alt="AlignNova Logo" className="h-16 w-auto object-contain" />
+                <img src={logo} alt="AlignNova Logo" className="h-32 w-auto object-contain" />
               </div>
               <h1 className="font-display-lg text-display-lg text-on-surface leading-tight mb-4 tracking-tighter">
                 AlignNova
