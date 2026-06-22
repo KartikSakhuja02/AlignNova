@@ -90,12 +90,12 @@ export default function Home() {
           <div className="max-w-2xl mx-auto md:mx-0">
             {/* Hero Section */}
             <div className="mb-12">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="mb-6">
                 <img src={logo} alt="AlignNova Logo" className="h-16 w-auto object-contain" />
-                <h1 className="font-display-lg text-display-lg text-on-surface leading-tight tracking-tighter">
-                  AlignNova
-                </h1>
               </div>
+              <h1 className="font-display-lg text-display-lg text-on-surface leading-tight mb-4 tracking-tighter">
+                AlignNova
+              </h1>
               <h2 className="font-headline-lg text-headline-lg text-secondary mb-6">One Platform. Endless Opportunities.</h2>
               <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg mb-10">
                 Empowering students, campuses, and recruiters through a secure and smart placement ecosystem. Streamline your hiring journey with professional precision.
@@ -238,7 +238,6 @@ export default function Home() {
       <footer className="bg-white border-t border-outline-variant/30">
         <div className="max-w-4xl mx-auto py-12 px-p-md flex flex-col items-center gap-6 text-center">
           <div className="font-headline-md text-headline-md text-primary font-bold">
-            <img src={logo} alt="AlignNova Logo" className="h-10 w-auto mx-auto mb-4 object-contain" />
             AlignNova
           </div>
           <div className="flex flex-wrap justify-center gap-8 mb-4">
