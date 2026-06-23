@@ -1,6 +1,18 @@
 <!doctype html>
-<html lang="en" class="light">
+<html lang="en">
   <head>
+    <script>
+      (function() {
+        const isDark = localStorage.getItem('alignnova_dark_mode') === 'true';
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

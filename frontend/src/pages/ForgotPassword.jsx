@@ -36,7 +36,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen text-on-surface p-p-md relative overflow-hidden bg-[#f9f9ff]">
+    <div className="flex items-center justify-center min-h-screen text-on-surface p-p-md relative overflow-hidden bg-background">
       {/* Atmospheric Subtle Background Element */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-50">
         <div className="absolute -top-1/4 -right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]"></div>

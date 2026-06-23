@@ -67,7 +67,7 @@ export default function SignIn() {
   const isLoading = status === 'loading';
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#F8FAFC]">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Background Pattern Decorative Element */}
       <div className="fixed inset-0 z-0 opacity-[0.03] pointer-events-none">
         <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">

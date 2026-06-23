@@ -125,7 +125,7 @@ export default function PartnerDashboard() {
   };
 
   return (
-    <div className="text-on-surface bg-[#F8FAFC] min-h-screen flex">
+    <div className="text-on-surface bg-background min-h-screen flex">
       {/* Sidebar Navigation */}
       <aside className="bg-white h-screen w-64 fixed left-0 top-0 border-r border-outline-variant shadow-sm flex flex-col py-6 z-50">
         <div className="px-6 mb-10 flex items-center gap-3">
