@@ -131,6 +131,77 @@
   color: var(--color-secondary) !important;
 }
 
+/* Hardcoded hex backgrounds */
+.dark .bg-\[\#F8FAFC\],
+.dark .bg-\[\#f9f9ff\] {
+  background-color: var(--color-background) !important;
+}
+
+/* Escaped selectors for opacity utilities under .dark */
+.dark .bg-surface\/80 {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+}
+
+.dark .bg-white\/95 {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+}
+
+.dark .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .bg-white\/30 {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .bg-black\/5 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .border-outline-variant\/50 {
+  border-color: rgba(51, 65, 85, 0.5) !important;
+}
+
+.dark .border-outline-variant\/40 {
+  border-color: rgba(51, 65, 85, 0.4) !important;
+}
+
+.dark .border-outline-variant\/30 {
+  border-color: rgba(51, 65, 85, 0.3) !important;
+}
+
+.dark .border-outline-variant\/20 {
+  border-color: rgba(51, 65, 85, 0.2) !important;
+}
+
+.dark .border-outline-variant\/10 {
+  border-color: rgba(51, 65, 85, 0.1) !important;
+}
+
+.dark .bg-primary\/80 {
+  background-color: rgba(129, 140, 248, 0.8) !important;
+}
+
+.dark .bg-secondary\/10 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+.dark .bg-error\/10 {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+.dark .bg-tertiary\/10 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+.dark .bg-outline-variant\/30 {
+  background-color: rgba(51, 65, 85, 0.3) !important;
+}
+
 /* Glassmorphism updates */
 .dark .glass-card {
   background: rgba(15, 23, 42, 0.75) !important;
