@@ -42,7 +42,7 @@ export default function ForgotPassword() {
         <div className="absolute -top-1/4 -right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px]"></div>
         <div className="absolute -bottom-1/4 -left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]"></div>
       </div>
-      
+
       {/* Main Container */}
       <main className="w-full max-w-md relative z-10">
         {/* Logo Header */}
@@ -71,19 +71,19 @@ export default function ForgotPassword() {
                     <span>{error}</span>
                   </div>
                 )}
-                
+
                 <div>
                   <label className="block font-label-md text-label-md text-on-surface mb-2" htmlFor="email">Email Address</label>
                   <div className="relative group transition-transform duration-200 focus-within:scale-[1.01]">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <span className="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">mail</span>
                     </div>
-                    <input 
-                      className="block w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-body-md placeholder-on-surface-variant/40 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all" 
-                      id="email" 
-                      name="email" 
-                      placeholder="john.doe@university.edu" 
-                      required 
+                    <input
+                      className="block w-full pl-11 pr-4 py-3 bg-surface-container-low border border-outline-variant rounded-md text-on-surface font-body-md placeholder-on-surface-variant/40 focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+                      id="email"
+                      name="email"
+                      placeholder=""
+                      required
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -91,8 +91,8 @@ export default function ForgotPassword() {
                     />
                   </div>
                 </div>
-                
-                <button 
+
+                <button
                   className="w-full bg-primary text-on-primary font-label-md text-label-md py-4 px-6 rounded-md shadow-sm hover:brightness-110 active:scale-[0.98] transition-all duration-200 uppercase tracking-wider font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                   type="submit"
                   disabled={loading}
@@ -111,8 +111,8 @@ export default function ForgotPassword() {
               <p className="font-body-md text-body-md text-on-surface-variant mb-6 leading-relaxed">
                 If an account exists for that email, you will receive a password reset link shortly.
               </p>
-              <button 
-                className="text-primary font-label-md text-label-md hover:underline outline-none" 
+              <button
+                className="text-primary font-label-md text-label-md hover:underline outline-none"
                 onClick={() => setSubmitted(false)}
               >
                 Resend Email
@@ -122,7 +122,7 @@ export default function ForgotPassword() {
 
           {/* Footer Link */}
           <div className="mt-8 pt-8 border-t border-outline-variant/30 text-center">
-            <button 
+            <button
               onClick={() => navigate('/signin')}
               className="inline-flex items-center gap-2 font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors duration-200 outline-none"
             >
