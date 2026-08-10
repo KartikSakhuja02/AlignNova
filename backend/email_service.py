@@ -41,6 +41,8 @@ if not logger.handlers:
 
 # ── Provider Configuration ───────────────────────────────────────────────────
 EMAIL_PROXY_URL    = os.getenv("EMAIL_PROXY_URL", "").strip()
+if EMAIL_PROXY_URL and not EMAIL_PROXY_URL.endswith("/api/send-email"):
+    EMAIL_PROXY_URL = EMAIL_PROXY_URL.rstrip("/") + "/api/send-email"
 EMAIL_PROXY_SECRET = os.getenv("EMAIL_PROXY_SECRET", "").strip()
 
 BREVO_API_KEY      = os.getenv("BREVO_API_KEY", "").strip()
@@ -311,6 +313,65 @@ def _send_via_resend(to_email: str, subject: str, html: str, plain: str) -> None
         logger.info("[RESEND] ✓ Success — id=%s (%.2fs)", result.get('id'), elapsed)
 
 
+def _send_with_fallback(to_email: str, subject: str, html: str, plain: str, recipient_name: str = "", tag: str = "EMAIL") -> str:
+    """
+    Attempt to send an email using configured providers in priority order:
+    1. Vercel Proxy (if EMAIL_PROXY_URL set)
+    2. Brevo (if BREVO_API_KEY set)
+    3. Resend (if RESEND_API_KEY set)
+
+    If a provider fails (e.g. HTTP 410 Gone), it logs a warning and automatically falls back to the next available provider.
+    Returns the provider name that succeeded.
+    Raises Exception if all providers fail or if none configured.
+    """
+    providers_tried = []
+    errors = []
+
+    # 1. Try Vercel Proxy
+    if EMAIL_PROXY_URL:
+        providers_tried.append("vercel_proxy")
+        try:
+            logger.info("[%s] Trying provider #1: Vercel Proxy (%s) ...", tag, EMAIL_PROXY_URL)
+            _send_via_proxy(to_email, subject, html, plain)
+            logger.info("[%s] ✓ Successfully sent via Vercel Proxy to %s", tag, to_email)
+            return "vercel_proxy"
+        except Exception as exc:
+            err_msg = f"Vercel Proxy error: {exc}"
+            logger.warning("[%s] ⚠️ Vercel Proxy failed (%s). Falling back to next available provider...", tag, err_msg)
+            errors.append(err_msg)
+
+    # 2. Try Brevo
+    if BREVO_API_KEY:
+        providers_tried.append("brevo")
+        try:
+            logger.info("[%s] Trying provider #%d: Brevo ...", tag, len(providers_tried))
+            _send_via_brevo(to_email, subject, html, plain, recipient_name)
+            logger.info("[%s] ✓ Successfully sent via Brevo to %s", tag, to_email)
+            return "brevo"
+        except Exception as exc:
+            err_msg = f"Brevo error: {exc}"
+            logger.warning("[%s] ⚠️ Brevo failed (%s). Falling back to next available provider...", tag, err_msg)
+            errors.append(err_msg)
+
+    # 3. Try Resend
+    if RESEND_API_KEY:
+        providers_tried.append("resend")
+        try:
+            logger.info("[%s] Trying provider #%d: Resend ...", tag, len(providers_tried))
+            _send_via_resend(to_email, subject, html, plain)
+            logger.info("[%s] ✓ Successfully sent via Resend to %s", tag, to_email)
+            return "resend"
+        except Exception as exc:
+            err_msg = f"Resend error: {exc}"
+            logger.warning("[%s] ⚠️ Resend failed (%s).", tag, err_msg)
+            errors.append(err_msg)
+
+    if not providers_tried:
+        raise Exception("No email provider configured. Set EMAIL_PROXY_URL, BREVO_API_KEY, or RESEND_API_KEY.")
+
+    raise Exception(f"All configured email providers failed [{', '.join(providers_tried)}]: {'; '.join(errors)}")
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def get_config_status() -> dict:
@@ -373,7 +434,7 @@ def send_test_email_sync(to_email: str) -> dict:
     """Send a test email synchronously and return the result."""
     cfg = get_config_status()
 
-    if cfg["provider"] == "none":
+    if not EMAIL_PROXY_URL and not BREVO_API_KEY and not RESEND_API_KEY:
         return {
             "ok": False,
             "provider": "none",
@@ -390,39 +451,16 @@ def send_test_email_sync(to_email: str) -> dict:
   <h2 style="color:#1a1a2e;font-size:20px;">✅ Email delivery is working!</h2>
   <p style="color:#4b5563;font-size:15px;line-height:1.6;">
     This test email was sent from your AlignNova admin panel.<br/>
-    Provider used: <strong>{cfg['provider']}</strong>
   </p>
 </div>"""
 
     try:
-        if cfg["provider"] == "vercel_proxy":
-            logger.info("[TEST] Attempting test email via Vercel Proxy → %s", to_email)
-            _send_via_proxy(to_email, subject, html, plain)
-            logger.info("[TEST] ✓ Vercel Proxy test SUCCESS → %s", to_email)
-            return {"ok": True, "provider": "vercel_proxy", "config": cfg}
-        elif cfg["provider"] == "brevo":
-            logger.info("[TEST] Attempting test email via Brevo → %s", to_email)
-            _send_via_brevo(to_email, subject, html, plain)
-            logger.info("[TEST] ✓ Brevo test SUCCESS → %s", to_email)
-            return {"ok": True, "provider": "brevo", "config": cfg}
-        else:
-            logger.info("[TEST] Attempting test email via Resend → %s", to_email)
-            _send_via_resend(to_email, subject, html, plain)
-            logger.info("[TEST] ✓ Resend test SUCCESS → %s", to_email)
-            return {"ok": True, "provider": "resend", "config": cfg}
-
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        msg = f"{cfg['provider'].capitalize()} API returned HTTP {e.code}: {body}"
-        logger.error("[TEST] ✗ HTTPError: %s", msg)
-        logger.debug("[TEST] Full traceback:\n%s", traceback.format_exc())
-        return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
-
+        provider_used = _send_with_fallback(to_email, subject, html, plain, tag="TEST")
+        return {"ok": True, "provider": provider_used, "config": cfg}
     except Exception as e:
-        msg = f"{type(e).__name__}: {e}"
-        logger.error("[TEST] ✗ Unexpected error: %s", msg)
+        logger.error("[TEST] ✗ All email providers failed: %s", e)
         logger.debug("[TEST] Full traceback:\n%s", traceback.format_exc())
-        return {"ok": False, "provider": cfg["provider"], "error": msg, "config": cfg}
+        return {"ok": False, "provider": cfg["provider"], "error": str(e), "config": cfg}
 
 
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str, base_url: str = None) -> bool:
@@ -454,25 +492,14 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
         logger.debug("[WELCOME] base_url used: %s", active_base_url)
         send_start = time.time()
         try:
-            if EMAIL_PROXY_URL:
-                logger.info("[WELCOME] Sending via Vercel Proxy to %s ...", to_email)
-                _send_via_proxy(to_email, subject, html, plain)
-                logger.info("[WELCOME] ✓ Sent via Vercel Proxy to %s (%.2fs)", to_email, time.time() - send_start)
-            elif BREVO_API_KEY:
-                logger.info("[WELCOME] Sending via Brevo to %s ...", to_email)
-                _send_via_brevo(to_email, subject, html, plain, student_name)
-                logger.info("[WELCOME] ✓ Sent via Brevo to %s (%.2fs)", to_email, time.time() - send_start)
-            else:
-                logger.info("[WELCOME] Sending via Resend to %s ...", to_email)
-                _send_via_resend(to_email, subject, html, plain)
-                logger.info("[WELCOME] ✓ Sent via Resend to %s (%.2fs)", to_email, time.time() - send_start)
-        except urllib.error.HTTPError as e:
-            body = e.read().decode()
-            logger.error("[WELCOME] ✗ HTTPError %d sending to %s: %s", e.code, to_email, body)
-            logger.debug("[WELCOME] Full traceback:\n%s", traceback.format_exc())
+            provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=student_name, tag="WELCOME")
+            logger.info("[WELCOME] ✓ Sent welcome email to %s via %s (%.2fs)", to_email, provider_used, time.time() - send_start)
         except Exception as exc:
-            logger.error("[WELCOME] ✗ Failed to send to %s: %s: %s", to_email, type(exc).__name__, exc)
+            logger.error("[WELCOME] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[WELCOME] Full traceback:\n%s", traceback.format_exc())
+
+    threading.Thread(target=_send, daemon=True).start()
+    return True
 
     threading.Thread(target=_send, daemon=True).start()
     return True
@@ -698,24 +725,10 @@ def send_reset_password_email(to_email: str, student_name: str, reset_token: str
         logger.debug("[RESET] reset_url: %s", reset_url)
         send_start = time.time()
         try:
-            if EMAIL_PROXY_URL:
-                logger.info("[RESET] Sending via Vercel Proxy to %s ...", to_email)
-                _send_via_proxy(to_email, subject, html, plain)
-                logger.info("[RESET] ✓ Sent via Vercel Proxy to %s (%.2fs)", to_email, time.time() - send_start)
-            elif BREVO_API_KEY:
-                logger.info("[RESET] Sending via Brevo to %s ...", to_email)
-                _send_via_brevo(to_email, subject, html, plain, student_name)
-                logger.info("[RESET] ✓ Sent via Brevo to %s (%.2fs)", to_email, time.time() - send_start)
-            else:
-                logger.info("[RESET] Sending via Resend to %s ...", to_email)
-                _send_via_resend(to_email, subject, html, plain)
-                logger.info("[RESET] ✓ Sent via Resend to %s (%.2fs)", to_email, time.time() - send_start)
-        except urllib.error.HTTPError as e:
-            body = e.read().decode()
-            logger.error("[RESET] ✗ HTTPError %d sending to %s: %s", e.code, to_email, body)
-            logger.debug("[RESET] Full traceback:\n%s", traceback.format_exc())
+            provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=student_name, tag="RESET")
+            logger.info("[RESET] ✓ Sent reset password email to %s via %s (%.2fs)", to_email, provider_used, time.time() - send_start)
         except Exception as exc:
-            logger.error("[RESET] ✗ Failed to send to %s: %s: %s", to_email, type(exc).__name__, exc)
+            logger.error("[RESET] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[RESET] Full traceback:\n%s", traceback.format_exc())
 
     threading.Thread(target=_send, daemon=True).start()
@@ -927,24 +940,10 @@ def send_opportunity_alert_email(
         logger.info("[OPPORTUNITY] Background thread started for %s (student: %s, company: %s, role: %s)", to_email, student_name, company, role)
         send_start = time.time()
         try:
-            if EMAIL_PROXY_URL:
-                logger.info("[OPPORTUNITY] Sending via Vercel Proxy to %s ...", to_email)
-                _send_via_proxy(to_email, subject, html, plain)
-                logger.info("[OPPORTUNITY] ✓ Sent via Vercel Proxy to %s (%.2fs)", to_email, time.time() - send_start)
-            elif BREVO_API_KEY:
-                logger.info("[OPPORTUNITY] Sending via Brevo to %s ...", to_email)
-                _send_via_brevo(to_email, subject, html, plain, student_name)
-                logger.info("[OPPORTUNITY] ✓ Sent via Brevo to %s (%.2fs)", to_email, time.time() - send_start)
-            else:
-                logger.info("[OPPORTUNITY] Sending via Resend to %s ...", to_email)
-                _send_via_resend(to_email, subject, html, plain)
-                logger.info("[OPPORTUNITY] ✓ Sent via Resend to %s (%.2fs)", to_email, time.time() - send_start)
-        except urllib.error.HTTPError as e:
-            body = e.read().decode()
-            logger.error("[OPPORTUNITY] ✗ HTTPError %d sending to %s: %s", e.code, to_email, body)
-            logger.debug("[OPPORTUNITY] Full traceback:\n%s", traceback.format_exc())
+            provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=student_name, tag="OPPORTUNITY")
+            logger.info("[OPPORTUNITY] ✓ Sent opportunity alert to %s via %s (%.2fs)", to_email, provider_used, time.time() - send_start)
         except Exception as exc:
-            logger.error("[OPPORTUNITY] ✗ Failed to send to %s: %s: %s", to_email, type(exc).__name__, exc)
+            logger.error("[OPPORTUNITY] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[OPPORTUNITY] Full traceback:\n%s", traceback.format_exc())
 
     threading.Thread(target=_send, daemon=True).start()
@@ -1083,24 +1082,10 @@ def send_partner_welcome_email(to_email: str, partner_name: str, company_name: s
         logger.debug("[PARTNER] set_password_url: %s", set_password_url)
         send_start = time.time()
         try:
-            if EMAIL_PROXY_URL:
-                logger.info("[PARTNER] Sending via Vercel Proxy to %s ...", to_email)
-                _send_via_proxy(to_email, subject, html, plain)
-                logger.info("[PARTNER] ✓ Sent via Vercel Proxy to %s (%.2fs)", to_email, time.time() - send_start)
-            elif BREVO_API_KEY:
-                logger.info("[PARTNER] Sending via Brevo to %s ...", to_email)
-                _send_via_brevo(to_email, subject, html, plain, partner_name)
-                logger.info("[PARTNER] ✓ Sent via Brevo to %s (%.2fs)", to_email, time.time() - send_start)
-            else:
-                logger.info("[PARTNER] Sending via Resend to %s ...", to_email)
-                _send_via_resend(to_email, subject, html, plain)
-                logger.info("[PARTNER] ✓ Sent via Resend to %s (%.2fs)", to_email, time.time() - send_start)
-        except urllib.error.HTTPError as e:
-            body = e.read().decode()
-            logger.error("[PARTNER] ✗ HTTPError %d sending to %s: %s", e.code, to_email, body)
-            logger.debug("[PARTNER] Full traceback:\n%s", traceback.format_exc())
+            provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=partner_name, tag="PARTNER")
+            logger.info("[PARTNER] ✓ Sent partner welcome to %s via %s (%.2fs)", to_email, provider_used, time.time() - send_start)
         except Exception as exc:
-            logger.error("[PARTNER] ✗ Failed to send to %s: %s: %s", to_email, type(exc).__name__, exc)
+            logger.error("[PARTNER] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[PARTNER] Full traceback:\n%s", traceback.format_exc())
 
     threading.Thread(target=_send, daemon=True).start()
