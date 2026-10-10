@@ -227,7 +227,7 @@ sequenceDiagram
     Server->>DB: Create User Record (must_change_password="1")
     Server->>Server: Generate JWT Set-Password Token (7-day expiry)
     Server-->>Admin: 200 OK (Student Created)
-    Server->)Email: Background Thread: Send Welcome Email
+    Server-->>Email: Async Background Thread: Send Welcome Email
     Email->>Student: Deliver Welcome Email with Setup Link
     Student->>Server: GET /set-password?token=...
     Student->>Server: POST /api/set-password (New Password)
@@ -249,7 +249,7 @@ sequenceDiagram
     Admin->>Server: POST /api/drives (Eligibility Criteria, Package, Timeline)
     Server->>DB: Save Drive Entity
     Server-->>Admin: 200 OK (Drive Created)
-    Server->)Worker: Trigger run_broadcast_task()
+    Server-->>Worker: Async Background Trigger: run_broadcast_task()
     Worker->>DB: Fetch All Registered Students
     loop For Every Student
         Worker->>Engine: check_student_eligibility(student, drive)
