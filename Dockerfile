@@ -1,38 +1,30 @@
+# ── Stage 1: Build Frontend (Fast React + Tailwind bundle via Vite) ─────────────
 FROM node:20-alpine AS builder
-WORKDIR /app
+WORKDIR /app/frontend
 
-# Install root dependencies (for Tailwind)
-COPY package.json package-lock.json* ./
-RUN npm ci --silent || npm install --silent
+# Cache frontend dependencies
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install --prefer-offline --no-audit --no-fund
 
-# Install frontend dependencies (for React / Vite)
-COPY frontend/package.json frontend/package-lock.json* ./frontend/
-RUN cd frontend && (npm ci --silent || npm install --silent)
+# Copy frontend source and build production bundle to /app/frontend_dist
+COPY frontend/ ./
+RUN npm run build
 
-# Copy source files
-COPY . .
-
-# Build Tailwind CSS and React frontend bundle (outputs to frontend_dist)
-RUN npm run build:css
-RUN cd frontend && npm run build
-
+# ── Stage 2: Python Runtime ───────────────────────────────────────────────────
 FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 
-# Install python deps
+# Cache python dependencies
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip install --no-cache-dir -r /app/backend/requirements.txt
+RUN pip install --no-cache-dir --disable-pip-version-check -r /app/backend/requirements.txt
 
-# Copy project files
-COPY . /app
-
-# Copy built frontend from builder stage
+# Copy application backend and built frontend
+COPY backend /app/backend
 COPY --from=builder /app/frontend_dist /app/frontend_dist
-COPY --from=builder /app/frontend/styles.css /app/frontend/styles.css
 
 ENV PORT=8000
 EXPOSE 8000
 
-# Run the app with gunicorn + uvicorn worker
+# Run FastAPI app with gunicorn + uvicorn worker
 CMD ["sh", "-c", "gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:${PORT:-8000} --workers 1"]

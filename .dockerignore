@@ -5,3 +5,8 @@ __pycache__
 .git
 node_modules
 frontend/node_modules
+*.pdf
+*.docx
+*.db
+scratch/
+frontend_dist/

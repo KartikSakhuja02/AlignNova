@@ -6,21 +6,47 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 load_dotenv()
 
-# Use DATABASE_URL from env, fall back to a local sqlite file
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./alignnova.db")
+def _build_database_engine():
+    # Read from common env vars (DATABASE_URL, POSTGRES_URL, POSTGRESQL_URL)
+    raw = (
+        os.getenv("DATABASE_URL")
+        or os.getenv("POSTGRES_URL")
+        or os.getenv("POSTGRESQL_URL")
+        or ""
+    ).strip()
 
-# Normalize legacy postgres:// scheme from cloud providers (e.g., Railway/Heroku) to postgresql://
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Strip surrounding quotes if pasted with quotes
+    raw = raw.strip("'\"").strip()
 
-is_sqlite = DATABASE_URL.startswith("sqlite")
-connect_args = {"check_same_thread": False} if is_sqlite else {}
-engine = create_engine(
-    DATABASE_URL,
-    connect_args=connect_args,
-    echo=False,
-    pool_pre_ping=not is_sqlite
-)
+    # Strip accidental command prefixes (e.g. 'psql ...')
+    if raw.startswith("psql "):
+        raw = raw[5:].strip().strip("'\"").strip()
+
+    # Check for empty string or unexpanded Railway variable template like ${{Postgres.DATABASE_URL}}
+    if not raw or raw.startswith("${{"):
+        print("[DATABASE] DATABASE_URL is not set or unresolved. Falling back to local SQLite.")
+        raw = "sqlite:///./alignnova.db"
+    elif raw.startswith("postgres://"):
+        raw = raw.replace("postgres://", "postgresql://", 1)
+
+    is_sqlite = raw.startswith("sqlite")
+    connect_args = {"check_same_thread": False} if is_sqlite else {}
+
+    try:
+        eng = create_engine(
+            raw,
+            connect_args=connect_args,
+            echo=False,
+            pool_pre_ping=not is_sqlite
+        )
+        return eng, raw
+    except Exception as exc:
+        print(f"[DATABASE WARNING] Failed to parse DATABASE_URL ({exc}). Falling back to SQLite.")
+        fallback_url = "sqlite:///./alignnova.db"
+        eng = create_engine(fallback_url, connect_args={"check_same_thread": False}, echo=False)
+        return eng, fallback_url
+
+engine, DATABASE_URL = _build_database_engine()
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 Base = declarative_base()
@@ -107,7 +133,18 @@ class OpportunityAlertSent(Base):
 
 
 def init_db() -> None:
-    Base.metadata.create_all(bind=engine)
+    import time
+    for attempt in range(5):
+        try:
+            Base.metadata.create_all(bind=engine)
+            break
+        except Exception as e:
+            if attempt < 4:
+                print(f"[DATABASE] Waiting for database (attempt {attempt + 1}/5): {e}")
+                time.sleep(2)
+            else:
+                print(f"[DATABASE WARNING] Failed to run create_all after 5 attempts: {e}")
+                break
     try:
         inspector = inspect(engine)
         if "users" in inspector.get_table_names():
