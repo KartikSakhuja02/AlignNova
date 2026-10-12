@@ -9,8 +9,18 @@ load_dotenv()
 # Use DATABASE_URL from env, fall back to a local sqlite file
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./alignnova.db")
 
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args, echo=False)
+# Normalize legacy postgres:// scheme from cloud providers (e.g., Railway/Heroku) to postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+is_sqlite = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if is_sqlite else {}
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=connect_args,
+    echo=False,
+    pool_pre_ping=not is_sqlite
+)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 Base = declarative_base()
