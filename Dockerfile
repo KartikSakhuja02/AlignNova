@@ -1,25 +1,35 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# install node deps and build Tailwind CSS
+# Install root dependencies (for Tailwind)
 COPY package.json package-lock.json* ./
 RUN npm ci --silent || npm install --silent
+
+# Install frontend dependencies (for React / Vite)
+COPY frontend/package.json frontend/package-lock.json* ./frontend/
+RUN cd frontend && (npm ci --silent || npm install --silent)
+
+# Copy source files
 COPY . .
+
+# Build Tailwind CSS and React frontend bundle (outputs to frontend_dist)
 RUN npm run build:css
+RUN cd frontend && npm run build
 
 FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 
-# copy built assets from node builder
-COPY --from=builder /app/frontend/styles.css ./frontend/styles.css
-
-# install python deps
+# Install python deps
 COPY backend/requirements.txt /app/backend/requirements.txt
 RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 
-# copy project
+# Copy project files
 COPY . /app
+
+# Copy built frontend from builder stage
+COPY --from=builder /app/frontend_dist /app/frontend_dist
+COPY --from=builder /app/frontend/styles.css /app/frontend/styles.css
 
 ENV PORT=8000
 EXPOSE 8000
