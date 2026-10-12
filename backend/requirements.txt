@@ -8,5 +8,6 @@ sqlalchemy
 jinja2
 gunicorn
 uvicorn[standard]
+psycopg[binary]
 psycopg2-binary
 python-multipart
