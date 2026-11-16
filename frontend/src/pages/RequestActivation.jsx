@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import Brand from '../components/Brand';
 
 export default function RequestActivation() {
   const navigate = useNavigate();
@@ -49,10 +49,10 @@ export default function RequestActivation() {
     <div className="bg-background min-h-screen flex items-center justify-center p-p-md md:py-8">
       {/* Main Content Shell */}
       <main className="w-full max-w-[480px] flex flex-col items-center gap-y-4">
-        
+
         {/* Logo Section */}
-        <div className="w-20 h-20 md:w-24 md:h-24">
-          <img alt="AlignNova Logo" className="w-full h-full object-contain" src={logo} />
+        <div className="py-5">
+          <Brand />
         </div>
 
         {/* Auth Card */}
@@ -68,7 +68,7 @@ export default function RequestActivation() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            
+
             {/* Error Message */}
             {error && (
               <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-caption border border-error-container/30">
@@ -85,15 +85,15 @@ export default function RequestActivation() {
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
                   mail
                 </span>
-                <input 
-                  id="email" 
-                  name="email" 
+                <input
+                  id="email"
+                  name="email"
                   type="email"
                   required
                   disabled={loading || success}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email Address" 
+                  placeholder="Email Address"
                   className="w-full pl-12 pr-4 bg-surface-container-low border border-outline-variant rounded-lg text-body-md font-body-md focus:ring-2 focus:ring-primary-container focus:border-primary-container outline-none transition-all duration-200 placeholder:text-outline py-2.5 disabled:opacity-50"
                 />
               </div>
@@ -101,8 +101,8 @@ export default function RequestActivation() {
 
             {/* Primary Action Button */}
             {success ? (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled
                 className="w-full bg-secondary-container text-on-secondary-container font-label-md text-label-md px-6 rounded-lg shadow-sm flex items-center justify-center gap-2 py-3 transition-all duration-200"
               >
@@ -110,8 +110,8 @@ export default function RequestActivation() {
                 Link Sent Successfully
               </button>
             ) : loading ? (
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled
                 className="w-full bg-primary-container text-on-primary font-label-md text-label-md px-6 rounded-lg shadow-sm flex items-center justify-center gap-2 py-3 transition-all duration-200 cursor-wait"
               >
@@ -122,9 +122,9 @@ export default function RequestActivation() {
                 Processing...
               </button>
             ) : (
-              <button 
+              <button
                 type="submit"
-                className="w-full bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md px-6 rounded-lg shadow-sm transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2 group py-3"
+                className="w-full bg-primary-container hover:bg-primary-container text-on-primary font-label-md text-label-md px-6 rounded-lg shadow-sm transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2 group py-3"
               >
                 Resend Activation Link
                 <span className="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:translate-x-1">
@@ -136,7 +136,7 @@ export default function RequestActivation() {
 
           {/* Secondary Actions */}
           <div className="border-t border-outline-variant flex justify-center pt-4 mt-4">
-            <button 
+            <button
               onClick={() => navigate('/signin')}
               className="font-label-md text-label-md text-primary-container hover:text-primary transition-colors duration-200 flex items-center gap-1 group outline-none"
             >
@@ -151,7 +151,7 @@ export default function RequestActivation() {
         {/* System Footer */}
         <footer className="text-center space-y-4">
           <p className="font-caption text-caption text-on-surface-variant opacity-70">
-            © 2026 AlignNova Platform. All rights reserved. 
+            © 2026 AlignNova Platform. All rights reserved.
           </p>
           <div className="flex justify-center gap-x-6">
             <a className="font-caption text-caption text-on-surface-variant hover:text-primary transition-colors" href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>

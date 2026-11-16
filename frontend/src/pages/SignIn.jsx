@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/logo.png';
+import Brand from '../components/Brand';
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -84,8 +84,8 @@ export default function SignIn() {
       <main className="relative z-10 w-full max-w-[480px] px-p-md fade-in">
         {/* Branding Header */}
         <div className="text-center mb-p-xl">
-          <img src={logo} alt="AlignNova Logo" className="h-32 mx-auto mb-p-md object-contain" />
-          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Elevating high-stakes career placement.</p>
+          <Brand className="h-32 mx-auto mb-p-md object-contain" />
+          <p className="font-body-md text-body-md text-on-surface-variant mt-2">Your campus placement workspace.</p>
         </div>
 
         {/* Sign In Card */}
@@ -124,8 +124,8 @@ export default function SignIn() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder=""
                   className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
-                    ${isLoading 
-                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 
+                    ${isLoading
+                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30'
                       : 'bg-transparent border-outline-variant text-on-surface focus:border-primary focus:ring-4 focus:ring-primary/10'
                     }`}
                 />
@@ -159,8 +159,8 @@ export default function SignIn() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder=""
                   className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
-                    ${isLoading 
-                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30' 
+                    ${isLoading
+                      ? 'bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant/30'
                       : 'bg-transparent border-outline-variant text-on-surface focus:border-primary focus:ring-4 focus:ring-primary/10'
                     }`}
                 />
@@ -191,7 +191,7 @@ export default function SignIn() {
             ) : status === 'success' ? (
               <button
                 disabled
-                className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary text-on-secondary rounded-xl font-label-md text-label-md transition-all duration-200 cursor-wait"
+                className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary-solid text-on-secondary rounded-xl font-label-md text-label-md transition-all duration-200 cursor-wait"
               >
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>
                   check_circle
@@ -201,7 +201,7 @@ export default function SignIn() {
             ) : (
               <button
                 type="submit"
-                className="w-full py-4 px-6 bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:scale-[1.01] hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.99]"
+                className="w-full py-4 px-6 bg-primary-container text-on-primary rounded-xl font-label-md text-label-md hover:scale-[1.01] hover:shadow-lg transition-all duration-200 cursor-pointer active:scale-[0.99]"
               >
                 Sign In
               </button>

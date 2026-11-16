@@ -114,7 +114,7 @@ function DriveCard({ drive }) {
       <div className="mt-auto pt-8 flex gap-3">
         <button
           onClick={() => navigate(`/apply/${drive.id}`)}
-          className="flex-1 bg-primary text-on-primary py-3 rounded-xl text-label-md font-semibold hover:shadow-md hover:bg-primary/90 transition-all active:scale-95 cursor-pointer"
+          className="flex-1 bg-primary-container text-on-primary py-3 rounded-xl text-label-md font-semibold hover:shadow-md hover:bg-primary-container/90 transition-all active:scale-95 cursor-pointer"
         >
           Apply Now
         </button>
@@ -171,7 +171,7 @@ function FeaturedSection() {
           round.
         </p>
         <div className="flex gap-4 flex-wrap">
-          <button className="bg-primary text-on-primary px-8 py-3 rounded-xl text-label-md font-semibold hover:shadow-lg transition-all active:scale-95">
+          <button className="bg-primary-container text-on-primary px-8 py-3 rounded-xl text-label-md font-semibold hover:shadow-lg transition-all active:scale-95">
             Explore Resources
           </button>
           <button className="border border-on-primary-fixed-variant px-8 py-3 rounded-xl text-label-md font-semibold hover:bg-on-primary-fixed-variant/5 transition-all">
@@ -274,7 +274,7 @@ export default function Drives() {
                 key={f}
                 onClick={() => setActiveFilter(f)}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-label-md font-semibold transition-colors ${activeFilter === f
-                    ? 'bg-primary text-on-primary shadow-sm'
+                    ? 'bg-primary-container text-on-primary shadow-sm'
                     : 'border border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
                   }`}
               >

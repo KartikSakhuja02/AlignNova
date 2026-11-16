@@ -22,16 +22,16 @@ const formatDate = (isoString) => {
 const getStatusStyles = (status) => {
   const s = status?.toLowerCase() || 'submitted';
   if (s === 'selected' || s === 'approved' || s === 'offer' || s === 'hired') {
-    return { text: 'Selected', statusClass: 'bg-secondary/10 text-secondary' };
+    return { text: 'Selected', statusClass: 'bg-secondary-solid/10 text-secondary' };
   }
   if (s === 'rejected') {
-    return { text: 'Rejected', statusClass: 'bg-error/10 text-error' };
+    return { text: 'Rejected', statusClass: 'bg-error-solid/10 text-error' };
   }
   if (s === 'withdrawn') {
     return { text: 'Withdrawn', statusClass: 'bg-outline-variant/40 text-on-surface-variant' };
   }
   if (s === 'shortlisted') {
-    return { text: 'Shortlisted', statusClass: 'bg-tertiary/10 text-tertiary' };
+    return { text: 'Shortlisted', statusClass: 'bg-tertiary-solid/10 text-tertiary' };
   }
   if (s === 'interviewing' || s === 'interview') {
     return { text: 'Interviewing', statusClass: 'bg-primary/10 text-primary' };
@@ -241,7 +241,7 @@ export default function Applications() {
             </button>
             <button
               onClick={() => navigate('/drives')}
-              className="px-6 py-3 bg-primary text-on-primary text-label-md rounded-xl hover:shadow-lg hover:scale-[1.01] transition-all flex items-center gap-2 cursor-pointer font-semibold"
+              className="px-6 py-3 bg-primary-container text-on-primary text-label-md rounded-xl hover:shadow-lg hover:scale-[1.01] transition-all flex items-center gap-2 cursor-pointer font-semibold"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
               New Application
@@ -268,7 +268,7 @@ export default function Applications() {
           {/* In Progress */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:border-primary/50 transition-colors group">
             <div className="flex justify-between items-start mb-4">
-              <div className="bg-tertiary/10 p-3 rounded-xl text-tertiary">
+              <div className="bg-tertiary-solid/10 p-3 rounded-xl text-tertiary">
                 <span className="material-symbols-outlined">pending_actions</span>
               </div>
               <span className="text-on-surface-variant text-label-md">Under review</span>
@@ -282,7 +282,7 @@ export default function Applications() {
           {/* Offers Received */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-p-md shadow-sm hover:border-primary/50 transition-colors group">
             <div className="flex justify-between items-start mb-4">
-              <div className="bg-secondary/10 p-3 rounded-xl text-secondary">
+              <div className="bg-secondary-solid/10 p-3 rounded-xl text-secondary">
                 <span className="material-symbols-outlined">verified</span>
               </div>
               <span className="text-secondary text-label-md">Select Pool</span>
@@ -434,7 +434,7 @@ export default function Applications() {
         {/* ── Secondary Insight Grid ── */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Upcoming Interviews */}
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 rounded-2xl p-p-md">
+          <div className="bg-white/80 backdrop-blur-xl border border-outline-variant rounded-2xl p-p-md">
             <h4 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">calendar_today</span>
               Upcoming Interviews
@@ -470,7 +470,7 @@ export default function Applications() {
           </div>
 
           {/* Application Success Rate */}
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 rounded-2xl p-p-md overflow-hidden relative">
+          <div className="bg-white/80 backdrop-blur-xl border border-outline-variant rounded-2xl p-p-md overflow-hidden relative">
             <h4 className="text-headline-md font-bold text-on-surface mb-6">
               Application Success Rate
             </h4>
@@ -478,7 +478,7 @@ export default function Applications() {
               <DonutChart percent={successRate} />
               <div className="ml-8 space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-primary flex-shrink-0" />
+                  <span className="w-3 h-3 rounded-full bg-primary-container flex-shrink-0" />
                   <span className="text-label-md text-on-surface">Shortlisted / Select</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -515,7 +515,7 @@ export default function Applications() {
               </button>
               <button
                 onClick={confirmWithdraw}
-                className="px-5 py-2.5 bg-error text-white text-label-md font-semibold rounded-xl hover:bg-error-container hover:shadow-md active:scale-95 transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-error-solid text-white text-label-md font-semibold rounded-xl hover:bg-error-container hover:shadow-md active:scale-95 transition-all cursor-pointer"
               >
                 Yes, Withdraw
               </button>

@@ -108,7 +108,7 @@ function SuccessModal({ visible, companyName, onClose }) {
           </p>
           <button
             onClick={onClose}
-            className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl active:scale-95 transition-transform"
+            className="w-full py-4 bg-primary-container text-on-primary font-bold rounded-xl active:scale-95 transition-transform"
           >
             Done
           </button>
@@ -229,7 +229,7 @@ function AdminSettingsView({ profile, token, onSaved }) {
               {form.profile_image ? (
                 <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-primary-container text-primary text-[36px] font-bold">
+                <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-[36px] font-bold">
                   {form.full_name ? form.full_name[0].toUpperCase() : 'A'}
                 </div>
               )}
@@ -237,7 +237,7 @@ function AdminSettingsView({ profile, token, onSaved }) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary-container text-on-primary rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>photo_camera</span>
             </button>
@@ -262,8 +262,8 @@ function AdminSettingsView({ profile, token, onSaved }) {
         )}
 
         {success && (
-          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-label-md">
-            <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: '18px' }}>check_circle</span>
+          <div className="flex items-center gap-2 px-4 py-3 bg-success-container border border-success/20 rounded-xl text-on-success-container text-label-md">
+            <span className="material-symbols-outlined text-success" style={{ fontSize: '18px' }}>check_circle</span>
             Profile updated successfully!
           </div>
         )}
@@ -294,7 +294,7 @@ function AdminSettingsView({ profile, token, onSaved }) {
           <button
             type="submit"
             disabled={saving}
-            className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+            className="px-8 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
           >
             {saving && (
               <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -310,12 +310,12 @@ function AdminSettingsView({ profile, token, onSaved }) {
 
       {/* Preferences / Theme Settings */}
       <div className="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden max-w-4xl">
-        <div className="bg-slate-50 border-b border-outline-variant/60 px-6 py-4 flex items-center gap-3">
+        <div className="bg-surface-container-low border-b border-outline-variant/60 px-6 py-4 flex items-center gap-3">
           <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '20px' }}>palette</span>
           <h3 className="font-bold text-body-lg text-on-surface">Preferences</h3>
         </div>
         <div className="p-6">
-          <label className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+          <label className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
             <div>
               <span className="font-semibold text-label-md text-on-surface">Dark Mode</span>
               <p className="text-[12px] text-on-surface-variant">Switch the interface to dark colors.</p>
@@ -463,7 +463,7 @@ function AddPartnerModal({ visible, token, onClose, onAdded }) {
             <button
               type="submit"
               disabled={creating || success}
-              className="flex-1 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary-container/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {creating ? (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -532,12 +532,12 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
   };
 
   const colors = [
-    'bg-blue-500 text-white',
-    'bg-red-500 text-white',
-    'bg-purple-600 text-white',
-    'bg-amber-600 text-white',
-    'bg-indigo-600 text-white',
-    'bg-teal-600 text-white'
+    'bg-primary-container text-white',
+    'bg-error-solid text-white',
+    'bg-secondary-solid text-white',
+    'bg-tertiary-solid text-white',
+    'bg-primary-container text-white',
+    'bg-primary-container text-white'
   ];
 
   return (
@@ -548,18 +548,18 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
           <p className="text-body-md text-on-surface-variant">Manage relationships with placement & internship recruiters</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             type="button"
             onClick={onPreviewPartnerEmail}
-            className="px-4 py-2.5 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
+            className="px-4 py-2.5 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors flex items-center gap-2"
           >
             <span className="material-symbols-outlined text-[18px]">drafts</span>
             Preview Welcome Email
           </button>
-          <button 
+          <button
             type="button"
             onClick={() => setShowAddPartner(true)}
-            className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center gap-2"
+            className="px-5 py-2.5 bg-primary-container text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 transition-all shadow-sm flex items-center gap-2"
           >
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
             Add Partner
@@ -591,10 +591,10 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
                   <div className="flex items-center gap-3">
                     {partner.profile_image ? (
                       <div className="w-12 h-12 rounded-xl overflow-hidden border border-outline-variant flex items-center justify-center shadow-inner bg-white flex-shrink-0">
-                        <img 
-                          src={partner.profile_image} 
-                          alt={`${partner.company} Logo`} 
-                          className="w-full h-full object-contain" 
+                        <img
+                          src={partner.profile_image}
+                          alt={`${partner.company} Logo`}
+                          className="w-full h-full object-contain"
                         />
                       </div>
                     ) : (
@@ -607,17 +607,17 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
                       <p className="text-caption text-on-surface-variant">{partner.full_name}</p>
                     </div>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-caption font-bold border bg-emerald-50 border-emerald-200 text-emerald-700">
+                  <span className="px-2.5 py-1 rounded-full text-caption font-bold border bg-success-container border-success/20 text-on-success-container">
                     Active Partner
                   </span>
                 </div>
-                
+
                 <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between text-caption text-outline">
                   <span className="flex items-center gap-1">
                     <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>mail</span>
                     {partner.email}
                   </span>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setPartnerToDelete(partner)}
                     className="p-1.5 hover:bg-error-container/30 rounded-lg text-error transition-colors"
@@ -632,13 +632,13 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
         </div>
       )}
 
-      <AddPartnerModal 
+      <AddPartnerModal
         visible={showAddPartner}
         token={token}
         onClose={() => setShowAddPartner(false)}
         onAdded={() => fetchPartners()}
       />
-      <ConfirmDeletePartnerModal 
+      <ConfirmDeletePartnerModal
         partner={partnerToDelete}
         onCancel={() => setPartnerToDelete(null)}
         onConfirm={handleDeletePartnerConfirm}
@@ -842,7 +842,7 @@ function EditDriveModal({ visible, drive, token, partners = [], onClose, onSaved
     e.preventDefault();
     setSaving(true);
     setError('');
-    
+
     const payload = {
       ...form,
       partner_id: form.partner_id || null,
@@ -1189,7 +1189,7 @@ function EditDriveModal({ visible, drive, token, partners = [], onClose, onSaved
                         const current = parseRounds(form.selection_process);
                         const allSelected = current.length === SELECTION_ROUNDS.length;
                         const next = allSelected ? [] : SELECTION_ROUNDS;
-                        
+
                         const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
                         const formatted = next
                           .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
@@ -1217,7 +1217,7 @@ function EditDriveModal({ visible, drive, token, partners = [], onClose, onSaved
                               } else {
                                 next = current.filter((r) => r !== round);
                               }
-                              
+
                               const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
                               const formatted = next
                                 .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
@@ -1263,7 +1263,7 @@ function EditDriveModal({ visible, drive, token, partners = [], onClose, onSaved
             </button>
             <button
               type="submit" disabled={saving}
-              className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+              className="px-8 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
             >
               {saving && (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1428,7 +1428,7 @@ function AddStudentModal({ visible, token, onClose, onAdded }) {
               <button
                 type="submit"
                 disabled={creating}
-                className="px-8 py-3 bg-secondary text-on-secondary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+                className="px-8 py-3 bg-secondary-solid text-on-secondary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
               >
                 {creating && (
                   <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1454,7 +1454,7 @@ function ConfirmDeleteModal({ student, onConfirm, onCancel, deleting }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Red header strip */}
-        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+        <div className="bg-gradient-to-r from-error-solid to-error-solid px-6 py-4 flex items-center gap-3">
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
             <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
           </div>
@@ -1484,7 +1484,7 @@ function ConfirmDeleteModal({ student, onConfirm, onCancel, deleting }) {
             <button
               onClick={onConfirm}
               disabled={deleting}
-              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-error-solid text-on-error text-label-md font-semibold rounded-xl hover:bg-error-solid/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {deleting ? (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1508,7 +1508,7 @@ function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+        <div className="bg-gradient-to-r from-error-solid to-error-solid px-6 py-4 flex items-center gap-3">
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
             <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
           </div>
@@ -1538,7 +1538,7 @@ function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
             <button
               onClick={onConfirm}
               disabled={deleting}
-              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-error-solid text-on-error text-label-md font-semibold rounded-xl hover:bg-error-solid/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {deleting ? (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1562,7 +1562,7 @@ function ConfirmDeletePartnerModal({ partner, onConfirm, onCancel, deleting }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="bg-gradient-to-r from-error to-red-500 px-6 py-4 flex items-center gap-3">
+        <div className="bg-gradient-to-r from-error-solid to-error-solid px-6 py-4 flex items-center gap-3">
           <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
             <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>delete_forever</span>
           </div>
@@ -1592,7 +1592,7 @@ function ConfirmDeletePartnerModal({ partner, onConfirm, onCancel, deleting }) {
             <button
               onClick={onConfirm}
               disabled={deleting}
-              className="flex-1 py-3 bg-error text-on-error text-label-md font-semibold rounded-xl hover:bg-error/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-error-solid text-on-error text-label-md font-semibold rounded-xl hover:bg-error-solid/90 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {deleting ? (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1761,7 +1761,7 @@ function ManageTimelineModal({ visible, drive, token, onClose, onSaved }) {
           )}
 
           {rounds.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-outline-variant/60 rounded-2xl bg-slate-50/30">
+            <div className="text-center py-8 border border-dashed border-outline-variant/60 rounded-2xl bg-surface-container-low/30">
               <span className="material-symbols-outlined text-[48px] text-outline mb-2">event_busy</span>
               <p className="text-body-md text-on-surface-variant font-semibold">No timeline rounds defined yet.</p>
               <p className="text-caption text-outline mt-1">Add rounds below to structure the selection process timeline for candidates.</p>
@@ -1769,9 +1769,9 @@ function ManageTimelineModal({ visible, drive, token, onClose, onSaved }) {
           ) : (
             <div className="space-y-4">
               {rounds.map((round, idx) => (
-                <div 
-                  key={idx} 
-                  className="border border-outline-variant rounded-2xl p-4 bg-slate-50/30 hover:border-primary/20 transition-all flex flex-col gap-4 relative group"
+                <div
+                  key={idx}
+                  className="border border-outline-variant rounded-2xl p-4 bg-surface-container-low/30 hover:border-primary/20 transition-all flex flex-col gap-4 relative group"
                 >
                   {/* Round Card Header */}
                   <div className="flex items-center justify-between border-b border-outline-variant/40 pb-2">
@@ -1877,7 +1877,7 @@ function ManageTimelineModal({ visible, drive, token, onClose, onSaved }) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              className="flex-1 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:bg-primary-container/95 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {saving ? (
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -2064,39 +2064,39 @@ export default function AdminDashboard() {
         setStatsData([
           {
             icon: "school",
-            iconColor: "text-blue-600",
-            iconBg: "bg-blue-100",
+            iconColor: "text-primary",
+            iconBg: "bg-primary/10",
             label: "Students",
             value: data.total_students,
             sub: "Registered Students",
-            subColor: "text-blue-600",
+            subColor: "text-primary",
           },
           {
             icon: "campaign",
-            iconColor: "text-green-600",
-            iconBg: "bg-green-100",
+            iconColor: "text-success",
+            iconBg: "bg-success-container",
             label: "Drives",
             value: data.total_drives,
             sub: "Total Opportunities",
-            subColor: "text-green-600",
+            subColor: "text-success",
           },
           {
             icon: "description",
-            iconColor: "text-purple-600",
-            iconBg: "bg-purple-100",
+            iconColor: "text-secondary",
+            iconBg: "bg-secondary-container",
             label: "Applications",
             value: data.total_applications,
             sub: "Applications Submitted",
-            subColor: "text-purple-600",
+            subColor: "text-secondary",
           },
           {
             icon: "verified",
-            iconColor: "text-emerald-600",
-            iconBg: "bg-emerald-100",
+            iconColor: "text-success",
+            iconBg: "bg-success-container",
             label: "Placement %",
             value: `${data.placement_percentage}%`,
             sub: `${data.placed_students} Students Placed`,
-            subColor: "text-emerald-600",
+            subColor: "text-success",
           },
         ]);
       })
@@ -2112,7 +2112,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLaunching(true);
     setFormError('');
-    
+
     const payload = {
       company: form.company, role: form.role, type: form.type,
       eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
@@ -2240,7 +2240,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-4">
             <button className="relative text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95">
               <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-error-solid rounded-full" />
             </button>
             <div className="h-8 w-px bg-outline-variant mx-1" />
 
@@ -2262,7 +2262,7 @@ export default function AdminDashboard() {
                     alt={adminName}
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full border-2 border-primary-container bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
+                  <div className="w-10 h-10 rounded-full border-2 border-primary-container bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md">
                     {adminInitial}
                   </div>
                 )}
@@ -2297,7 +2297,7 @@ export default function AdminDashboard() {
                 <div className="hidden md:flex items-center gap-3">
                   <button
                     onClick={() => setShowAddStudent(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 shadow-sm transition-all"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] active:scale-95 shadow-sm transition-all"
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                     Add Student
@@ -2531,7 +2531,7 @@ export default function AdminDashboard() {
                             keyboard_arrow_down
                           </span>
                         </button>
-                        
+
                         {showAdvanced && (
                           <div className="p-5 bg-white border-t border-outline-variant space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2656,7 +2656,7 @@ export default function AdminDashboard() {
                                     const current = parseRounds(form.selection_process);
                                     const allSelected = current.length === SELECTION_ROUNDS.length;
                                     const next = allSelected ? [] : SELECTION_ROUNDS;
-                                    
+
                                     const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
                                     const formatted = next
                                       .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
@@ -2684,7 +2684,7 @@ export default function AdminDashboard() {
                                           } else {
                                             next = current.filter((r) => r !== round);
                                           }
-                                          
+
                                           const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
                                           const formatted = next
                                             .map((r, idx) => `${ordinals[idx] || `${idx + 1}th`} Round – ${r}`)
@@ -2733,7 +2733,7 @@ export default function AdminDashboard() {
                         <button
                           type="submit"
                           disabled={launching}
-                          className="px-8 py-3 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
+                          className="px-8 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
                         >
                           {launching && (
                             <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -2779,7 +2779,7 @@ export default function AdminDashboard() {
                         <p className="text-caption text-on-surface-variant mt-1">Add your first student to get started</p>
                         <button
                           onClick={() => setShowAddStudent(true)}
-                          className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                          className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                           Add First Student
@@ -2797,7 +2797,7 @@ export default function AdminDashboard() {
                                 {s.profile_image ? (
                                   <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-label-md">
+                                  <div className="w-full h-full bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md">
                                     {initials}
                                   </div>
                                 )}
@@ -2807,7 +2807,7 @@ export default function AdminDashboard() {
                                 <p className="text-caption text-outline truncate">{s.email || s.username}</p>
                               </div>
                               {s.enrollment_id && (
-                                <span className="text-[10px] bg-primary-container/20 text-primary px-2 py-0.5 rounded font-semibold flex-shrink-0">
+                                <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded font-semibold flex-shrink-0">
                                   {s.enrollment_id}
                                 </span>
                               )}
@@ -2873,7 +2873,7 @@ export default function AdminDashboard() {
                     </button>
                     <button
                       onClick={() => setShowAddStudent(true)}
-                      className="px-6 py-2 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
+                      className="px-6 py-2 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all flex items-center gap-2"
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
                       Add Student
@@ -2934,7 +2934,7 @@ export default function AdminDashboard() {
                             {!studentSearch && (
                               <button
                                 onClick={() => setShowAddStudent(true)}
-                                className="mt-2 px-5 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
+                                className="mt-2 px-5 py-2 bg-primary-container text-on-primary rounded-xl text-label-md font-semibold hover:scale-[1.02] transition-transform shadow-sm"
                               >
                                 Add First Student
                               </button>
@@ -2950,7 +2950,7 @@ export default function AdminDashboard() {
                         const joinedDate = s.created_at
                           ? new Date(s.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                           : '—';
-                        
+
                         const isEligible = s.is_eligible === 1;
                         const isPendingSetup = s.must_change_password === '1';
                         const hasResume = !!s.resume_name;
@@ -2961,28 +2961,28 @@ export default function AdminDashboard() {
                         let statusLabel, statusBg, statusText, statusIcon;
                         if (isEligible) {
                           statusLabel = 'Eligible';
-                          statusBg = 'bg-emerald-50 border-emerald-200';
-                          statusText = 'text-emerald-700';
+                          statusBg = 'bg-success-container border-success/20';
+                          statusText = 'text-on-success-container';
                           statusIcon = 'verified';
                         } else if (isPendingSetup) {
                           statusLabel = 'Pending Setup';
-                          statusBg = 'bg-amber-50 border-amber-200';
-                          statusText = 'text-amber-700';
+                          statusBg = 'bg-tertiary-container border-tertiary/20';
+                          statusText = 'text-tertiary';
                           statusIcon = 'schedule';
                         } else if (!isProfileDone) {
                           statusLabel = 'Profile Incomplete';
-                          statusBg = 'bg-slate-50 border-slate-200';
-                          statusText = 'text-slate-600';
+                          statusBg = 'bg-surface-container-low border-outline-variant';
+                          statusText = 'text-on-surface-variant';
                           statusIcon = 'person_alert';
                         } else if (!hasResume) {
                           statusLabel = 'Resume Missing';
-                          statusBg = 'bg-orange-50 border-orange-200';
-                          statusText = 'text-orange-700';
+                          statusBg = 'bg-tertiary-container border-tertiary/20';
+                          statusText = 'text-tertiary';
                           statusIcon = 'description';
                         } else {
                           statusLabel = 'Education Missing';
-                          statusBg = 'bg-amber-50 border-amber-200';
-                          statusText = 'text-amber-700';
+                          statusBg = 'bg-tertiary-container border-tertiary/20';
+                          statusText = 'text-tertiary';
                           statusIcon = 'school';
                         }
 
@@ -3000,7 +3000,7 @@ export default function AdminDashboard() {
                                   {s.profile_image ? (
                                     <img src={s.profile_image} alt={s.full_name} className="w-full h-full object-cover" />
                                   ) : (
-                                    <div className="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold text-caption">
+                                    <div className="w-full h-full bg-primary/10 text-primary flex items-center justify-center font-bold text-caption">
                                       {initials}
                                     </div>
                                   )}
@@ -3014,7 +3014,7 @@ export default function AdminDashboard() {
                             <td className="px-6 py-5 text-body-md text-on-surface-variant">{s.email || '—'}</td>
                             <td className="px-6 py-5">
                               {s.enrollment_id ? (
-                                <span className="px-2 py-1 bg-primary-container/20 text-primary text-caption font-semibold rounded-lg">
+                                <span className="px-2 py-1 bg-primary/20 text-primary text-caption font-semibold rounded-lg">
                                   {s.enrollment_id}
                                 </span>
                               ) : (
@@ -3079,7 +3079,7 @@ export default function AdminDashboard() {
                       <button
                         key={n}
                         onClick={() => setStudentPage(n)}
-                        className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === studentPage ? 'bg-primary text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
+                        className={`w-8 h-8 rounded-lg text-label-md font-semibold ${n === studentPage ? 'bg-primary-container text-on-primary' : 'hover:bg-surface-container-high text-on-surface'}`}
                       >
                         {n}
                       </button>

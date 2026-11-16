@@ -1,211 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
+@import "./theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-background: #f9f9ff;
-  --color-surface: #f9f9ff;
-  --color-surface-bright: #f9f9ff;
-  --color-surface-dim: #cfdaf2;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f0f3ff;
-  --color-surface-container: #e7eeff;
-  --color-surface-container-high: #dee8ff;
-  --color-surface-container-highest: #d8e3fb;
-  --color-on-surface: #111c2d;
-  --color-on-surface-variant: #464555;
-  --color-outline: #777587;
-  --color-outline-variant: #c7c4d8;
-  --color-primary: #3525cd;
-  --color-primary-container: #4f46e5;
-  --color-on-primary: #ffffff;
-  --color-secondary: #006c49;
-  --color-secondary-container: #6cf8bb;
-  --color-on-secondary: #ffffff;
+/* Surface utilities follow the palette, including translucent headers. */
+@layer utilities {
+  .bg-white { background-color: var(--color-surface-container-lowest); }
+  .bg-white\/50 { background-color: rgb(var(--rgb-surface-container-lowest) / .5); }
+  .bg-white\/80 { background-color: rgb(var(--rgb-surface-container-lowest) / .8); }
+  .bg-white\/95 { background-color: rgb(var(--rgb-surface-container-lowest) / .95); }
 }
 
-.dark {
-  --color-background: #0b0f19;
-  --color-surface: #0f172a;
-  --color-surface-bright: #1e293b;
-  --color-surface-dim: #0b0f19;
-  --color-surface-container-lowest: #1e293b;
-  --color-surface-container-low: #0f172a;
-  --color-surface-container: #1e293b;
-  --color-surface-container-high: #334155;
-  --color-surface-container-highest: #475569;
-  --color-on-surface: #f8fafc;
-  --color-on-surface-variant: #94a3b8;
-  --color-outline: #64748b;
-  --color-outline-variant: #334155;
-  --color-primary: #818cf8;
-  --color-primary-container: #4f46e5;
-  --color-on-primary: #ffffff;
-  --color-secondary: #10b981;
-  --color-secondary-container: #047857;
-  --color-on-secondary: #ffffff;
-}
-
-/* Global overrides for dark mode hardcoded layouts */
-.dark body {
-  background-color: var(--color-background);
-  color: var(--color-on-surface);
-}
-
-.dark .bg-white {
-  background-color: var(--color-surface-container-lowest) !important;
-}
-
-.dark .bg-slate-50 {
-  background-color: var(--color-surface-container-low) !important;
-}
-
-.dark .border-slate-100,
-.dark .border-slate-200,
-.dark .border-slate-300,
-.dark .border-slate-100\/30,
-.dark .border-outline-variant\/30,
-.dark .border-outline-variant\/20 {
-  border-color: var(--color-outline-variant) !important;
-}
-
-.dark .text-slate-500,
-.dark .text-slate-600,
-.dark .text-slate-700,
-.dark .text-on-surface-variant {
-  color: var(--color-on-surface-variant) !important;
-}
-
-.dark .text-slate-800,
-.dark .text-slate-900,
-.dark .text-on-surface {
-  color: var(--color-on-surface) !important;
-}
-
-.dark input,
-.dark select,
-.dark textarea {
-  background-color: var(--color-surface-container-low) !important;
-  color: var(--color-on-surface) !important;
-  border-color: var(--color-outline-variant) !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Fix text colors inside various buttons and inputs */
-.dark .text-primary {
-  color: var(--color-primary) !important;
-}
-
-.dark .border-primary {
-  border-color: var(--color-primary) !important;
-}
-
-.dark .bg-primary\/5 {
-  background-color: rgba(129, 140, 248, 0.1) !important;
-}
-
-.dark .bg-primary\/10 {
-  background-color: rgba(129, 140, 248, 0.15) !important;
-}
-
-.dark .bg-primary-container {
-  background-color: var(--color-primary-container) !important;
-}
-
-.dark .text-on-primary-fixed {
-  color: var(--color-on-surface) !important;
-}
-
-.dark .bg-secondary-container\/20 {
-  background-color: rgba(16, 185, 129, 0.2) !important;
-}
-
-.dark .text-secondary {
-  color: var(--color-secondary) !important;
-}
-
-/* Hardcoded hex backgrounds */
-.dark .bg-\[\#F8FAFC\],
-.dark .bg-\[\#f9f9ff\] {
-  background-color: var(--color-background) !important;
-}
-
-/* Escaped selectors for opacity utilities under .dark */
-.dark .bg-surface\/80 {
-  background-color: rgba(15, 23, 42, 0.8) !important;
-}
-
-.dark .bg-white\/80 {
-  background-color: rgba(15, 23, 42, 0.8) !important;
-}
-
-.dark .bg-white\/95 {
-  background-color: rgba(30, 41, 59, 0.95) !important;
-}
-
-.dark .bg-white\/20 {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.dark .bg-white\/30 {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-.dark .bg-black\/5 {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-.dark .border-outline-variant\/50 {
-  border-color: rgba(51, 65, 85, 0.5) !important;
-}
-
-.dark .border-outline-variant\/40 {
-  border-color: rgba(51, 65, 85, 0.4) !important;
-}
-
-.dark .border-outline-variant\/30 {
-  border-color: rgba(51, 65, 85, 0.3) !important;
-}
-
-.dark .border-outline-variant\/20 {
-  border-color: rgba(51, 65, 85, 0.2) !important;
-}
-
-.dark .border-outline-variant\/10 {
-  border-color: rgba(51, 65, 85, 0.1) !important;
-}
-
-.dark .bg-primary\/80 {
-  background-color: rgba(129, 140, 248, 0.8) !important;
-}
-
-.dark .bg-secondary\/10 {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-}
-
-.dark .bg-error\/10 {
-  background-color: rgba(239, 68, 68, 0.15) !important;
-}
-
-.dark .bg-tertiary\/10 {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-}
-
-.dark .bg-outline-variant\/30 {
-  background-color: rgba(51, 65, 85, 0.3) !important;
-}
-
-/* Glassmorphism updates */
-.dark .glass-card {
-  background: rgba(15, 23, 42, 0.75) !important;
-  border-color: var(--color-outline-variant) !important;
+@layer base {
+  body { color: var(--color-on-surface); }
+  h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -.025em; }
+  :focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 3px; }
+  ::selection { background: var(--color-secondary-container); color: var(--color-on-secondary-container); }
+  input, select, textarea { accent-color: var(--color-primary); }
 }
 
 .material-symbols-outlined {
@@ -226,7 +41,7 @@
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #f9f9ff;
+  background-color: var(--color-background);
 }
 
 .bento-grid {
@@ -240,9 +55,9 @@ body {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgb(var(--rgb-surface-container-lowest) / .85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(241, 245, 249, 1);
+  border: 1px solid var(--color-outline-variant);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -252,7 +67,7 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: var(--color-outline-variant);
   border-radius: 10px;
 }
 
@@ -262,7 +77,7 @@ body {
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, var(--color-surface-container-low) 25%, var(--color-surface-container-high) 50%, var(--color-surface-container-low) 75%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite linear;
 }
@@ -327,3 +142,20 @@ body {
 .dashboard-stack:hover {
   animation-play-state: paused;
 }
+
+/* Editorial headings share the public site's typography; controls stay sans serif. */
+h1.text-display-lg, h2.text-display-lg, h1.text-headline-lg, h2.text-headline-lg,
+h1.text-headline-md, h2.text-headline-md, h2.text-4xl {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -.025em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fadeIn, .animate-slideIn, .skeleton-shimmer, .dashboard-stack { animation: none; }
+}
+
+.brand { display: inline-flex; align-items: center; justify-content: center; gap: 10px; color: var(--color-on-surface); font-family: 'Plus Jakarta Sans', sans-serif; flex-shrink: 0; }
+.brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; min-width: 36px; border-radius: 3px; background: var(--color-primary-container); color: var(--color-on-primary); font: 400 34px Georgia, serif; padding-bottom: 7px; }
+.brand-mark > span { color: var(--color-secondary-fixed-dim); }
+.brand-name { font-size: 22px; line-height: 1.2; font-weight: 800; letter-spacing: -1px; }
+[type='checkbox']:checked, [type='radio']:checked { background-color: var(--color-primary-container); border-color: var(--color-primary-container); }

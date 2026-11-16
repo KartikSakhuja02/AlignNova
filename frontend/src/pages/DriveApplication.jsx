@@ -323,7 +323,7 @@ export default function DriveApplication() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-surface-container-low">
         <svg className="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -334,7 +334,7 @@ export default function DriveApplication() {
 
   if (!details || errorStatus === 403) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-container-low p-4">
         <span className="material-symbols-outlined text-[48px] text-error mb-4">error</span>
         <h2 className="text-headline-md font-bold text-on-surface mb-2">
           {errorStatus === 403 ? 'Access Restricted' : 'Drive Not Found'}
@@ -344,7 +344,7 @@ export default function DriveApplication() {
             ? 'You are not eligible to view or apply for this placement drive based on your profile credentials.'
             : 'The placement drive details could not be found or has expired.'}
         </p>
-        <button onClick={() => navigate('/drives')} className="px-6 py-3 bg-primary text-white font-semibold rounded-xl">
+        <button onClick={() => navigate('/drives')} className="px-6 py-3 bg-primary-container text-white font-semibold rounded-xl">
           Back to Drives
         </button>
       </div>
@@ -353,10 +353,10 @@ export default function DriveApplication() {
 
   return (
     <div
-      className="p-p-lg min-h-screen bg-slate-50/50"
+      className="p-p-lg min-h-screen bg-surface-container-low/50"
       style={{
         background:
-          'radial-gradient(at 0% 0%, rgba(79,70,229,0.04) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.03) 0px, transparent 50%)',
+          'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.04) 0px, transparent 50%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.03) 0px, transparent 50%)',
       }}
     >
       <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
@@ -374,13 +374,13 @@ export default function DriveApplication() {
         </nav>
 
         {/* Hero Card */}
-        <section className="relative bg-white rounded-3xl p-8 border border-slate-100 overflow-hidden shadow-sm group">
+        <section className="relative bg-white rounded-3xl p-8 border border-outline-variant overflow-hidden shadow-sm group">
           <div className="absolute top-0 right-0 p-12 pointer-events-none opacity-[0.03] group-hover:opacity-5 transition-opacity">
             <span className="material-symbols-outlined text-[240px]">terminal</span>
           </div>
           <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8 z-10">
             {/* Logo */}
-            <div className="w-24 h-24 bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-24 h-24 bg-white rounded-2xl border border-outline-variant shadow-sm p-4 flex items-center justify-center shrink-0 overflow-hidden">
               <img className="w-full h-auto object-contain" alt={`${details.company} Logo`} src={details.logo} />
             </div>
             {/* Details */}
@@ -396,7 +396,7 @@ export default function DriveApplication() {
               <p className="text-headline-md font-semibold text-on-surface-variant mb-6">
                 {details.company} • {details.location}
               </p>
-              
+
               <div className="flex flex-wrap justify-center md:justify-start gap-6 mb-8 text-outline">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">schedule</span>
@@ -414,7 +414,7 @@ export default function DriveApplication() {
 
               <button
                 onClick={() => document.getElementById('apply-form-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className="px-8 py-4 bg-primary-container text-white font-bold rounded-2xl hover:scale-[1.02] hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Apply Now</span>
                 <span className="material-symbols-outlined">arrow_forward</span>
@@ -428,8 +428,8 @@ export default function DriveApplication() {
           {/* Left Column: Details & Form */}
           <div className="lg:col-span-8 space-y-8">
             {/* About Section */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-              <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3 border-b border-slate-50 pb-4">
+            <div className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm">
+              <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3 border-b border-outline-variant pb-4">
                 <span className="material-symbols-outlined text-primary">info</span>
                 About {details.company}
               </h3>
@@ -439,8 +439,8 @@ export default function DriveApplication() {
             </div>
 
             {/* Role Details */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-              <h3 className="text-headline-md font-bold text-on-surface mb-8 flex items-center gap-3 border-b border-slate-50 pb-4">
+            <div className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm">
+              <h3 className="text-headline-md font-bold text-on-surface mb-8 flex items-center gap-3 border-b border-outline-variant pb-4">
                 <span className="material-symbols-outlined text-primary">assignment</span>
                 Role Details
               </h3>
@@ -453,7 +453,7 @@ export default function DriveApplication() {
                   <ul className="space-y-4">
                     {details.responsibilities.map((resp, i) => (
                       <li key={i} className="flex items-start gap-4">
-                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0"></div>
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-primary-container shrink-0"></div>
                         <p className="text-body-md text-on-surface-variant font-medium">{resp}</p>
                       </li>
                     ))}
@@ -468,7 +468,7 @@ export default function DriveApplication() {
                   <ul className="space-y-4">
                     {details.requirements.map((req, i) => (
                       <li key={i} className="flex items-start gap-4">
-                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0"></div>
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-primary-container shrink-0"></div>
                         <p className="text-body-md text-on-surface-variant font-medium">{req}</p>
                       </li>
                     ))}
@@ -484,7 +484,7 @@ export default function DriveApplication() {
                     {details.techStack.map((tech) => (
                       <span
                         key={tech}
-                        className="px-4 py-2 rounded-xl bg-surface-container-low border border-slate-100 text-on-surface text-label-md hover:bg-primary hover:text-white transition-colors cursor-default"
+                        className="px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface text-label-md hover:bg-primary-container hover:text-white transition-colors cursor-default"
                       >
                         {tech}
                       </span>
@@ -496,14 +496,14 @@ export default function DriveApplication() {
 
             {/* Eligible Courses Section */}
             {details.eligibleCourses && details.eligibleCourses.length > 0 && (
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm animate-fadeIn">
-                <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3 border-b border-slate-50 pb-4">
+              <div className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm animate-fadeIn">
+                <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3 border-b border-outline-variant pb-4">
                   <span className="material-symbols-outlined text-primary">school</span>
                   Eligible Courses & Streams
                 </h3>
                 <div className="flex flex-wrap gap-2.5">
                   {details.eligibleCourses.map((course, idx) => (
-                    <span key={idx} className="px-3.5 py-2 rounded-xl bg-primary-container/10 border border-primary-container/20 text-primary font-bold text-caption tracking-wide uppercase">
+                    <span key={idx} className="px-3.5 py-2 rounded-xl bg-primary/10 border border-primary-container/20 text-primary font-bold text-caption tracking-wide uppercase">
                       {course}
                     </span>
                   ))}
@@ -512,8 +512,8 @@ export default function DriveApplication() {
             )}
 
             {/* Application Submission Form */}
-            <div id="apply-form-section" className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm scroll-mt-24">
-              <h3 className="text-headline-md font-bold text-on-surface mb-2 flex items-center gap-3 border-b border-slate-50 pb-4">
+            <div id="apply-form-section" className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm scroll-mt-24">
+              <h3 className="text-headline-md font-bold text-on-surface mb-2 flex items-center gap-3 border-b border-outline-variant pb-4">
                 <span className="material-symbols-outlined text-primary">send</span>
                 Submit Application
               </h3>
@@ -522,16 +522,16 @@ export default function DriveApplication() {
               </p>
 
               {user && !user.is_eligible ? (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-6 text-center space-y-4">
-                  <span className="material-symbols-outlined text-amber-600 text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-                  <h4 className="font-bold text-body-lg text-amber-900">Placement Eligibility Required</h4>
-                  <p className="text-body-md text-amber-800/90 max-w-md mx-auto">
+                <div className="bg-tertiary-container border border-tertiary/20 text-tertiary rounded-2xl p-6 text-center space-y-4">
+                  <span className="material-symbols-outlined text-tertiary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+                  <h4 className="font-bold text-body-lg text-tertiary">Placement Eligibility Required</h4>
+                  <p className="text-body-md text-tertiary/90 max-w-md mx-auto">
                     You have not fully activated your account. You must complete your profile details (Full Name, Email) and upload your official resume PDF before you can apply to placement drives.
                   </p>
                   <button
                     type="button"
                     onClick={() => navigate('/profile')}
-                    className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer"
+                    className="px-6 py-2.5 bg-primary-container text-on-primary rounded-xl font-bold text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer"
                   >
                     Go to Profile to Activate
                   </button>
@@ -539,7 +539,7 @@ export default function DriveApplication() {
               ) : (
                 <form onSubmit={handleFormSubmit} className="space-y-6">
                   {errorMsg && (
-                    <div className="bg-error/10 text-error p-4 rounded-xl text-label-md font-semibold">
+                    <div className="bg-error-solid/10 text-error p-4 rounded-xl text-label-md font-semibold">
                       {errorMsg}
                     </div>
                   )}
@@ -556,7 +556,7 @@ export default function DriveApplication() {
                         disabled={submitStatus !== 'idle'}
                         placeholder="Alex Rivera"
                         type="text"
-                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
+                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-surface-container-low disabled:text-on-surface-variant"
                       />
                     </div>
                     <div className="space-y-2">
@@ -571,7 +571,7 @@ export default function DriveApplication() {
                         disabled={submitStatus !== 'idle'}
                         placeholder="alex.rivera@university.edu"
                         type="email"
-                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-slate-50 disabled:text-on-surface-variant"
+                        className="w-full rounded-xl border border-outline-variant focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all px-4 py-3 bg-white outline-none disabled:bg-surface-container-low disabled:text-on-surface-variant"
                       />
                     </div>
                   </div>
@@ -582,19 +582,19 @@ export default function DriveApplication() {
                       Resume (PDF)
                     </label>
                     {user?.resume_name ? (
-                      <div className="border-2 border-solid border-emerald-200 bg-emerald-50/30 rounded-2xl p-6 text-center">
-                        <span className="material-symbols-outlined text-4xl text-emerald-600 mb-2">
+                      <div className="border-2 border-solid border-success/20 bg-success-container/30 rounded-2xl p-6 text-center">
+                        <span className="material-symbols-outlined text-4xl text-success mb-2">
                           task_alt
                         </span>
-                        <p className="font-semibold text-body-md text-emerald-800">
+                        <p className="font-semibold text-body-md text-on-success-container">
                           Verified Resume Attached: {user.resume_name}
                         </p>
-                        <p className="text-caption text-emerald-600 mt-1">Recruiters will receive your official profile resume.</p>
+                        <p className="text-caption text-success mt-1">Recruiters will receive your official profile resume.</p>
                       </div>
                     ) : (
                       <div
                         onClick={() => navigate('/profile')}
-                        className="border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-slate-50/50 group select-none"
+                        className="border-2 border-dashed border-outline-variant rounded-2xl p-8 text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low/50 group select-none"
                       >
                         <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-2">
                           upload_file
@@ -622,7 +622,7 @@ export default function DriveApplication() {
                   ) : submitStatus === 'success' ? (
                     <button
                       disabled
-                      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary text-white rounded-2xl font-bold text-label-md transition-all"
+                      className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-secondary-solid text-white rounded-2xl font-bold text-label-md transition-all"
                     >
                       <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
                         check_circle
@@ -632,7 +632,7 @@ export default function DriveApplication() {
                   ) : (
                     <button
                       type="submit"
-                      className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-95 transition-all shadow-md hover:shadow-lg shadow-primary/10 cursor-pointer"
+                      className="w-full py-4 bg-primary-container text-white font-bold rounded-2xl hover:scale-[1.01] active:scale-95 transition-all shadow-md hover:shadow-lg shadow-primary/10 cursor-pointer"
                     >
                       Confirm & Submit Application
                     </button>
@@ -645,7 +645,7 @@ export default function DriveApplication() {
           {/* Right Column: Perks and Timelines */}
           <div className="lg:col-span-4 space-y-8">
             {/* Offer Package Card */}
-            <div className="bg-primary text-white rounded-3xl p-8 custom-shadow relative overflow-hidden shadow-sm">
+            <div className="bg-primary-container text-white rounded-3xl p-8 custom-shadow relative overflow-hidden shadow-sm">
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
               <h3 className="text-headline-md font-bold mb-6 relative z-10 border-b border-white/10 pb-4">
                 Offer Package
@@ -679,8 +679,8 @@ export default function DriveApplication() {
 
             {/* Organisation Profile Card */}
             {(details.website || details.orgSize || details.contactPerson || details.aboutCompany) && (
-              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6 animate-fadeIn">
-                <h3 className="text-headline-md font-bold border-b border-slate-50 pb-4">
+              <div className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm space-y-6 animate-fadeIn">
+                <h3 className="text-headline-md font-bold border-b border-outline-variant pb-4">
                   Organisation Profile
                 </h3>
                 {details.aboutCompany && (
@@ -688,7 +688,7 @@ export default function DriveApplication() {
                     {details.aboutCompany}
                   </p>
                 )}
-                <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="space-y-4 pt-4 border-t border-outline-variant">
                   {details.website && (
                     <div className="flex items-start gap-3">
                       <span className="material-symbols-outlined text-primary text-[20px] mt-0.5">public</span>
@@ -723,8 +723,8 @@ export default function DriveApplication() {
             )}
 
             {/* Timeline Progress Tracker */}
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-              <h3 className="text-headline-md font-bold mb-8 border-b border-slate-50 pb-4">
+            <div className="bg-white rounded-3xl p-8 border border-outline-variant shadow-sm">
+              <h3 className="text-headline-md font-bold mb-8 border-b border-outline-variant pb-4">
                 Drive Timeline
               </h3>
               <div className="space-y-0 relative timeline-line pl-1">
@@ -734,7 +734,7 @@ export default function DriveApplication() {
                     <div key={idx} className={`relative pl-8 ${idx === details.timeline.length - 1 ? '' : 'pb-8'} group`}>
                       <div
                         className={`absolute left-[-1.5px] top-1.5 w-4.5 h-4.5 rounded-full flex items-center justify-center z-10 border-4 border-white shadow-sm transition-transform group-hover:scale-125
-                          ${isFirst ? 'bg-primary' : 'bg-surface-container-low'}`}
+                          ${isFirst ? 'bg-primary-container' : 'bg-surface-container-low'}`}
                       >
                         <span className={`w-1 h-1 rounded-full ${isFirst ? 'bg-white' : 'bg-outline'}`}></span>
                       </div>
@@ -751,7 +751,7 @@ export default function DriveApplication() {
             <div className="bg-white rounded-3xl p-8 border border-outline-variant border-dashed">
               <h4 className="font-bold text-label-md text-on-surface mb-4">Preparation Resources</h4>
               <div className="space-y-3">
-                <a className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group" href="#">
+                <a className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-low transition-colors group" href="#">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary">menu_book</span>
                     <span className="text-body-md font-semibold text-on-surface-variant">Coding Interview Guide</span>
@@ -760,7 +760,7 @@ export default function DriveApplication() {
                     open_in_new
                   </span>
                 </a>
-                <a className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group" href="#">
+                <a className="flex items-center justify-between p-3 rounded-xl hover:bg-surface-container-low transition-colors group" href="#">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary">video_library</span>
                     <span className="text-body-md font-semibold text-on-surface-variant">Tech Blogs & Life</span>

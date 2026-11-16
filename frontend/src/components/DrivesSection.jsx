@@ -70,7 +70,7 @@ function DriveCard({ id, logo, altText, type, company, role, salary, location, l
 
       <button
         onClick={() => navigate(`/apply/${id}`)}
-        className="w-full py-4 bg-primary text-white font-bold rounded-xl active:scale-95 transition-transform hover:bg-primary/90 cursor-pointer"
+        className="w-full py-4 bg-primary-container text-white font-bold rounded-xl active:scale-95 transition-transform hover:bg-primary-container/90 cursor-pointer"
       >
         Apply Now
       </button>

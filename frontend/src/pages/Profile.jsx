@@ -65,7 +65,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const fileInputRef = useRef(null);
-  
+
   const marksheetInputRef = useRef(null);
   const [uploadingSemIdx, setUploadingSemIdx] = useState(null);
   const [marksheetUploading, setMarksheetUploading] = useState(false);
@@ -78,7 +78,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
   const handleMarksheetChange = async (e) => {
     const file = e.target.files[0];
     if (!file || uploadingSemIdx === null) return;
-    
+
     setMarksheetUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -199,7 +199,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
-    
+
     // Format numeric GPA/Marks inside education history to 2 decimal places (e.g. 9 -> 9.00, 8.4 -> 8.40)
     const formattedEducation = form.education.map((edu) => {
       const gpaText = (edu.detail || '').trim();
@@ -210,7 +210,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
       if (match) {
         return { ...edu, detail: parseFloat(gpaText).toFixed(2) };
       }
-      
+
       const numberMatch = gpaText.match(/(\b\d+(?:\.\d+)?\b)/);
       if (numberMatch) {
         const num = parseFloat(numberMatch[1]);
@@ -248,7 +248,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
               Cancel
             </button>
             <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] hover:shadow-lg active:scale-95 transition-all disabled:opacity-60">
+              className="px-6 py-2.5 bg-primary-container text-on-primary rounded-xl font-label-md text-label-md shadow-md hover:scale-[1.02] hover:shadow-lg active:scale-95 transition-all disabled:opacity-60">
               {saving ? 'Saving Changes…' : 'Save Changes'}
             </button>
           </div>
@@ -262,18 +262,18 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
               <h3 className="font-label-md text-label-md text-primary uppercase tracking-widest mb-6">Identity Photo</h3>
               <div className="flex flex-col items-center">
                 <div className="relative group">
-                  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-surface-container-high shadow-xl mb-6 flex items-center justify-center bg-gradient-to-br from-primary to-primary-container">
+                  <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-surface-container-high shadow-xl mb-6 flex items-center justify-center bg-gradient-to-br from-primary-container to-primary-container">
                     {form.profile_image
                       ? <img src={form.profile_image} alt="Profile" className="w-full h-full object-cover" />
                       : <span className="text-5xl font-extrabold text-white">{initials}</span>}
                   </div>
                   <button type="button" onClick={() => fileInputRef.current.click()}
-                    className="absolute bottom-6 right-2 bg-primary text-on-primary p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all">
+                    className="absolute bottom-6 right-2 bg-primary-container text-on-primary p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all">
                     <span className="material-symbols-outlined text-sm">photo_camera</span>
                   </button>
                   {form.profile_image && (
                     <button type="button" onClick={() => setForm((p) => ({ ...p, profile_image: '' }))}
-                      className="absolute bottom-6 left-2 bg-error text-on-error p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all" title="Remove Photo">
+                      className="absolute bottom-6 left-2 bg-error-solid text-on-error p-2 rounded-full shadow-lg hover:scale-110 active:scale-90 transition-all" title="Remove Photo">
                       <span className="material-symbols-outlined text-sm">delete</span>
                     </button>
                   )}
@@ -344,7 +344,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
                   placeholder="React, Python, SQL…"
                   className="flex-1 px-4 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl text-body-md focus:outline-none focus:border-primary transition-all text-on-surface" />
                 <button type="button" onClick={addSkill}
-                  className="px-4 py-2 bg-primary text-on-primary rounded-xl text-label-md font-semibold hover:opacity-90 transition-opacity">
+                  className="px-4 py-2 bg-primary-container text-on-primary rounded-xl text-label-md font-semibold hover:opacity-90 transition-opacity">
                   Add
                 </button>
               </div>
@@ -744,7 +744,7 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="flex-1 py-3 bg-primary text-on-primary rounded-xl font-label-md text-label-md shadow-lg disabled:opacity-60">
+            className="flex-1 py-3 bg-primary-container text-on-primary rounded-xl font-label-md text-label-md shadow-lg disabled:opacity-60">
             {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
@@ -894,9 +894,9 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="p-p-lg min-h-screen"
-        style={{ background: 'radial-gradient(at 0% 0%, rgba(79,70,229,0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.05) 0px, transparent 50%)' }}>
+        style={{ background: 'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.05) 0px, transparent 50%)' }}>
         <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
-          <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+          <div className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm">
             <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
               <div className="w-32 h-32 rounded-3xl skeleton-shimmer shrink-0" />
               <div className="flex-1 space-y-4 w-full">
@@ -911,7 +911,7 @@ export default function Profile() {
           </div>
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
-              <div className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm">
+              <div className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm">
                 <div className="h-6 w-40 skeleton-shimmer rounded mb-8" />
                 <div className="flex gap-6">
                   <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0" />
@@ -932,7 +932,7 @@ export default function Profile() {
   if (isEditing) {
     return (
       <div className="p-p-lg min-h-screen"
-        style={{ background: 'radial-gradient(at 0% 0%, rgba(79,70,229,0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.05) 0px, transparent 50%)' }}>
+        style={{ background: 'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.05) 0px, transparent 50%)' }}>
         <EditProfileForm profile={profile} token={token} onCancel={() => setIsEditing(false)} onSave={handleSave} />
       </div>
     );
@@ -940,12 +940,12 @@ export default function Profile() {
 
   return (
     <div className="p-p-lg min-h-screen"
-      style={{ background: 'radial-gradient(at 0% 0%, rgba(79,70,229,0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.05) 0px, transparent 50%)' }}>
+      style={{ background: 'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.05) 0px, transparent 50%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.05) 0px, transparent 50%)' }}>
 
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-24 right-6 z-50 px-6 py-3 rounded-xl text-label-md shadow-lg flex items-center gap-2 animate-bounce transition-all
-          ${toast.type === 'error' ? 'bg-error text-on-error' : 'bg-secondary text-on-secondary'}`}>
+          ${toast.type === 'error' ? 'bg-error-solid text-on-error' : 'bg-secondary-solid text-on-secondary'}`}>
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
             {toast.type === 'error' ? 'error' : 'check_circle'}
           </span>
@@ -957,21 +957,21 @@ export default function Profile() {
 
         {/* Eligibility Banner */}
         {profile.is_eligible ? (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
-            <span className="material-symbols-outlined text-emerald-600 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+          <div className="bg-success-container border border-success/20 text-on-success-container rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
+            <span className="material-symbols-outlined text-success mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
             <div>
-              <h4 className="font-bold text-body-lg text-emerald-900">Placement Eligibility Active</h4>
-              <p className="text-body-md text-emerald-800/90 mt-1">
+              <h4 className="font-bold text-body-lg text-on-success-container">Placement Eligibility Active</h4>
+              <p className="text-body-md text-on-success-container/90 mt-1">
                 Your account is fully activated. You are eligible to apply to all placement and internship drives. Keep your profile updated for recruiters!
               </p>
             </div>
           </div>
         ) : (
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
-            <span className="material-symbols-outlined text-amber-600 mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+          <div className="bg-tertiary-container border border-tertiary/20 text-tertiary rounded-2xl p-6 flex items-start gap-4 shadow-sm animate-fadeIn">
+            <span className="material-symbols-outlined text-tertiary mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
             <div>
-              <h4 className="font-bold text-body-lg text-amber-900">Account Not Fully Activated</h4>
-              <p className="text-body-md text-amber-800/90 mt-1">
+              <h4 className="font-bold text-body-lg text-tertiary">Account Not Fully Activated</h4>
+              <p className="text-body-md text-tertiary/90 mt-1">
                 You are currently <strong>ineligible</strong> to apply for placement drives. To activate, please update your profile (Full Name + Email), add your <strong>Education details (10th, 12th, and College/University with GPA/Marks)</strong>, and upload a <strong>PDF Resume</strong> in the resume section below.
               </p>
             </div>
@@ -979,12 +979,12 @@ export default function Profile() {
         )}
 
         {/* Header Profile Card */}
-        <section className="bg-white border border-slate-100 rounded-2xl p-p-lg flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <section className="bg-white border border-outline-variant rounded-2xl p-p-lg flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none" />
           <div className="w-36 h-36 rounded-2xl overflow-hidden border-4 border-surface-container-low shadow-sm flex-shrink-0 bg-primary/10 flex items-center justify-center">
             {profile.profile_image
               ? <img src={profile.profile_image} alt="Profile" className="w-full h-full object-cover" />
-              : <div className="w-full h-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
+              : <div className="w-full h-full bg-gradient-to-br from-primary-container to-primary-container flex items-center justify-center">
                   <span className="text-4xl font-extrabold text-white">{initials}</span>
                 </div>}
           </div>
@@ -1053,7 +1053,7 @@ export default function Profile() {
             </div>
           </div>
           <div className="flex flex-col gap-3">
-            <button className="bg-primary text-on-primary px-8 py-3 rounded-xl text-label-md shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+            <button className="bg-primary-container text-on-primary px-8 py-3 rounded-xl text-label-md shadow-md hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">share</span> Share Portfolio
             </button>
             <button onClick={() => setIsEditing(true)}
@@ -1069,7 +1069,7 @@ export default function Profile() {
           <div className="col-span-12 lg:col-span-8 space-y-6">
             {/* Bio */}
             {profile.bio && (
-              <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+              <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-headline-md font-bold text-on-surface mb-4 flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">description</span> Professional Summary
                 </h3>
@@ -1078,7 +1078,7 @@ export default function Profile() {
             )}
 
             {/* University Performance (Read-only) */}
-            <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+            <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-headline-md font-bold text-on-surface mb-6 flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary font-bold">analytics</span> University Performance
               </h3>
@@ -1147,7 +1147,7 @@ export default function Profile() {
             </section>
 
             {/* Education */}
-            <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+            <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-headline-md font-bold text-on-surface mb-8 flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">school</span> Education
               </h3>
@@ -1179,7 +1179,7 @@ export default function Profile() {
             </section>
 
             {/* Experience */}
-            <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+            <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-headline-md font-bold text-on-surface mb-8 flex items-center gap-3">
                 <span className="material-symbols-outlined text-primary">work_history</span> Experience
               </h3>
@@ -1212,7 +1212,7 @@ export default function Profile() {
 
             {/* Projects — full width under experience */}
             {profile.projects?.length > 0 && (
-              <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+              <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-headline-md font-bold text-on-surface mb-8 flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">rocket_launch</span> Key Projects
                 </h3>
@@ -1223,7 +1223,7 @@ export default function Profile() {
                       : (proj.tags || []);
                     return (
                       <div key={idx} className="border border-outline-variant rounded-2xl p-6 hover:border-primary transition-colors group cursor-default">
-                        <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors text-on-surface-variant">
+                        <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary-container group-hover:text-white transition-colors text-on-surface-variant">
                           <span className="material-symbols-outlined">psychology</span>
                         </div>
                         <h4 className="text-body-lg font-bold mb-2 text-on-surface">{proj.title}</h4>
@@ -1244,7 +1244,7 @@ export default function Profile() {
           {/* Right column */}
           <div className="col-span-12 lg:col-span-4 space-y-6">
             {/* Resume */}
-            <section className="bg-primary text-on-primary rounded-2xl p-p-lg shadow-sm">
+            <section className="bg-primary-container text-on-primary rounded-2xl p-p-lg shadow-sm">
               <h3 className="text-headline-md font-bold mb-3">Official Resume</h3>
               {profile.resume_name ? (
                 <>
@@ -1285,12 +1285,12 @@ export default function Profile() {
 
             {/* Skills */}
             {profile.skills?.length > 0 && (
-              <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+              <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-headline-md font-bold text-on-surface mb-6">Expertise</h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.skills.map((skill) => (
                     <span key={skill}
-                      className="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 text-label-md hover:bg-primary hover:text-on-primary transition-colors cursor-default">
+                      className="px-4 py-2 rounded-lg bg-primary/5 text-primary border border-primary/10 text-label-md hover:bg-primary-container hover:text-on-primary transition-colors cursor-default">
                       {skill}
                     </span>
                   ))}
@@ -1300,7 +1300,7 @@ export default function Profile() {
 
             {/* Languages */}
             {profile.languages?.length > 0 && (
-              <section className="bg-white border border-slate-100 rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
+              <section className="bg-white border border-outline-variant rounded-2xl p-p-lg shadow-sm hover:shadow-md transition-shadow">
                 <h3 className="text-label-md text-outline uppercase tracking-widest mb-4">Languages</h3>
                 <div className="space-y-3">
                   {profile.languages.map(({ name, level }, i) => (
@@ -1326,9 +1326,9 @@ export default function Profile() {
 
       {/* Tutorial Modals */}
       {tutorialStep === 1 && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-slate-100 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-primary-container/20 text-primary rounded-2xl flex items-center justify-center mb-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-inverse-surface/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-outline-variant flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mb-6">
               <span className="material-symbols-outlined text-primary" style={{ fontSize: '32px' }}>person_search</span>
             </div>
             <h3 className="text-headline-md font-bold text-on-surface mb-2">Step 1: Activate Your Profile</h3>
@@ -1338,24 +1338,24 @@ export default function Profile() {
             </p>
             <div className="flex gap-3 w-full">
               <button onClick={() => setTutorialStep(0)}
-                className="flex-1 py-3 border border-outline-variant text-on-surface-variant font-bold rounded-xl text-label-md hover:bg-slate-50 transition-colors cursor-pointer">
+                className="flex-1 py-3 border border-outline-variant text-on-surface-variant font-bold rounded-xl text-label-md hover:bg-surface-container-low transition-colors cursor-pointer">
                 Skip
               </button>
               <button onClick={() => setTutorialStep(2)}
-                className="flex-1 py-3 bg-primary text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer">
+                className="flex-1 py-3 bg-primary-container text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer">
                 Next: Resume →
               </button>
             </div>
             <div className="flex gap-2 mt-6">
-              <span className="w-2 h-2 rounded-full bg-primary" />
+              <span className="w-2 h-2 rounded-full bg-primary-container" />
               <span className="w-2 h-2 rounded-full bg-outline-variant" />
             </div>
           </div>
         </div>
       )}
       {tutorialStep === 2 && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-slate-100 flex flex-col items-center text-center">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-inverse-surface/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-outline-variant flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-secondary-container/20 text-secondary rounded-2xl flex items-center justify-center mb-6">
               <span className="material-symbols-outlined text-secondary" style={{ fontSize: '32px' }}>upload_file</span>
             </div>
@@ -1366,12 +1366,12 @@ export default function Profile() {
               Upload your document in the <strong>Official Resume</strong> section on the right side to get instantly activated!
             </p>
             <button onClick={() => setTutorialStep(0)}
-              className="w-full py-3.5 bg-primary text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer">
+              className="w-full py-3.5 bg-primary-container text-on-primary font-bold rounded-xl text-label-md hover:scale-[1.02] active:scale-95 transition-all shadow-md cursor-pointer">
               Get Started 🚀
             </button>
             <div className="flex gap-2 mt-6">
               <span className="w-2 h-2 rounded-full bg-outline-variant" />
-              <span className="w-2 h-2 rounded-full bg-secondary" />
+              <span className="w-2 h-2 rounded-full bg-secondary-solid" />
             </div>
           </div>
         </div>

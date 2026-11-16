@@ -22,29 +22,29 @@ const getStatusStyles = (status) => {
   if (s === 'selected' || s === 'approved' || s === 'offer' || s === 'hired') {
     return {
       text: 'Selected',
-      statusClass: 'bg-secondary/10 text-secondary',
-      dotClass: 'bg-secondary',
+      statusClass: 'bg-secondary-solid/10 text-secondary',
+      dotClass: 'bg-secondary-solid',
     };
   }
   if (s === 'rejected' || s === 'withdrawn') {
     return {
       text: s === 'rejected' ? 'Rejected' : 'Withdrawn',
-      statusClass: 'bg-error/10 text-error',
-      dotClass: 'bg-error',
+      statusClass: 'bg-error-solid/10 text-error',
+      dotClass: 'bg-error-solid',
     };
   }
   if (s === 'shortlisted') {
     return {
       text: 'Shortlisted',
-      statusClass: 'bg-tertiary/10 text-tertiary',
-      dotClass: 'bg-tertiary',
+      statusClass: 'bg-tertiary-solid/10 text-tertiary',
+      dotClass: 'bg-tertiary-solid',
     };
   }
   if (s === 'interviewing' || s === 'interview') {
     return {
       text: 'Interviewing',
       statusClass: 'bg-primary/10 text-primary',
-      dotClass: 'bg-primary',
+      dotClass: 'bg-primary-container',
     };
   }
   return {

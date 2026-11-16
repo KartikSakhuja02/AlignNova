@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from '../assets/logo.png';
 
 export default function OpportunityEmailPreview({ visible, onClose }) {
   const [previewData, setPreviewData] = useState({
@@ -21,9 +20,9 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm transition-all duration-300">
       <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-[700px] overflow-hidden flex flex-col max-h-[90vh]">
-        
+
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-primary to-primary-container px-6 py-4 flex items-center justify-between text-white shadow-sm flex-shrink-0">
+        <div className="bg-gradient-to-r from-primary-container to-primary-container px-6 py-4 flex items-center justify-between text-white shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-[24px]">campaign</span>
             <div>
@@ -31,8 +30,8 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
               <p className="text-[12px] text-primary-fixed-dim">Notification alert sent to students eligible for newly launched drives</p>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-all outline-none"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -43,8 +42,8 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
         <div className="bg-surface-container-low px-6 py-3 border-b border-outline-variant/30 grid grid-cols-1 sm:grid-cols-3 gap-3 flex-shrink-0 overflow-y-auto max-h-40">
           <div>
             <label className="text-[11px] font-bold text-on-surface-variant block mb-1">Student Name:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={previewData.studentName}
               onChange={(e) => setPreviewData({ ...previewData, studentName: e.target.value })}
               className="border border-outline-variant/60 rounded-lg px-2.5 py-1 text-caption bg-surface-container-lowest focus:outline-none focus:border-primary w-full"
@@ -52,8 +51,8 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
           </div>
           <div>
             <label className="text-[11px] font-bold text-on-surface-variant block mb-1">Student CGPA:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={previewData.studentCgpa}
               onChange={(e) => setPreviewData({ ...previewData, studentCgpa: e.target.value })}
               className="border border-outline-variant/60 rounded-lg px-2.5 py-1 text-caption bg-surface-container-lowest focus:outline-none focus:border-primary w-full"
@@ -61,8 +60,8 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
           </div>
           <div>
             <label className="text-[11px] font-bold text-on-surface-variant block mb-1">Company Name:</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={previewData.company}
               onChange={(e) => setPreviewData({ ...previewData, company: e.target.value })}
               className="border border-outline-variant/60 rounded-lg px-2.5 py-1 text-caption bg-surface-container-lowest focus:outline-none focus:border-primary w-full"
@@ -71,11 +70,11 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
         </div>
 
         {/* Mockup Email Container */}
-        <div className="p-6 overflow-y-auto bg-slate-100 flex justify-center">
-          <div className="max-w-[580px] w-full bg-white rounded-2xl overflow-hidden shadow-md border border-slate-200">
-            
+        <div className="p-6 overflow-y-auto bg-surface-container flex justify-center">
+          <div className="max-w-[580px] w-full bg-white rounded-2xl overflow-hidden shadow-md border border-outline-variant">
+
             {/* Header: Logo & Branding */}
-            <div className="bg-primary px-6 py-8 flex items-center justify-center relative overflow-hidden">
+            <div className="bg-primary-container px-6 py-8 flex items-center justify-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-6 -mt-6 blur-xl"></div>
               <div className="z-10 flex items-center gap-3">
                 <span className="material-symbols-outlined text-white text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
@@ -89,7 +88,7 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
               <div className="space-y-4">
                 <p className="font-body-md text-body-md text-on-surface-variant">Hi {previewData.studentName},</p>
                 <h2 className="font-headline-lg text-headline-lg text-primary leading-tight">You are eligible for a new placement drive</h2>
-                
+
                 {/* Company card */}
                 <div className="p-5 bg-surface-container border border-outline-variant rounded-xl flex items-center gap-4 hover:shadow-md transition-all duration-300">
                   <div className="w-16 h-16 rounded-lg bg-white flex items-center justify-center shadow-sm p-2 overflow-hidden border border-outline-variant/30">
@@ -138,7 +137,7 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
 
               {/* CTA Section */}
               <div className="flex flex-col items-center gap-3 pt-2">
-                <button className="w-full bg-primary text-white font-label-md text-label-md py-3.5 rounded-full shadow-md hover:scale-[1.01] hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
+                <button className="w-full bg-primary-container text-white font-label-md text-label-md py-3.5 rounded-full shadow-md hover:scale-[1.01] hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2">
                   View Details & Apply
                   <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                 </button>
@@ -149,7 +148,7 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
             </div>
 
             {/* Footer */}
-            <div className="bg-slate-50 p-6 text-center border-t border-slate-100 space-y-4">
+            <div className="bg-surface-container-low p-6 text-center border-t border-outline-variant space-y-4">
               <div className="flex justify-center gap-6">
                 <a className="text-[12px] font-semibold text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>Dashboard</a>
                 <a className="text-[12px] font-semibold text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>Support</a>
@@ -168,9 +167,9 @@ export default function OpportunityEmailPreview({ visible, onClose }) {
 
         {/* Modal Footer Controls */}
         <div className="bg-surface-container px-6 py-4 flex items-center justify-end border-t border-outline-variant/30 flex-shrink-0">
-          <button 
+          <button
             onClick={onClose}
-            className="px-6 py-2.5 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+            className="px-6 py-2.5 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md"
           >
             Close Preview
           </button>

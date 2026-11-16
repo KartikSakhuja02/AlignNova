@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from '../assets/logo.png';
 
 export default function PartnerEmailPreview({ visible, onClose }) {
   const [partnerName, setPartnerName] = useState('Alex Thorne');
@@ -10,9 +9,9 @@ export default function PartnerEmailPreview({ visible, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm transition-all duration-300">
       <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-[850px] overflow-hidden flex flex-col max-h-[95vh] animate-in fade-in zoom-in duration-200">
-        
+
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-primary to-primary-container px-6 py-4 flex items-center justify-between text-white shadow-sm flex-shrink-0">
+        <div className="bg-gradient-to-r from-primary-container to-primary-container px-6 py-4 flex items-center justify-between text-white shadow-sm flex-shrink-0">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-[24px]">drafts</span>
             <div>
@@ -20,8 +19,8 @@ export default function PartnerEmailPreview({ visible, onClose }) {
               <p className="text-[12px] text-primary-fixed-dim mt-1">Network invitation alert sent to newly registered corporate partners</p>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-all outline-none"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -35,79 +34,79 @@ export default function PartnerEmailPreview({ visible, onClose }) {
             <label className="text-label-md font-bold text-on-surface-variant">Live Preview Config:</label>
           </div>
           <div className="flex flex-1 flex-col sm:flex-row gap-3">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={partnerName}
               onChange={(e) => setPartnerName(e.target.value)}
-              placeholder="Partner Name..." 
+              placeholder="Partner Name..."
               className="border border-outline-variant/60 rounded-lg px-3 py-1.5 text-body-md bg-surface-container-lowest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-full sm:max-w-[200px] transition-all"
             />
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
-              placeholder="Company Name..." 
+              placeholder="Company Name..."
               className="border border-outline-variant/60 rounded-lg px-3 py-1.5 text-body-md bg-surface-container-lowest focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-full sm:max-w-[200px] transition-all"
             />
           </div>
         </div>
 
         {/* Gmail Client Mockup */}
-        <div className="flex-1 overflow-hidden flex flex-col bg-[#f6f8fc] text-on-surface min-h-[400px]">
+        <div className="flex-1 overflow-hidden flex flex-col bg-background text-on-surface min-h-[400px]">
           {/* Mock Gmail Header */}
-          <header className="flex items-center px-4 justify-between h-14 bg-[#f6f8fc] border-b border-gray-200/50 flex-shrink-0">
+          <header className="flex items-center px-4 justify-between h-14 bg-background border-b border-outline-variant/50 flex-shrink-0">
             <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-200 rounded-full" onClick={(e) => e.preventDefault()}>
-                <span className="material-symbols-outlined text-gray-600">menu</span>
+              <button className="p-2 hover:bg-surface-container-high rounded-full" onClick={(e) => e.preventDefault()}>
+                <span className="material-symbols-outlined text-on-surface-variant">menu</span>
               </button>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-gray-700 tracking-tight flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-red-500 fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>mail</span>
+                <span className="font-bold text-lg text-on-surface-variant tracking-tight flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-error fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>mail</span>
                   Gmail
                 </span>
               </div>
             </div>
             <div className="flex-1 max-w-xl px-6">
-              <div className="relative flex items-center bg-blue-50/50 px-3 py-1.5 rounded-full border-none shadow-sm focus-within:bg-white focus-within:shadow-md transition-all">
-                <span className="material-symbols-outlined text-gray-500 mr-2 text-[18px]">search</span>
+              <div className="relative flex items-center bg-primary/50 px-3 py-1.5 rounded-full border-none shadow-sm focus-within:bg-white focus-within:shadow-md transition-all">
+                <span className="material-symbols-outlined text-on-surface-variant mr-2 text-[18px]">search</span>
                 <input className="bg-transparent border-none focus:ring-0 w-full text-xs" placeholder="Search mail" type="text" readOnly value="subject:(Welcome to the Network)" />
-                <span className="material-symbols-outlined text-gray-500 text-[18px]">tune</span>
+                <span className="material-symbols-outlined text-on-surface-variant text-[18px]">tune</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button className="p-1.5 hover:bg-gray-200 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[20px]">help_outline</span></button>
-              <button className="p-1.5 hover:bg-gray-200 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[20px]">settings</span></button>
-              <button className="p-1.5 hover:bg-gray-200 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[20px]">apps</span></button>
-              <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs ml-1">A</div>
+              <button className="p-1.5 hover:bg-surface-container-high rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[20px]">help_outline</span></button>
+              <button className="p-1.5 hover:bg-surface-container-high rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[20px]">settings</span></button>
+              <button className="p-1.5 hover:bg-surface-container-high rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[20px]">apps</span></button>
+              <div className="w-7 h-7 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xs ml-1">A</div>
             </div>
           </header>
 
           <div className="flex-1 flex overflow-hidden">
             {/* Mock Gmail Sidebar */}
-            <aside className="w-56 hidden md:flex flex-col py-3 px-3 gap-1 flex-shrink-0 bg-[#f6f8fc] border-r border-gray-200/50">
-              <button className="flex items-center gap-3 bg-white hover:shadow-md border border-gray-200/60 shadow-sm px-4 py-3 rounded-2xl w-fit mb-3 ml-1 transition-all">
-                <span className="material-symbols-outlined text-gray-700">edit</span>
+            <aside className="w-56 hidden md:flex flex-col py-3 px-3 gap-1 flex-shrink-0 bg-background border-r border-outline-variant/50">
+              <button className="flex items-center gap-3 bg-white hover:shadow-md border border-outline-variant/60 shadow-sm px-4 py-3 rounded-2xl w-fit mb-3 ml-1 transition-all">
+                <span className="material-symbols-outlined text-on-surface-variant">edit</span>
                 <span className="text-sm font-medium pr-3">Compose</span>
               </button>
               <nav className="flex flex-col gap-0.5">
-                <a className="flex items-center gap-3 px-4 py-1.5 bg-[#d3e3fd] rounded-full text-sm font-semibold text-gray-800" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="flex items-center gap-3 px-4 py-1.5 bg-primary/10 rounded-full text-sm font-semibold text-on-surface" href="#" onClick={(e) => e.preventDefault()}>
                   <span className="material-symbols-outlined fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>inbox</span>
                   <span>Inbox</span>
                   <span className="ml-auto font-bold text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">1</span>
                 </a>
-                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-gray-200/60 rounded-full text-sm text-gray-600" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-surface-container-high/60 rounded-full text-sm text-on-surface-variant" href="#" onClick={(e) => e.preventDefault()}>
                   <span className="material-symbols-outlined">star</span>
                   <span>Starred</span>
                 </a>
-                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-gray-200/60 rounded-full text-sm text-gray-600" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-surface-container-high/60 rounded-full text-sm text-on-surface-variant" href="#" onClick={(e) => e.preventDefault()}>
                   <span className="material-symbols-outlined">schedule</span>
                   <span>Snoozed</span>
                 </a>
-                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-gray-200/60 rounded-full text-sm text-gray-600" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-surface-container-high/60 rounded-full text-sm text-on-surface-variant" href="#" onClick={(e) => e.preventDefault()}>
                   <span className="material-symbols-outlined">send</span>
                   <span>Sent</span>
                 </a>
-                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-gray-200/60 rounded-full text-sm text-gray-600" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="flex items-center gap-3 px-4 py-1.5 hover:bg-surface-container-high/60 rounded-full text-sm text-on-surface-variant" href="#" onClick={(e) => e.preventDefault()}>
                   <span className="material-symbols-outlined">drafts</span>
                   <span>Drafts</span>
                 </a>
@@ -117,21 +116,21 @@ export default function PartnerEmailPreview({ visible, onClose }) {
             {/* Email Pane */}
             <main className="flex-1 bg-white rounded-tl-2xl shadow-inner overflow-y-auto flex flex-col">
               {/* Toolbar */}
-              <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-4 py-2 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+              <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-4 py-2 border-b border-outline-variant flex items-center justify-between flex-shrink-0">
                 <div className="flex items-center gap-1">
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">arrow_back</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full ml-2"><span className="material-symbols-outlined text-gray-600 text-[18px]">archive</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">report</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">delete</span></button>
-                  <div className="w-px h-4 bg-gray-200 mx-1.5"></div>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">mark_as_unread</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">schedule</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">add_task</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_back</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full ml-2"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">archive</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">report</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">delete</span></button>
+                  <div className="w-px h-4 bg-surface-container-high mx-1.5"></div>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">mark_as_unread</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">schedule</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">add_task</span></button>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-500 mr-2">1 of 1</span>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">chevron_left</span></button>
-                  <button className="p-1.5 hover:bg-gray-100 rounded-full"><span className="material-symbols-outlined text-gray-600 text-[18px]">chevron_right</span></button>
+                  <span className="text-xs text-on-surface-variant mr-2">1 of 1</span>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_left</span></button>
+                  <button className="p-1.5 hover:bg-surface-container rounded-full"><span className="material-symbols-outlined text-on-surface-variant text-[18px]">chevron_right</span></button>
                 </div>
               </div>
 
@@ -142,8 +141,8 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                   <div className="flex items-start justify-between mb-6 pl-4 border-l-2 border-primary/20">
                     <h2 className="text-lg md:text-xl font-bold text-on-surface">Welcome to the Network - Action Required</h2>
                     <div className="flex items-center gap-1.5">
-                      <button className="p-1 hover:bg-gray-100 rounded"><span className="material-symbols-outlined text-gray-500 text-[16px]">print</span></button>
-                      <button className="p-1 hover:bg-gray-100 rounded"><span className="material-symbols-outlined text-gray-500 text-[16px]">open_in_new</span></button>
+                      <button className="p-1 hover:bg-surface-container rounded"><span className="material-symbols-outlined text-on-surface-variant text-[16px]">print</span></button>
+                      <button className="p-1 hover:bg-surface-container rounded"><span className="material-symbols-outlined text-on-surface-variant text-[16px]">open_in_new</span></button>
                     </div>
                   </div>
 
@@ -155,17 +154,17 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                     <div className="flex-1">
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold text-xs md:text-sm">Alignnova Placement</span>
-                        <span className="text-gray-500 text-[11px]">&lt;noreply@alignnova.com&gt;</span>
+                        <span className="text-on-surface-variant text-[11px]">&lt;noreply@alignnova.com&gt;</span>
                       </div>
-                      <div className="text-gray-500 text-[10px]">to me</div>
+                      <div className="text-on-surface-variant text-[10px]">to me</div>
                     </div>
-                    <div className="text-gray-500 text-[10px]">10:42 AM (3 hours ago)</div>
+                    <div className="text-on-surface-variant text-[10px]">10:42 AM (3 hours ago)</div>
                   </div>
 
                   {/* Welcome Transactional Email */}
                   <div className="border border-outline-variant/30 rounded-2xl overflow-hidden bg-white shadow-sm">
                     {/* Brand Header */}
-                    <header className="bg-primary px-5 py-4 flex items-center justify-between text-white">
+                    <header className="bg-primary-container px-5 py-4 flex items-center justify-between text-white">
                       <div className="flex items-center gap-3.5">
                         <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
                           <span className="material-symbols-outlined text-white text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
@@ -181,7 +180,7 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                     </header>
 
                     {/* Hero */}
-                    <div className="relative w-full py-8 px-6 bg-[#dee8ff] flex items-center border-b border-outline-variant/10">
+                    <div className="relative w-full py-8 px-6 bg-surface-container-high flex items-center border-b border-outline-variant/10">
                       <h2 className="font-headline-md text-[24px] text-on-surface">Welcome to the Network</h2>
                     </div>
 
@@ -190,7 +189,7 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                       <div className="space-y-4">
                         <p className="font-bold text-body-md text-on-surface">Dear {partnerName},</p>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
-                          We are pleased to inform you that an institutional account has been successfully provisioned for <strong>{companyName || 'your organization'}</strong> within the <span className="font-semibold text-primary">Alignova Placement Portal</span>. 
+                          We are pleased to inform you that an institutional account has been successfully provisioned for <strong>{companyName || 'your organization'}</strong> within the <span className="font-semibold text-primary">Alignova Placement Portal</span>.
                         </p>
                         <p className="font-body-md text-on-surface-variant leading-relaxed">
                           As an official corporate partner, you now have priority access to our elite pool of student talent. This workspace is designed to streamline your end-to-end recruitment lifecycle.
@@ -199,8 +198,8 @@ export default function PartnerEmailPreview({ visible, onClose }) {
 
                       {/* CTA */}
                       <div className="py-4 text-center">
-                        <a 
-                          className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white font-label-md text-[13px] font-semibold rounded-xl hover:scale-[1.01] active:scale-95 transition-all shadow-md duration-200" 
+                        <a
+                          className="inline-flex items-center justify-center px-8 py-3 bg-primary-container text-white font-label-md text-[13px] font-semibold rounded-xl hover:scale-[1.01] active:scale-95 transition-all shadow-md duration-200"
                           href="#"
                           onClick={(e) => e.preventDefault()}
                         >
@@ -216,7 +215,7 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                       <div className="space-y-4">
                         <h3 className="font-bold text-body-md text-on-surface">Getting Started</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className="p-3 bg-slate-50 border border-outline-variant/20 rounded-xl flex flex-col gap-2">
+                          <div className="p-3 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col gap-2">
                             <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
                               <span className="material-symbols-outlined text-primary text-[16px]">business</span>
                             </div>
@@ -225,8 +224,8 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                               <p className="text-[11px] text-on-surface-variant mt-0.5">Complete your organization's brand identity.</p>
                             </div>
                           </div>
-                          <div className="p-3 bg-slate-50 border border-outline-variant/20 rounded-xl flex flex-col gap-2">
-                            <div className="w-7 h-7 bg-secondary/10 rounded-full flex items-center justify-center">
+                          <div className="p-3 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col gap-2">
+                            <div className="w-7 h-7 bg-secondary-solid/10 rounded-full flex items-center justify-center">
                               <span className="material-symbols-outlined text-secondary text-[16px]">campaign</span>
                             </div>
                             <div>
@@ -234,8 +233,8 @@ export default function PartnerEmailPreview({ visible, onClose }) {
                               <p className="text-[11px] text-on-surface-variant mt-0.5">Initiate recruitment campaigns for Q3/Q4.</p>
                             </div>
                           </div>
-                          <div className="p-3 bg-slate-50 border border-outline-variant/20 rounded-xl flex flex-col gap-2">
-                            <div className="w-7 h-7 bg-tertiary/10 rounded-full flex items-center justify-center">
+                          <div className="p-3 bg-surface-container-low border border-outline-variant/20 rounded-xl flex flex-col gap-2">
+                            <div className="w-7 h-7 bg-tertiary-solid/10 rounded-full flex items-center justify-center">
                               <span className="material-symbols-outlined text-tertiary text-[16px]">dynamic_feed</span>
                             </div>
                             <div>
@@ -248,16 +247,16 @@ export default function PartnerEmailPreview({ visible, onClose }) {
 
                       {/* Image Banner */}
                       <div className="rounded-xl overflow-hidden h-28 border border-outline-variant/10">
-                        <img 
-                          alt="Office Lounge" 
-                          className="w-full h-full object-cover" 
-                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rTXzfrIpO6Ee40Pm-7lDnsJ43mAUb7MmU3ti_1K7f0QYi5tMtfjb83ZgLpEZG7jzP68x-oNFWjCAfrTEpj0XMggnsDBqOxIND9lxmtPLu7pU1m1pM6RswXFB4196GYSTbYpgXORufIoNX-QD3W4hCoTuV4AliPtNuo9vvRs41AoNAVEZmjMZ3oKsdVLldghnNiIRHUK_kW5EoLTxUxrZ8uu8rW0AkVXVNyWpG1DPS2eJ5NzTX-4lqZHIsOF8w-ZtA4Q_H4OVeeE" 
+                        <img
+                          alt="Office Lounge"
+                          className="w-full h-full object-cover"
+                          src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rTXzfrIpO6Ee40Pm-7lDnsJ43mAUb7MmU3ti_1K7f0QYi5tMtfjb83ZgLpEZG7jzP68x-oNFWjCAfrTEpj0XMggnsDBqOxIND9lxmtPLu7pU1m1pM6RswXFB4196GYSTbYpgXORufIoNX-QD3W4hCoTuV4AliPtNuo9vvRs41AoNAVEZmjMZ3oKsdVLldghnNiIRHUK_kW5EoLTxUxrZ8uu8rW0AkVXVNyWpG1DPS2eJ5NzTX-4lqZHIsOF8w-ZtA4Q_H4OVeeE"
                         />
                       </div>
                     </div>
 
                     {/* Welcome Email Footer */}
-                    <footer className="bg-slate-50 p-5 border-t border-slate-100">
+                    <footer className="bg-surface-container-low p-5 border-t border-outline-variant">
                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                           <p className="font-bold text-xs text-on-surface">Alignnova Placement Office</p>
@@ -273,10 +272,10 @@ export default function PartnerEmailPreview({ visible, onClose }) {
 
                   {/* Mail Actions */}
                   <div className="mt-6 flex gap-3 pb-8">
-                    <button className="px-5 py-1.5 border border-gray-300 rounded-full flex items-center gap-1.5 hover:bg-gray-50 text-xs text-gray-600 transition-colors">
+                    <button className="px-5 py-1.5 border border-outline-variant rounded-full flex items-center gap-1.5 hover:bg-surface-container-low text-xs text-on-surface-variant transition-colors">
                       <span className="material-symbols-outlined text-[16px]">reply</span> Reply
                     </button>
-                    <button className="px-5 py-1.5 border border-gray-300 rounded-full flex items-center gap-1.5 hover:bg-gray-50 text-xs text-gray-600 transition-colors">
+                    <button className="px-5 py-1.5 border border-outline-variant rounded-full flex items-center gap-1.5 hover:bg-surface-container-low text-xs text-on-surface-variant transition-colors">
                       <span className="material-symbols-outlined text-[16px]">forward</span> Forward
                     </button>
                   </div>
@@ -288,9 +287,9 @@ export default function PartnerEmailPreview({ visible, onClose }) {
 
         {/* Modal Controls */}
         <div className="bg-surface-container px-6 py-4 flex items-center justify-end border-t border-outline-variant/30 flex-shrink-0">
-          <button 
+          <button
             onClick={onClose}
-            className="px-6 py-2.5 bg-primary text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md"
+            className="px-6 py-2.5 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md"
           >
             Close Preview
           </button>

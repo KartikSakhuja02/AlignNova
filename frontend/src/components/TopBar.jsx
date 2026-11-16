@@ -7,7 +7,7 @@ export default function TopBar() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  
+
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -61,7 +61,7 @@ export default function TopBar() {
           <span className="material-symbols-outlined">notifications</span>
         </button>
         <div className="h-8 w-px bg-outline-variant" />
-        
+
         {/* User Profile Dropdown Trigger */}
         <div ref={dropdownRef} className="relative flex items-center gap-3 cursor-pointer select-none">
           <div onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-3">
@@ -81,7 +81,7 @@ export default function TopBar() {
 
           {/* Profile Dropdown Menu */}
           <div
-            className={`absolute top-full right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-2xl py-2 z-50 transition-all duration-200 transform origin-top-right ${
+            className={`absolute top-full right-0 mt-2 w-48 bg-white border border-outline-variant rounded-xl shadow-2xl py-2 z-50 transition-all duration-200 transform origin-top-right ${
               dropdownOpen
                 ? 'opacity-100 scale-100 pointer-events-auto'
                 : 'opacity-0 scale-95 pointer-events-none'

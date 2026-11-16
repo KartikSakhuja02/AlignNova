@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/logo.png';
+import Brand from '../components/Brand';
 
 export default function SetPassword() {
   const [searchParams] = useSearchParams();
@@ -67,11 +67,11 @@ export default function SetPassword() {
         }
         throw new Error(data.detail || 'Something went wrong');
       }
-      
+
       // Auto-login with the returned token
       login(data.access_token, data.role);
       setStep('success');
-      
+
       // Redirect after 2s
       setTimeout(() => {
         const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : (isReset ? '/dashboard' : '/profile?tutorial=true'));
@@ -84,26 +84,11 @@ export default function SetPassword() {
     }
   };
 
-  // Inject background style overrides
-  useEffect(() => {
-    document.body.style.backgroundImage = `
-      radial-gradient(at 0% 0%, rgba(53, 37, 205, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(53, 37, 205, 0.02) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(53, 37, 205, 0.03) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(53, 37, 205, 0.02) 0px, transparent 50%)
-    `;
-    document.body.style.backgroundColor = "#f9f9ff";
-    return () => {
-      document.body.style.backgroundImage = "";
-      document.body.style.backgroundColor = "";
-    };
-  }, []);
-
   // ─── Expired / Invalid Token ─────────────────────────────────────────────────
   if (step === 'expired') {
     return (
       <div className="min-h-screen flex items-center justify-center p-gutter w-full">
-        <div className="w-full max-w-[480px] bg-white rounded-2xl border border-[#F1F5F9] p-8 text-center shadow-md backdrop-blur-xl">
+        <div className="w-full max-w-[480px] bg-white rounded-2xl border border-outline-variant/50 p-8 text-center shadow-md backdrop-blur-xl">
           <div className="w-20 h-20 bg-error-container text-error rounded-full flex items-center justify-center mx-auto mb-6 border border-error-container/40">
             <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>link_off</span>
           </div>
@@ -114,7 +99,7 @@ export default function SetPassword() {
           <div className="space-y-4">
             <button
               onClick={() => navigate('/request-activation')}
-              className="w-full py-4 bg-primary text-on-primary font-bold rounded-xl hover:scale-[1.01] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 group"
+              className="w-full py-4 bg-primary-container text-on-primary font-bold rounded-xl hover:scale-[1.01] active:scale-[0.98] transition-all shadow-sm flex items-center justify-center gap-2 group"
             >
               <span className="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
               Request New Link
@@ -135,7 +120,7 @@ export default function SetPassword() {
   if (step === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center p-gutter w-full">
-        <div className="w-full max-w-[480px] bg-white rounded-2xl border border-[#F1F5F9] p-8 text-center shadow-md backdrop-blur-xl">
+        <div className="w-full max-w-[480px] bg-white rounded-2xl border border-outline-variant/50 p-8 text-center shadow-md backdrop-blur-xl">
           <div className="w-20 h-20 bg-secondary-container text-secondary rounded-full flex items-center justify-center mx-auto mb-6 border border-secondary-container/40 animate-bounce">
             <span
               className="material-symbols-outlined"
@@ -152,7 +137,7 @@ export default function SetPassword() {
           </p>
           <p className="text-outline text-caption">Redirecting you to the dashboard...</p>
           <div className="mt-6 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-primary to-primary-container rounded-full animate-[progressBar_2s_linear_forwards]" style={{ width: '100%' }} />
+            <div className="h-full bg-gradient-to-r from-primary-container to-primary-container rounded-full animate-[progressBar_2s_linear_forwards]" style={{ width: '100%' }} />
           </div>
           <style>{`@keyframes progressBar { from { width: 0% } to { width: 100% } }`}</style>
         </div>
@@ -163,25 +148,25 @@ export default function SetPassword() {
   // ─── Set Password Form ────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-gutter w-full relative overflow-hidden">
-      
+
       {/* Main Content Box */}
       <main className="w-full max-w-[480px] flex flex-col items-center z-10">
-        
+
         {/* Logo Header */}
         <div className="mb-8">
-          <img alt="AlignNova" className="h-12 w-auto object-contain" src={logo}/>
+          <Brand className="h-12 w-auto object-contain" />
         </div>
 
         {/* Central Card */}
-        <div className="bg-white/80 border border-[#F1F5F9] rounded-2xl p-8 w-full shadow-md backdrop-blur-xl">
-          
+        <div className="bg-white/80 border border-outline-variant/50 rounded-2xl p-8 w-full shadow-md backdrop-blur-xl">
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">
               {isReset ? "Reset Your Password" : "Secure Your Account"}
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-[340px] mx-auto">
-              {isReset 
+              {isReset
                 ? "Choose a strong password to secure and access your AlignNova account."
                 : "Welcome to AlignNova. Create a strong password to access your placement dashboard."
               }
@@ -189,7 +174,7 @@ export default function SetPassword() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            
+
             {/* Error Message */}
             {error && (
               <div className="flex items-center gap-2 px-4 py-3 bg-error-container rounded-xl text-on-error-container text-body-md border border-error-container/30">
@@ -229,7 +214,7 @@ export default function SetPassword() {
             <div className="space-y-2">
               <label className="font-label-md text-label-md text-on-surface-variant block" htmlFor="confirm-password">Confirm Password</label>
               <div className={`relative group border rounded-lg bg-surface-container-lowest focus-within:ring-2 transition-all duration-200 ${
-                mismatch 
+                mismatch
                   ? 'border-error focus-within:border-error focus-within:ring-error/10'
                   : confirm && !mismatch
                   ? 'border-secondary focus-within:border-secondary focus-within:ring-secondary/10'
@@ -274,13 +259,13 @@ export default function SetPassword() {
                   { key: 'number', text: 'One number (0-9)', check: rules.number },
                   { key: 'special', text: 'One special character (!@#$..._)', check: rules.special }
                 ].map(({ key, text, check }) => (
-                  <li 
-                    key={key} 
+                  <li
+                    key={key}
                     className={`flex items-center gap-3 font-caption text-caption transition-colors duration-200 ${
                       check ? 'text-secondary font-semibold' : 'text-on-surface-variant'
                     }`}
                   >
-                    <span 
+                    <span
                       className="material-symbols-outlined text-[16px] transition-all"
                       style={{ fontVariationSettings: check ? "'FILL' 1" : "'FILL' 0" }}
                     >
@@ -336,7 +321,7 @@ export default function SetPassword() {
       {/* Decorative Pattern Background */}
       <div className="fixed top-0 right-0 w-64 h-64 opacity-5 pointer-events-none -mr-12 -mt-12">
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,90,-16.3,88.5,-0.9C87.1,14.5,81.6,29,73.8,42.3C66,55.6,56,67.7,43.2,74.9C30.4,82.2,15.2,84.6,0.4,83.9C-14.4,83.2,-28.8,79.5,-42.2,72.6C-55.6,65.7,-68,55.6,-76.4,42.7C-84.8,29.8,-89.2,14.9,-88.9,0.2C-88.6,-14.5,-83.6,-29,-75.2,-41.9C-66.8,-54.8,-55.1,-66.1,-41.5,-73.7C-27.9,-81.3,-14,-85.2,0.3,-85.7C14.6,-86.2,29.1,-83.3,44.7,-76.4Z" fill="#4f46e5" transform="translate(100 100)"></path>
+          <path d="M44.7,-76.4C58.8,-69.2,71.8,-59.1,79.6,-45.8C87.4,-32.5,90,-16.3,88.5,-0.9C87.1,14.5,81.6,29,73.8,42.3C66,55.6,56,67.7,43.2,74.9C30.4,82.2,15.2,84.6,0.4,83.9C-14.4,83.2,-28.8,79.5,-42.2,72.6C-55.6,65.7,-68,55.6,-76.4,42.7C-84.8,29.8,-89.2,14.9,-88.9,0.2C-88.6,-14.5,-83.6,-29,-75.2,-41.9C-66.8,-54.8,-55.1,-66.1,-41.5,-73.7C-27.9,-81.3,-14,-85.2,0.3,-85.7C14.6,-86.2,29.1,-83.3,44.7,-76.4Z" fill="var(--color-primary)" transform="translate(100 100)"></path>
         </svg>
       </div>
 

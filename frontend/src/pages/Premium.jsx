@@ -15,7 +15,7 @@ const PLANS = [
     cta: 'Current Plan',
     active: false,
     recommended: false,
-    color: 'border-slate-200',
+    color: 'border-outline-variant',
   },
   {
     name: 'Alignnova Pro',
@@ -49,7 +49,7 @@ const PLANS = [
     cta: 'Join Elite Cohort',
     active: false,
     recommended: false,
-    color: 'border-slate-200',
+    color: 'border-outline-variant',
   },
 ];
 
@@ -77,7 +77,7 @@ export default function Premium() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [checkoutStep, setCheckoutStep] = useState(null); // null | 'form' | 'processing' | 'success'
   const [expandedFaq, setExpandedFaq] = useState(null);
-  
+
   // Checkout Form State
   const [cardForm, setCardForm] = useState({
     name: '',
@@ -105,7 +105,7 @@ export default function Premium() {
       className="p-p-lg min-h-screen"
       style={{
         background:
-          'radial-gradient(at 0% 0%, rgba(79,70,229,0.06) 0px, transparent 55%), radial-gradient(at 100% 100%, rgba(0,108,73,0.04) 0px, transparent 55%)',
+          'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.06) 0px, transparent 55%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.04) 0px, transparent 55%)',
       }}
     >
       <div className="max-w-[1200px] mx-auto pb-24 space-y-12">
@@ -131,7 +131,7 @@ export default function Premium() {
               className="w-14 h-8 bg-surface-container-high rounded-full p-1 transition-all flex items-center relative border border-outline-variant/30 cursor-pointer"
             >
               <div
-                className={`w-6 h-6 bg-primary rounded-full shadow-md transition-transform duration-300 ${
+                className={`w-6 h-6 bg-primary-container rounded-full shadow-md transition-transform duration-300 ${
                   billingCycle === 'yearly' ? 'translate-x-6' : ''
                 }`}
               />
@@ -158,15 +158,15 @@ export default function Premium() {
                 className={`bg-white border rounded-[2rem] p-8 flex flex-col justify-between hover:shadow-xl hover:scale-[1.01] transition-all duration-300 ${plan.color}`}
               >
                 {plan.recommended && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-caption font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wider">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-container text-on-primary text-caption font-bold px-4 py-1 rounded-full shadow-md uppercase tracking-wider">
                     Recommended Plan
                   </div>
                 )}
-                
+
                 <div>
                   <h3 className="text-headline-md font-bold text-on-surface mb-2">{plan.name}</h3>
                   <p className="text-on-surface-variant text-caption min-h-[40px] mb-6">{plan.desc}</p>
-                  
+
                   {/* Pricing Display */}
                   <div className="flex items-baseline gap-1 mb-8">
                     <span className="text-headline-lg font-black text-on-surface !text-5xl">
@@ -178,7 +178,7 @@ export default function Premium() {
                   </div>
 
                   {/* Feature List */}
-                  <div className="space-y-4 border-t border-slate-100 pt-6">
+                  <div className="space-y-4 border-t border-outline-variant pt-6">
                     <p className="text-[12px] font-bold text-outline uppercase tracking-wider">Features Included:</p>
                     <ul className="space-y-3">
                       {plan.features.map((feat) => (
@@ -210,7 +210,7 @@ export default function Premium() {
                       }}
                       className={`w-full py-4 rounded-2xl font-bold text-label-md text-center hover:scale-[1.01] transition-transform duration-200 shadow-md ${
                         plan.recommended
-                          ? 'bg-primary text-on-primary hover:shadow-lg'
+                          ? 'bg-primary-container text-on-primary hover:shadow-lg'
                           : 'border border-outline-variant text-on-surface hover:bg-surface-container-low'
                       }`}
                     >
@@ -224,7 +224,7 @@ export default function Premium() {
         </div>
 
         {/* Feature Comparison Section */}
-        <section className="bg-white border border-slate-100 rounded-3xl p-p-lg md:p-p-xl shadow-sm space-y-8 mt-10">
+        <section className="bg-white border border-outline-variant rounded-3xl p-p-lg md:p-p-xl shadow-sm space-y-8 mt-10">
           <div className="text-center space-y-2 max-w-md mx-auto">
             <h3 className="text-headline-md font-bold text-on-surface">Compare Access Levels</h3>
             <p className="text-on-surface-variant text-caption">Explore side by side details of what Pro and Elite offer.</p>
@@ -273,7 +273,7 @@ export default function Premium() {
               return (
                 <div
                   key={faq.q}
-                  className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm cursor-pointer hover:border-primary/30 transition-all select-none"
+                  className="bg-white border border-outline-variant rounded-2xl p-6 shadow-sm cursor-pointer hover:border-primary/30 transition-all select-none"
                   onClick={() => setExpandedFaq(isOpen ? null : idx)}
                 >
                   <div className="flex justify-between items-center gap-4">
@@ -297,7 +297,7 @@ export default function Premium() {
       {/* ─── CHECKOUT DIALOG MODAL ─── */}
       {selectedPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white border border-slate-100 rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-fadeIn">
+          <div className="bg-white border border-outline-variant rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-fadeIn">
             {/* Close Button */}
             <button
               onClick={closeCheckout}
@@ -320,7 +320,7 @@ export default function Premium() {
                   </p>
                 </div>
 
-                <div className="space-y-4 border-t border-slate-100 pt-4">
+                <div className="space-y-4 border-t border-outline-variant pt-4">
                   <div>
                     <label className="block text-label-md text-on-surface-variant mb-1">Cardholder Name</label>
                     <input
@@ -382,7 +382,7 @@ export default function Premium() {
                 <div className="flex flex-col gap-3 pt-2">
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-primary text-on-primary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 bg-primary-container text-on-primary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
                   >
                     Pay ${billingCycle === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly} Securely
                   </button>
@@ -401,7 +401,7 @@ export default function Premium() {
             {checkoutStep === 'processing' && (
               <div className="py-12 flex flex-col items-center justify-center space-y-6 text-center animate-fadeIn">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full border-4 border-slate-100 border-t-primary animate-spin" />
+                  <div className="w-16 h-16 rounded-full border-4 border-outline-variant border-t-primary animate-spin" />
                   <span className="material-symbols-outlined text-primary text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                     lock
                   </span>
@@ -429,7 +429,7 @@ export default function Premium() {
                 </div>
                 <button
                   onClick={closeCheckout}
-                  className="w-full py-3.5 bg-secondary text-on-secondary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all"
+                  className="w-full py-3.5 bg-secondary-solid text-on-secondary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all"
                 >
                   Return to Dashboard
                 </button>

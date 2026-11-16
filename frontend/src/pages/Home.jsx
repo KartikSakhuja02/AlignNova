@@ -1,3 +1,4 @@
+import Brand from '../components/Brand';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Home.css';
@@ -23,7 +24,7 @@ export default function Home() {
     <div className="landing">
       <a className="landing-skip" href="#main-content">Skip to content</a>
       <header className="landing-header landing-wrap">
-        <a className="landing-brand" href="/" aria-label="AlignNova home"><span className="landing-monogram" aria-hidden="true">a<span>.</span></span>AlignNova</a>
+        <a className="landing-brand" href="/" aria-label="AlignNova home"><Brand /></a>
         <nav className="landing-nav" aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#for-your-campus">For your campus</a></nav>
         <button className="landing-login" onClick={handleAction}>{isAuthenticated ? 'Your dashboard' : 'Sign in'} <Arrow /></button>
       </header>

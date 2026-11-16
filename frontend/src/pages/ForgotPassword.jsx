@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.png';
+import Brand from '../components/Brand';
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -47,9 +47,9 @@ export default function ForgotPassword() {
       <main className="w-full max-w-md relative z-10">
         {/* Logo Header */}
         <div className="flex flex-col items-center mb-10">
-          <img alt="Alignova Logo" className="h-16 w-16 mb-4 object-contain" src={logo} />
-          <h1 className="font-headline-md text-headline-md text-primary tracking-tight">Alignova</h1>
-          <p className="font-label-md text-label-md text-on-surface-variant/70 uppercase tracking-[0.2em] mt-1">Executive Precision</p>
+          <Brand className="mb-4" />
+
+          <p className="font-label-md text-label-md text-on-surface-variant/70 uppercase tracking-[0.2em] mt-1">Campus placement workspace</p>
         </div>
 
         {/* Forgot Password Card */}
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
                 </div>
 
                 <button
-                  className="w-full bg-primary text-on-primary font-label-md text-label-md py-4 px-6 rounded-md shadow-sm hover:brightness-110 active:scale-[0.98] transition-all duration-200 uppercase tracking-wider font-bold flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-primary-container text-on-primary font-label-md text-label-md py-4 px-6 rounded-md shadow-sm hover:brightness-110 active:scale-[0.98] transition-all duration-200 uppercase tracking-wider font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                   type="submit"
                   disabled={loading}
                 >
@@ -135,7 +135,7 @@ export default function ForgotPassword() {
         {/* System Status/Metadata Footer */}
         <div className="mt-8 text-center">
           <p className="font-caption text-caption text-outline-variant select-none">
-            © 2026 Alignova Executive Precision. Secure Access Protocol Enabled.
+            © 2026 Alignova Campus placement workspace. Secure Access Protocol Enabled.
           </p>
         </div>
       </main>

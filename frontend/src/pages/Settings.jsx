@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export default function Settings() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Notifications');
-  
+
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('alignnova_dark_mode') === 'true');
 
   const toggleDarkMode = () => {
@@ -17,7 +17,7 @@ export default function Settings() {
       document.documentElement.classList.remove('dark');
     }
   };
-  
+
   // Notification Preferences State
   const [preferences, setPreferences] = useState({
     email: true,
@@ -113,7 +113,7 @@ export default function Settings() {
       className="p-p-lg min-h-screen"
       style={{
         background:
-          'radial-gradient(at 0% 0%, rgba(79,70,229,0.03) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(0,108,73,0.03) 0px, transparent 50%)',
+          'radial-gradient(at 0% 0%, rgb(var(--rgb-secondary) / 0.03) 0px, transparent 50%), radial-gradient(at 100% 100%, rgb(var(--rgb-primary) / 0.03) 0px, transparent 50%)',
       }}
     >
       <div className="max-w-[1200px] mx-auto pb-24 space-y-8">
@@ -139,7 +139,7 @@ export default function Settings() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter animate-fadeIn">
             {/* Preferences Column */}
             <div className="lg:col-span-4 space-y-6 animate-slideIn">
-              <div className="bg-white p-p-lg rounded-2xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-p-lg rounded-2xl border border-outline-variant shadow-sm">
                 <h3 className="font-bold text-body-lg text-on-surface mb-2">Notification Preferences</h3>
                 <p className="text-on-surface-variant text-caption mb-6">
                   Configure how you receive updates about placement drives and application status.
@@ -180,7 +180,7 @@ export default function Settings() {
             <div className="lg:col-span-8 animate-slideIn" style={{ animationDelay: '100ms' }}>
               <div
                 onMouseMove={handleMouseMove}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm h-full flex flex-col items-center justify-center min-h-[500px] p-p-xl relative overflow-hidden"
+                className="bg-white rounded-2xl border border-outline-variant shadow-sm h-full flex flex-col items-center justify-center min-h-[500px] p-p-xl relative overflow-hidden"
               >
                 {/* Atmospheric micro-interaction: Subtle drifting particles */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
@@ -188,7 +188,7 @@ export default function Settings() {
                     className="absolute w-24 h-24 rounded-full bg-primary/10 blur-3xl -top-10 -right-10 transition-transform duration-200"
                     style={{ transform: `translate(${glowPos.x}px, ${glowPos.y}px)` }}
                   ></div>
-                  <div className="absolute w-48 h-48 rounded-full bg-secondary/10 blur-3xl -bottom-20 -left-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute w-48 h-48 rounded-full bg-secondary-solid/10 blur-3xl -bottom-20 -left-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
                 </div>
 
                 {/* Empty State Illustration */}
@@ -201,7 +201,7 @@ export default function Settings() {
                       notifications_off
                     </span>
                   </div>
-                  <div className="absolute -top-1 -right-1 bg-white p-1 rounded-full border border-slate-100">
+                  <div className="absolute -top-1 -right-1 bg-white p-1 rounded-full border border-outline-variant">
                     <span className="material-symbols-outlined text-primary text-sm font-bold">do_not_disturb_on</span>
                   </div>
                 </div>
@@ -214,7 +214,7 @@ export default function Settings() {
                 <div className="flex flex-col sm:flex-row gap-4 z-10">
                   <button
                     onClick={() => navigate('/drives')}
-                    className="px-8 py-3 bg-primary text-on-primary font-semibold text-label-md rounded-xl hover:scale-[1.01] transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                    className="px-8 py-3 bg-primary-container text-on-primary font-semibold text-label-md rounded-xl hover:scale-[1.01] transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined text-[18px]">explore</span>
                     Browse Career Drives
@@ -237,7 +237,7 @@ export default function Settings() {
 
                 {/* Status Indicator Badge */}
                 <div className="mt-16 py-2 px-4 bg-primary/5 rounded-full border border-primary/10 flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-primary animate-ping' : 'bg-secondary'}`}></span>
+                  <span className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-primary-container animate-ping' : 'bg-secondary-solid'}`}></span>
                   <span className="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider">
                     {isRefreshing ? 'Checking Gateway' : 'All systems operational'}
                   </span>
@@ -249,7 +249,7 @@ export default function Settings() {
 
         {/* ─── TAB: GENERAL ─── */}
         {activeTab === 'General' && (
-          <div className="max-w-[700px] bg-white p-p-lg border border-slate-100 rounded-2xl shadow-sm animate-fadeIn">
+          <div className="max-w-[700px] bg-white p-p-lg border border-outline-variant rounded-2xl shadow-sm animate-fadeIn">
             <h3 className="font-bold text-body-lg text-on-surface mb-2">General Settings</h3>
             <p className="text-on-surface-variant text-caption mb-6">
               Update configuration preferences for your web client experience.
@@ -299,7 +299,7 @@ export default function Settings() {
               <div className="flex gap-4 pt-2">
                 <button
                   type="submit"
-                  className="px-8 py-3 bg-primary text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
+                  className="px-8 py-3 bg-primary-container text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
                 >
                   Save Preferences
                 </button>
@@ -316,7 +316,7 @@ export default function Settings() {
 
         {/* ─── TAB: SECURITY ─── */}
         {activeTab === 'Security' && (
-          <div className="max-w-[700px] bg-white p-p-lg border border-slate-100 rounded-2xl shadow-sm animate-fadeIn">
+          <div className="max-w-[700px] bg-white p-p-lg border border-outline-variant rounded-2xl shadow-sm animate-fadeIn">
             <h3 className="font-bold text-body-lg text-on-surface mb-2">Change Password</h3>
             <p className="text-on-surface-variant text-caption mb-6">
               Ensure your account is protected by setting a strong credential combination.
@@ -369,7 +369,7 @@ export default function Settings() {
 
               <button
                 type="submit"
-                className="px-8 py-3 bg-primary text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
+                className="px-8 py-3 bg-primary-container text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
               >
                 Update Password
               </button>
@@ -379,7 +379,7 @@ export default function Settings() {
 
         {/* ─── TAB: PRIVACY ─── */}
         {activeTab === 'Privacy' && (
-          <div className="max-w-[700px] bg-white p-p-lg border border-slate-100 rounded-2xl shadow-sm animate-fadeIn">
+          <div className="max-w-[700px] bg-white p-p-lg border border-outline-variant rounded-2xl shadow-sm animate-fadeIn">
             <h3 className="font-bold text-body-lg text-on-surface mb-2">Privacy & Visibility</h3>
             <p className="text-on-surface-variant text-caption mb-6">
               Control how much of your credentials and dashboard data is shared with partner recruiters.
@@ -429,7 +429,7 @@ export default function Settings() {
               <div className="flex gap-4 pt-2">
                 <button
                   type="submit"
-                  className="px-8 py-3 bg-primary text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
+                  className="px-8 py-3 bg-primary-container text-on-primary font-semibold text-label-md rounded-xl hover:shadow-lg transition-all"
                 >
                   Save Privacy Settings
                 </button>

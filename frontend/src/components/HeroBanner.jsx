@@ -43,7 +43,7 @@ export default function HeroBanner() {
       label: 'Applications Submitted',
       value: totalApplied.toString().padStart(2, '0'),
       badge: (
-        <span className="text-xs text-emerald-300 font-bold mb-1 flex items-center gap-1">
+        <span className="text-xs text-success font-bold mb-1 flex items-center gap-1">
           <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>arrow_upward</span>
           Live Sync
         </span>
@@ -66,7 +66,7 @@ export default function HeroBanner() {
       label: 'Offers Received',
       value: offersCount.toString().padStart(2, '0'),
       badge: offersCount > 0 ? (
-        <span className="text-xs text-emerald-300 font-bold mb-1 flex items-center gap-1">
+        <span className="text-xs text-success font-bold mb-1 flex items-center gap-1">
           <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>emoji_events</span>
           Congrats!
         </span>
