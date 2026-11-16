@@ -608,6 +608,18 @@ docker compose up --build -d
 * **Backend API & Web App**: Configured for **Render** via `render.yaml`.
 * **Serverless Email Proxy**: Configured for **Vercel** via `vercel.json` (running `api/send-email.py`).
 
+### Email Design & Admin Previews
+All outgoing emails use `backend/email_templates.py`: student and recruiter invitations, password resets, opportunity alerts (including requirement updates), and delivery tests. They share the site's warm neutral, dark green, and terracotta palette, with inline styles and table layouts for email clients.
+
+The admin email preview dialogs display HTML generated from these same templates. They include editable sample data and a mobile width toggle. After changing a template, regenerate the preview data from the project root:
+
+```bash
+python scratch/generate_email_previews.py
+python -m unittest backend.test_email_templates
+```
+
+These commands use sample data and do not send email. Check real inbox rendering separately before a rollout; email apps can override colors in dark mode.
+
 ---
 
 ## 🎤 Presentation Walkthrough & Demo Cheat-Sheet
