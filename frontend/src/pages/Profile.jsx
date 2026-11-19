@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import DocumentDownload from '../components/DocumentDownload';
 import { useAuth } from '../context/AuthContext';
 import { COURSE_OPTIONS } from '../utils/constants';
 
@@ -479,9 +480,9 @@ function EditProfileForm({ profile, token, onCancel, onSave }) {
                         <td className="text-center py-3 px-2">
                           {sem.marksheet_url ? (
                             <div className="flex items-center justify-center gap-1.5">
-                              <a href={sem.marksheet_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold text-caption truncate max-w-[80px]" title={sem.marksheet_name}>
+                              <DocumentDownload url={sem.marksheet_url} filename={sem.marksheet_name} className="text-primary hover:underline font-semibold text-caption truncate max-w-[80px]" title={sem.marksheet_name}>
                                 View
-                              </a>
+                              </DocumentDownload>
                               <button type="button" onClick={() => removeMarksheet(idx)} className="text-error hover:scale-110 transition-transform">
                                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
                               </button>
@@ -1108,14 +1109,13 @@ export default function Profile() {
                           <td className="py-3 px-2">{sem.live_backlogs || '0'}</td>
                           <td className="py-3 px-2 text-center">
                             {sem.marksheet_url ? (
-                              <a
-                                href={sem.marksheet_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <DocumentDownload
+                                url={sem.marksheet_url}
+                                filename={sem.marksheet_name}
                                 className="inline-flex items-center gap-1 text-primary hover:underline font-bold text-caption"
                               >
                                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>visibility</span> View
-                              </a>
+                              </DocumentDownload>
                             ) : (
                               <span className="text-outline text-caption">Not Uploaded</span>
                             )}
@@ -1252,11 +1252,10 @@ export default function Profile() {
                     📄 {profile.resume_name}
                   </p>
                   <div className="space-y-3">
-                    <button
-                      onClick={() => profile.resume_url && window.open(profile.resume_url, '_blank')}
+                    <DocumentDownload url={profile.resume_url} filename={profile.resume_name}
                       className="w-full bg-white text-primary py-3 rounded-xl text-label-md font-semibold flex items-center justify-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors cursor-pointer">
-                      <span className="material-symbols-outlined">download</span> View / Download PDF
-                    </button>
+                      <span className="material-symbols-outlined">download</span> Download PDF
+                    </DocumentDownload>
                     <button
                       onClick={() => resumeInputRef.current?.click()}
                       disabled={resumeUploading}

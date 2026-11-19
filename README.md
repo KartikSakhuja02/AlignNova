@@ -487,7 +487,7 @@ AlignNova/
 
 ### Prerequisites
 * **Python**: Version `3.10` or higher (`python --version`)
-* **Node.js**: Version `18.0` or higher (`node --version`)
+* **Node.js**: Version `22.12` or higher (`node --version`)
 * **npm**: Version `9.0` or higher (`npm --version`)
 * **Git**: Installed and configured
 
@@ -569,8 +569,8 @@ uvicorn backend.main:app --reload --port 8000
 
 ---
 
-### Step 5: Default Demo Credentials
-Upon startup, the system automatically initializes the database and provisions a default administrator:
+### Step 5: Local Demo Credentials
+In development, startup initializes the database and provisions a local demo administrator:
 
 | Portal | Username / Email | Password | Role |
 | :--- | :--- | :--- | :--- |
@@ -585,17 +585,12 @@ Upon startup, the system automatically initializes the database and provisions a
 ### Production Build & Single-Port Serving
 To run the full stack as a single unified service (FastAPI serving the compiled React bundle):
 ```bash
-# 1. Compile the React production bundle
+# Compile React into frontend_dist, then serve the app from the project root
 cd frontend
+npm ci
 npm run build
 cd ..
-
-# 2. Copy the dist build to the root frontend_dist directory
-# (On Windows PowerShell)
-Copy-Item -Recurse -Force frontend/dist/* frontend_dist/
-
-# 3. Launch with Gunicorn/Uvicorn
-gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:8000
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
 ### Docker Deployment
@@ -607,6 +602,24 @@ docker compose up --build -d
 ### Cloud Deployments
 * **Backend API & Web App**: Configured for **Render** via `render.yaml`.
 * **Serverless Email Proxy**: Configured for **Vercel** via `vercel.json` (running `api/send-email.py`).
+
+#### Render, Neon and Vercel settings
+
+| Setting | What to configure |
+| --- | --- |
+| Render health check | `/healthz`. This checks server responsiveness without querying Neon on every probe. Startup verifies the schema. |
+| `DATABASE_URL` on Render | The Neon PostgreSQL URL, preferably its pooled endpoint, with TLS enabled. Keep it in Render's environment settings. A missing or invalid database URL fails production startup. |
+| `SECRET_KEY` on Render | A random secret of at least 32 characters. Keep the same value across redeploys. |
+| `APP_BASE_URL` on Render | The public HTTPS origin, including a custom domain if used. If omitted, Render's `RENDER_EXTERNAL_URL` is used. |
+| `EMAIL_PROXY_URL` on Render | The Vercel proxy endpoint ending in `/api/send-email`. |
+| `EMAIL_PROXY_SECRET` on both hosts | The same random secret in Render and Vercel. The proxy rejects requests without a matching secret. |
+| `SMTP_USER`, `SMTP_PASS` on Vercel | SMTP credentials. The authenticated mailbox is the sender unless the provider authorizes a `SMTP_FROM_EMAIL` alias. |
+
+The production login rejects the demo admin password. Before updating a service that still uses it, provision a real administrator using the Neon connection and `python -m backend.create_admin admin@example.com`. The command prompts for the password. Production signup is by invitation unless `ALLOW_PUBLIC_SIGNUP=true` is configured.
+
+New resumes and marksheets are stored in Neon with owner-only access. Uploads are limited to 2 MiB per file and 20 MiB per account, so monitor your Neon storage quota. Replacing a resume or saving a profile after removing a marksheet frees that document's storage. Files already lost from Render's filesystem need to be uploaded again.
+
+The service uses a small database connection pool and short process-local caches. Keep one worker on the free tier. Render and Neon can still suspend idle compute. Email work is bounded and runs in the Render process. Queued jobs can be interrupted by a restart or redeploy. Verify real delivery with an admin test email after both hosts are updated.
 
 ### Email Design & Admin Previews
 All outgoing emails use `backend/email_templates.py`: student and recruiter invitations, password resets, opportunity alerts (including requirement updates), and delivery tests. They share the site's warm neutral, dark green, and terracotta palette, with inline styles and table layouts for email clients.

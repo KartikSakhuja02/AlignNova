@@ -1,8 +1,9 @@
 from http.server import BaseHTTPRequestHandler
+import hmac
 import json
+import ssl
 import smtplib
 import time
-import traceback
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
@@ -27,38 +28,26 @@ class handler(BaseHTTPRequestHandler):
         _log("INFO", "=" * 50)
         _log("INFO", "POST request received — starting email send flow")
 
-        # 1. Parse request body
-        try:
-            content_length = int(self.headers.get('Content-Length', 0))
-            _log("DEBUG", f"Content-Length: {content_length}")
-            if content_length == 0:
-                _log("ERROR", "Missing request body (Content-Length=0)")
-                self._send_response(400, {"error": "Missing request body"})
-                return
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
-            _log("DEBUG", f"Parsed JSON body keys: {list(data.keys()) if isinstance(data, dict) else type(data).__name__}")
-            
-            if not isinstance(data, dict):
-                _log("ERROR", f"Request body is not a dict, got: {type(data).__name__}")
-                self._send_response(400, {"error": "Request body must be a JSON object"})
-                return
-        except Exception as e:
-            _log("ERROR", f"Failed to parse JSON body: {type(e).__name__}: {e}")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
-            self._send_response(400, {"error": f"Invalid JSON body: {str(e)}"})
+        proxy_secret = os.getenv("EMAIL_PROXY_SECRET", "").strip()
+        presented_secret = self.headers.get("X-Proxy-Secret", "")
+        if not proxy_secret:
+            self._send_response(503, {"error": "Email proxy not configured"})
+            return
+        if not hmac.compare_digest(presented_secret.encode(), proxy_secret.encode()):
+            self._send_response(401, {"error": "Unauthorized"})
             return
 
-        # 2. Authenticate using shared secret
-        proxy_secret = os.getenv("EMAIL_PROXY_SECRET", "").strip()
-        req_secret = self.headers.get("X-Proxy-Secret", "").strip()
-        _log("DEBUG", f"Proxy secret configured: {bool(proxy_secret)} (length={len(proxy_secret)})")
-        _log("DEBUG", f"Request secret provided: {bool(req_secret)} (length={len(req_secret)})")
-        if proxy_secret and req_secret != proxy_secret:
-            _log("ERROR", "Authentication FAILED — X-Proxy-Secret mismatch")
-            self._send_response(401, {"error": "Unauthorized: Invalid or missing X-Proxy-Secret"})
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < content_length <= 256 * 1024:
+                self._send_response(413, {"error": "Invalid request size"})
+                return
+            data = json.loads(self.rfile.read(content_length))
+            if not isinstance(data, dict) or any(not isinstance(value, str) for value in data.values()):
+                raise ValueError("Expected string fields")
+        except (ValueError, UnicodeError):
+            self._send_response(400, {"error": "Invalid email payload"})
             return
-        _log("INFO", "Authentication passed")
 
         # 3. Read SMTP credentials
         smtp_user = os.getenv("SMTP_USER", "").strip()
@@ -70,8 +59,6 @@ class handler(BaseHTTPRequestHandler):
             smtp_port = 587
 
         _log("INFO", f"SMTP config: host={smtp_host}, port={smtp_port}")
-        _log("DEBUG", f"SMTP_USER set: {bool(smtp_user)} (value={smtp_user[:3]}...{smtp_user[-8:] if len(smtp_user) > 11 else '***'} )" if smtp_user else "SMTP_USER: NOT SET")
-        _log("DEBUG", f"SMTP_PASS set: {bool(smtp_pass)} (length={len(smtp_pass)})")
 
         if not smtp_user or not smtp_pass:
             _log("ERROR", f"SMTP credentials missing! SMTP_USER={'SET' if smtp_user else 'EMPTY'}, SMTP_PASS={'SET' if smtp_pass else 'EMPTY'}")
@@ -83,11 +70,10 @@ class handler(BaseHTTPRequestHandler):
         subject = data.get("subject", "").strip()
         html = data.get("html", "").strip()
         plain = data.get("plain", "").strip()
-        from_email = data.get("from_email", smtp_user).strip()
+        from_email = os.getenv("SMTP_FROM_EMAIL", smtp_user).strip()
         from_name = data.get("from_name", "AlignNova Portal").strip()
 
         _log("INFO", f"Email payload: to={to_email}, from={from_name} <{from_email}>")
-        _log("DEBUG", f"Subject: {subject}")
         _log("DEBUG", f"HTML body length: {len(html)} chars, Plain body length: {len(plain)} chars")
 
         if not to_email or not subject or not (html or plain):
@@ -116,7 +102,10 @@ class handler(BaseHTTPRequestHandler):
             _log("INFO", f"Connecting to SMTP server {smtp_host}:{smtp_port} ...")
             start_time = time.time()
 
-            with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+            tls = ssl.create_default_context()
+            connection = (smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=8, context=tls)
+                          if smtp_port == 465 else smtplib.SMTP(smtp_host, smtp_port, timeout=8))
+            with connection as server:
                 connect_time = time.time() - start_time
                 _log("INFO", f"SMTP connection established ({connect_time:.2f}s)")
 
@@ -124,9 +113,8 @@ class handler(BaseHTTPRequestHandler):
                 server.ehlo()
                 _log("DEBUG", "EHLO done")
 
-                _log("DEBUG", "Starting TLS ...")
-                server.starttls()
-                _log("DEBUG", "TLS established")
+                if smtp_port != 465:
+                    server.starttls(context=tls)
 
                 _log("INFO", f"Logging in as {smtp_user} ...")
                 login_start = time.time()
@@ -146,39 +134,33 @@ class handler(BaseHTTPRequestHandler):
         except smtplib.SMTPAuthenticationError as e:
             _log("ERROR", f"SMTP Authentication FAILED: {e}")
             _log("ERROR", "This usually means: 1) Wrong SMTP_PASS (app password), 2) Gmail requires App Password (not regular password), 3) Less secure apps disabled")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"SMTP auth failure: {type(e).__name__}: {str(e)}"})
 
         except smtplib.SMTPRecipientsRefused as e:
             _log("ERROR", f"Recipient refused: {e}")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"Recipient refused: {type(e).__name__}: {str(e)}"})
 
         except smtplib.SMTPException as e:
             _log("ERROR", f"SMTP error: {type(e).__name__}: {e}")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"SMTP failure: {type(e).__name__}: {str(e)}"})
 
         except ConnectionError as e:
             _log("ERROR", f"Connection error to {smtp_host}:{smtp_port}: {e}")
             _log("ERROR", "This could mean: 1) SMTP host/port wrong, 2) Network/firewall blocking, 3) Vercel blocking outbound SMTP")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"Connection failure: {type(e).__name__}: {str(e)}"})
 
         except TimeoutError as e:
             _log("ERROR", f"Timeout connecting to {smtp_host}:{smtp_port}: {e}")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"SMTP timeout: {type(e).__name__}: {str(e)}"})
 
         except Exception as e:
             _log("ERROR", f"Unexpected error: {type(e).__name__}: {e}")
-            _log("DEBUG", f"Traceback:\n{traceback.format_exc()}")
             self._send_response(500, {"error": f"SMTP failure: {type(e).__name__}: {str(e)}"})
 
     def _send_response(self, status_code: int, body: dict):
         _log("DEBUG", f"Sending HTTP {status_code} response: {json.dumps(body)[:200]}")
         self.send_response(status_code)
         self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Cache-Control', 'no-store')
         self.end_headers()
         self.wfile.write(json.dumps(body).encode('utf-8'))

@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const getAbbr = (company) => {
@@ -54,31 +52,8 @@ const getStatusStyles = (status) => {
   };
 };
 
-export default function ApplicationTracker() {
-  const { token } = useAuth();
+export default function ApplicationTracker({ applications, loading }) {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!token) return;
-    setLoading(true);
-    fetch('/api/applications', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch applications');
-      })
-      .then((data) => {
-        // Slice first 3 applications for the dashboard summary
-        setApplications(data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [token]);
 
   return (
     <section className="bg-surface-container-lowest border border-outline-variant rounded-[2rem] overflow-hidden shadow-sm">

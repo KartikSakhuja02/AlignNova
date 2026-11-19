@@ -35,9 +35,16 @@ def create_reset_password_token(username: str) -> str:
 def decode_token(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
+def decode_access_token(token: str) -> dict:
+    payload = decode_token(token)
+    if payload.get("purpose") or not payload.get("sub") or payload.get("role") not in {"admin", "student", "hr"}:
+        raise JWTError("Invalid access token")
+    return payload
+
+
 def get_current_user_from_token(token: str) -> UserPublic:
     try:
-        payload = decode_token(token)
+        payload = decode_access_token(token)
         username = payload.get("sub")
         if not username:
             raise HTTPException(status_code=401, detail="invalid_token")
@@ -86,7 +93,7 @@ def get_optional_user(request: Request) -> Optional[UserPublic]:
     if not token:
         return None
     try:
-        payload = decode_token(token)
+        payload = decode_access_token(token)
         username = payload.get('sub')
         if not username:
             return None

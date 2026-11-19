@@ -69,15 +69,8 @@ class EmailTemplatesTest(unittest.TestCase):
             self.assertNotIn('script', Links(html).tags)
 
     def test_delivery_uses_shared_templates_without_sending(self):
-        class ImmediateThread:
-            def __init__(self, target, **kwargs):
-                self.target = target
-
-            def start(self):
-                self.target()
-
         with patch.object(email_service, 'EMAIL_PROXY_URL', 'https://proxy.example/api/send-email'), \
-             patch.object(email_service.threading, 'Thread', ImmediateThread), \
+             patch.object(email_service, 'submit_email', side_effect=lambda job: bool(job() or True)), \
              patch.object(email_service, '_send_with_fallback', return_value='mock') as send:
             email_service.send_welcome_email('sample@example.com', 'Alex', 'sample-token', 'https://campus.example')
             email_service.send_reset_password_email('sample@example.com', 'Alex', 'sample-token', 'https://campus.example')

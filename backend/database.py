@@ -1,53 +1,46 @@
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, inspect, text
+from sqlalchemy import Column, DateTime, Index, Integer, LargeBinary, String, create_engine, inspect, text, func
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import load_only
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 load_dotenv()
 
+PRODUCTION = os.getenv("APP_ENV", "").lower() == "production" or os.getenv("RENDER") == "true"
+
+
 def _build_database_engine():
-    # Read from common env vars (DATABASE_URL, POSTGRES_URL, POSTGRESQL_URL)
-    raw = (
-        os.getenv("DATABASE_URL")
-        or os.getenv("POSTGRES_URL")
-        or os.getenv("POSTGRESQL_URL")
-        or ""
-    ).strip()
-
-    # Strip surrounding quotes if pasted with quotes
-    raw = raw.strip("'\"").strip()
-
-    # Strip accidental command prefixes (e.g. 'psql ...')
-    if raw.startswith("psql "):
-        raw = raw[5:].strip().strip("'\"").strip()
-
-    # Check for empty string or unexpanded Railway variable template like ${{Postgres.DATABASE_URL}}
-    if not raw or raw.startswith("${{"):
-        print("[DATABASE] DATABASE_URL is not set or unresolved. Falling back to local SQLite.")
+    raw = next((value for key in ("DATABASE_URL", "POSTGRES_URL", "POSTGRESQL_URL")
+                if (value := os.getenv(key, "").strip())), "")
+    raw = raw.removeprefix("psql ").strip().strip("'\"")
+    if not raw:
+        if PRODUCTION:
+            raise RuntimeError("Production requires a PostgreSQL DATABASE_URL")
         raw = "sqlite:///./alignnova.db"
-    elif raw.startswith("postgres://"):
-        raw = raw.replace("postgres://", "postgresql://", 1)
+    if raw.startswith("postgres://"):
+        raw = "postgresql://" + raw[len("postgres://"):]
+    url = make_url(raw)
+    if url.get_backend_name() == "sqlite" and not PRODUCTION:
+        return create_engine(url, connect_args={"check_same_thread": False}), raw
+    if url.get_backend_name() != "postgresql":
+        raise RuntimeError("DATABASE_URL must point to PostgreSQL")
+    url = url.set(drivername="postgresql+psycopg")
+    if url.host and url.host.endswith(".neon.tech") and "sslmode" not in url.query:
+        url = url.update_query_dict({"sslmode": "require"})
+    options = {"connect_timeout": 8}
+    if url.host and "-pooler." in url.host:
+        options["prepare_threshold"] = None
+    return create_engine(
+        url, connect_args=options, pool_size=3, max_overflow=2,
+        pool_timeout=10, pool_pre_ping=True, pool_use_lifo=True,
+    ), raw
 
-    is_sqlite = raw.startswith("sqlite")
-    connect_args = {"check_same_thread": False} if is_sqlite else {}
-
-    try:
-        eng = create_engine(
-            raw,
-            connect_args=connect_args,
-            echo=False,
-            pool_pre_ping=not is_sqlite
-        )
-        return eng, raw
-    except Exception as exc:
-        print(f"[DATABASE WARNING] Failed to parse DATABASE_URL ({exc}). Falling back to SQLite.")
-        fallback_url = "sqlite:///./alignnova.db"
-        eng = create_engine(fallback_url, connect_args={"check_same_thread": False}, echo=False)
-        return eng, fallback_url
 
 engine, DATABASE_URL = _build_database_engine()
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 Base = declarative_base()
 
@@ -132,6 +125,32 @@ class OpportunityAlertSent(Base):
 
 
 
+class UsedPasswordToken(Base):
+    __tablename__ = "used_password_tokens"
+    digest = Column(String(64), primary_key=True)
+    expires_at = Column(Integer, nullable=False, index=True)
+
+
+class StoredUpload(Base):
+    __tablename__ = "stored_uploads"
+    filename = Column(String, primary_key=True)
+    owner_id = Column(Integer, nullable=False, index=True)
+    media_type = Column(String, nullable=False)
+    content = Column(LargeBinary, nullable=False)
+
+
+# Create indexes for existing deployments as well as fresh databases.
+READ_INDEXES = (
+    Index("ix_users_email", User.email),
+    Index("ix_users_role_created", User.role, User.created_at),
+    Index("ix_applications_user_created", Application.user_id, Application.created_at),
+    Index("ix_applications_drive", Application.drive_id),
+    Index("ix_applications_status_user", Application.status, Application.user_id),
+    Index("ix_drives_created", Drive.created_at),
+    Index("ix_alerts_drive_student", OpportunityAlertSent.drive_id, OpportunityAlertSent.student_id),
+)
+
+
 def init_db() -> None:
     import time
     for attempt in range(5):
@@ -143,11 +162,11 @@ def init_db() -> None:
                 print(f"[DATABASE] Waiting for database (attempt {attempt + 1}/5): {e}")
                 time.sleep(2)
             else:
-                print(f"[DATABASE WARNING] Failed to run create_all after 5 attempts: {e}")
-                break
+                raise RuntimeError("Unable to initialize the database") from e
     try:
         inspector = inspect(engine)
-        if "users" in inspector.get_table_names():
+        tables = inspector.get_table_names()
+        if "users" in tables:
             columns = [col["name"] for col in inspector.get_columns("users")]
             new_cols = {
                 "enrollment_id": "VARCHAR(255) DEFAULT ''",
@@ -176,7 +195,7 @@ def init_db() -> None:
                         conn.commit()
                         print(f"Database migration: Added {col_name} column to users table.")
         
-        if "drives" in inspector.get_table_names():
+        if "drives" in tables:
             columns = [col["name"] for col in inspector.get_columns("drives")]
             new_cols = {
                 "location": "VARCHAR(255) DEFAULT ''",
@@ -204,80 +223,84 @@ def init_db() -> None:
                         conn.execute(text(f"ALTER TABLE drives ADD COLUMN {col_name} {col_type}"))
                         conn.commit()
                         print(f"Database migration: Added {col_name} column to drives table.")
-    except Exception as e:
-        print(f"Database migration warning: {e}")
+        for index in READ_INDEXES:
+            index.create(bind=engine, checkfirst=True)
+    except Exception as exc:
+        raise RuntimeError("Database schema setup failed") from exc
+
+
+def user_dict(user):
+    return {
+        "username": user.username,
+        "hashed_password": user.hashed_password,
+        "role": user.role,
+        "full_name": user.full_name,
+        "email": user.email,
+        "phone": user.phone,
+        "enrollment_id": user.enrollment_id,
+        "course": user.course or "",
+        "location": user.location,
+        "linkedin_url": user.linkedin_url,
+        "website_url": user.website_url,
+        "headline": user.headline,
+        "bio": user.bio,
+        "education": user.education,
+        "experience": user.experience,
+        "profile_image": user.profile_image,
+        "must_change_password": user.must_change_password or "0",
+        "resume_name": user.resume_name or "",
+        "resume_url": user.resume_url or "",
+        "is_eligible": user.is_eligible or 0,
+        "skills": user.skills or "[]",
+        "languages": user.languages or "[]",
+        "projects": user.projects or "[]",
+        "uni_performance": user.uni_performance or "{}",
+        "id": user.id,
+    }
 
 
 def get_user(username: str):
     with SessionLocal() as db:
-        user = db.query(User).filter(User.username == username).first()
-        if not user:
-            return None
-        return {
-            "username": user.username,
-            "hashed_password": user.hashed_password,
-            "role": user.role,
-            "full_name": user.full_name,
-            "email": user.email,
-            "phone": user.phone,
-            "enrollment_id": user.enrollment_id,
-            "course": user.course or "",
-            "location": user.location,
-            "linkedin_url": user.linkedin_url,
-            "website_url": user.website_url,
-            "headline": user.headline,
-            "bio": user.bio,
-            "education": user.education,
-            "experience": user.experience,
-            "profile_image": user.profile_image,
-            "must_change_password": user.must_change_password or "0",
-            "resume_name": user.resume_name or "",
-            "resume_url": user.resume_url or "",
-            "is_eligible": user.is_eligible or 0,
-            "skills": user.skills or "[]",
-            "languages": user.languages or "[]",
-            "projects": user.projects or "[]",
-            "uni_performance": user.uni_performance or "{}",
-            "id": user.id,
-        }
+        user = db.query(User).filter_by(username=username).first()
+        return user_dict(user) if user else None
 
 
 def get_user_by_email(email: str):
     with SessionLocal() as db:
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            return None
-        return {
-            "username": user.username,
-            "hashed_password": user.hashed_password,
-            "role": user.role,
-            "full_name": user.full_name,
-            "email": user.email,
-            "phone": user.phone,
-            "enrollment_id": user.enrollment_id,
-            "course": user.course or "",
-            "location": user.location,
-            "linkedin_url": user.linkedin_url,
-            "website_url": user.website_url,
-            "headline": user.headline,
-            "bio": user.bio,
-            "education": user.education,
-            "experience": user.experience,
-            "profile_image": user.profile_image,
-            "resume_name": user.resume_name or "",
-            "resume_url": user.resume_url or "",
-            "is_eligible": user.is_eligible or 0,
-            "skills": user.skills or "[]",
-            "languages": user.languages or "[]",
-            "projects": user.projects or "[]",
-            "uni_performance": user.uni_performance or "{}",
-            "id": user.id,
-        }
+        user = db.query(User).filter_by(email=email).first()
+        return user_dict(user) if user else None
+
+
+def login_record(identifier):
+    with SessionLocal() as db:
+        return (
+            db.query(User.username, User.hashed_password, User.role)
+            .filter((User.username == identifier) | (User.email == identifier.lower()))
+            .order_by((User.username == identifier).desc(), User.id)
+            .first()
+        )
+
+
+def marksheet_filenames(performance):
+    import json
+
+    try:
+        semesters = json.loads(performance or "{}").get("semesters") or []
+    except (AttributeError, ValueError, TypeError):
+        return set()
+    if not isinstance(semesters, list):
+        return set()
+    prefix = "/api/uploads/"
+    return {
+        url[len(prefix):]
+        for semester in semesters if isinstance(semester, dict)
+        if isinstance(url := semester.get("marksheet_url"), str) and url.startswith(prefix)
+    }
 
 
 def update_profile(username: str, full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, location: str | None = None, linkedin_url: str | None = None, website_url: str | None = None, headline: str | None = None, bio: str | None = None, education: str | None = None, experience: str | None = None, profile_image: str | None = None, resume_name: str | None = None, resume_url: str | None = None, is_eligible: int | None = None, skills: str | None = None, languages: str | None = None, projects: str | None = None, uni_performance: str | None = None):
     with SessionLocal() as db:
-        user = db.query(User).filter(User.username == username).first()
+        user = db.query(User).filter(User.username == username).with_for_update().first()
         if not user:
             return None
         if full_name is not None:
@@ -319,79 +342,96 @@ def update_profile(username: str, full_name: str | None = None, email: str | Non
         if projects is not None:
             user.projects = projects
         if uni_performance is not None:
+            detached = marksheet_filenames(user.uni_performance) - marksheet_filenames(uni_performance)
+            if detached:
+                db.query(StoredUpload).filter(
+                    StoredUpload.owner_id == user.id, StoredUpload.filename.in_(detached),
+                    StoredUpload.filename != (user.resume_url or "").rsplit("/", 1)[-1],
+                ).delete(synchronize_session=False)
             user.uni_performance = uni_performance
         
-        # Automatically compute eligibility based on updated fields
-        has_required_details = bool(user.full_name and user.email and user.resume_name)
-        has_eligible_education = False
-        
-        if has_required_details and user.education:
-            try:
-                import json
-                edu_list = json.loads(user.education)
-                if isinstance(edu_list, list):
-                    has_10 = False
-                    has_12 = False
-                    has_coll = False
-                    for item in edu_list:
-                        inst = (item.get("institution") or "").strip()
-                        deg = (item.get("degree") or "").strip().lower()
-                        dtl = (item.get("detail") or "").strip()
-                        if not inst or not deg or not dtl:
-                            continue
-                        
-                        # Match 10th
-                        if any(x in deg for x in ["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"]):
-                            has_10 = True
-                        # Match 12th
-                        elif any(x in deg for x in ["12", "senior", "hsc", "intermediate", "diploma", "junior college", "class xii", "class 12"]):
-                            has_12 = True
-                        # Match College / University
-                        elif any(x in deg for x in ["b.tech", "btech", "b.e", "be", "b.sc", "bsc", "bca", "mca", "mtech", "m.tech", "bachelor", "master", "graduation", "university", "college", "degree"]):
-                            has_coll = True
-                    has_eligible_education = has_10 and has_12 and has_coll
-            except Exception:
-                pass
-
-        # Check university performance eligibility
-        has_uni_perf = False
-        if user.uni_performance:
-            try:
-                import json
-                perf = json.loads(user.uni_performance)
-                if isinstance(perf, dict):
-                    if str(perf.get("aggregate_cgpa", "")).strip():
-                        has_uni_perf = True
-                    else:
-                        for sem in perf.get("semesters", []):
-                            if any(str(sem.get(k, "")).strip() for k in ["cgpa", "closed_backlogs", "live_backlogs", "marksheet_url"]):
-                                has_uni_perf = True
-                                break
-            except Exception:
-                pass
-
-        if has_required_details and has_eligible_education and has_uni_perf:
-            user.is_eligible = 1
-        else:
-            user.is_eligible = 0
+        refresh_profile_eligibility(user)
 
         db.add(user)
         db.commit()
-        db.refresh(user)
-        return get_user(username)
+        return user_dict(user)
 
 
-def update_password(username: str, new_hashed_password: str) -> bool:
-    """Update a user's password and clear the must_change_password flag."""
-    with SessionLocal() as db:
-        user = db.query(User).filter(User.username == username).first()
-        if not user:
-            return False
-        user.hashed_password = new_hashed_password
-        user.must_change_password = "0"
-        db.add(user)
-        db.commit()
-        return True
+def refresh_profile_eligibility(user):
+    # Automatically compute eligibility based on updated fields
+    has_required_details = bool(user.full_name and user.email and user.resume_name)
+    has_eligible_education = False
+
+    if has_required_details and user.education:
+        try:
+            import json
+            edu_list = json.loads(user.education)
+            if isinstance(edu_list, list):
+                has_10 = False
+                has_12 = False
+                has_coll = False
+                for item in edu_list:
+                    inst = (item.get("institution") or "").strip()
+                    deg = (item.get("degree") or "").strip().lower()
+                    dtl = (item.get("detail") or "").strip()
+                    if not inst or not deg or not dtl:
+                        continue
+
+                    # Match 10th
+                    if any(x in deg for x in ["10", "secondary", "ssc", "matric", "high school", "class x", "class 10"]):
+                        has_10 = True
+                    # Match 12th
+                    elif any(x in deg for x in ["12", "senior", "hsc", "intermediate", "diploma", "junior college", "class xii", "class 12"]):
+                        has_12 = True
+                    # Match College / University
+                    elif any(x in deg for x in ["b.tech", "btech", "b.e", "be", "b.sc", "bsc", "bca", "mca", "mtech", "m.tech", "bachelor", "master", "graduation", "university", "college", "degree"]):
+                        has_coll = True
+                has_eligible_education = has_10 and has_12 and has_coll
+        except Exception:
+            pass
+
+    # Check university performance eligibility
+    has_uni_perf = False
+    if user.uni_performance:
+        try:
+            import json
+            perf = json.loads(user.uni_performance)
+            if isinstance(perf, dict):
+                if str(perf.get("aggregate_cgpa", "")).strip():
+                    has_uni_perf = True
+                else:
+                    for sem in perf.get("semesters", []):
+                        if any(str(sem.get(k, "")).strip() for k in ["cgpa", "closed_backlogs", "live_backlogs", "marksheet_url"]):
+                            has_uni_perf = True
+                            break
+        except Exception:
+            pass
+
+    if has_required_details and has_eligible_education and has_uni_perf:
+        user.is_eligible = 1
+    else:
+        user.is_eligible = 0
+
+
+def update_password(username, new_hashed_password, *, token, expected_hash, expires_at):
+    from hashlib import sha256
+    from time import time
+
+    digest = sha256(token.encode()).hexdigest()
+    try:
+        with SessionLocal.begin() as db:
+            db.add(UsedPasswordToken(digest=digest, expires_at=expires_at))
+            db.flush()  # Unique digest makes token consumption atomic across requests.
+            changed = db.query(User).filter_by(
+                username=username, hashed_password=expected_hash,
+            ).update({"hashed_password": new_hashed_password, "must_change_password": "0"})
+            if not changed:
+                db.rollback()
+                return False
+            db.query(UsedPasswordToken).filter(UsedPasswordToken.expires_at < int(time())).delete()
+    except IntegrityError:
+        return False
+    return True
 
 
 def create_drive(
@@ -418,7 +458,6 @@ def create_drive(
         )
         db.add(drive)
         db.commit()
-        db.refresh(drive)
         return {
             "id": drive.id,
             "company": drive.company,
@@ -450,7 +489,10 @@ def create_drive(
 
 def list_drives():
     with SessionLocal() as db:
-        rows = db.query(Drive).order_by(Drive.created_at.desc()).all()
+        logo_exists = db.query(User.id).filter(
+            User.id == Drive.partner_id, User.role == "hr", User.profile_image != ""
+        ).exists()
+        rows = db.query(Drive, logo_exists.label("has_logo")).order_by(Drive.created_at.desc()).all()
         return [
             {
                 "id": r.id, "company": r.company, "role": r.role, "type": r.type, "eligibility": r.eligibility, "package": r.package, "drive_date": r.drive_date,
@@ -459,9 +501,9 @@ def list_drives():
                 "org_size": r.org_size, "contact_person": r.contact_person, "responsibilities": r.responsibilities, "requirements": r.requirements,
                 "tech_stack": r.tech_stack, "no_active_backlogs": r.no_active_backlogs,
                 "min_10th_percent": r.min_10th_percent, "min_12th_percent": r.min_12th_percent,
-                "partner_id": r.partner_id
+                "partner_id": r.partner_id, "company_logo": f"/api/partners/{r.partner_id}/logo" if has_logo else ""
             }
-            for r in rows
+            for r, has_logo in rows
         ]
 
 
@@ -485,7 +527,11 @@ def list_applications(for_user_id: int | None = None):
 
 def list_users(role_filter: str = "student"):
     with SessionLocal() as db:
-        users = db.query(User).filter(User.role == role_filter).order_by(User.created_at.desc()).all()
+        users = db.query(User).options(load_only(
+            User.id, User.username, User.full_name, User.email, User.phone,
+            User.enrollment_id, User.course, User.role, User.headline, User.profile_image,
+            User.created_at, User.is_eligible, User.must_change_password, User.resume_name, User.uni_performance,
+        )).filter(User.role == role_filter).order_by(User.created_at.desc()).all()
         return [
             {
                 "id": u.id,
@@ -510,18 +556,17 @@ def list_users(role_filter: str = "student"):
 
 def create_user(username: str, hashed_password: str, role: str = "student", full_name: str | None = None, email: str | None = None, phone: str | None = None, enrollment_id: str | None = None, course: str | None = None, must_change_password: str = "0"):
     with SessionLocal() as db:
-        existing = db.query(User).filter(User.username == username).first()
-        if existing:
-            raise ValueError("user_exists")
         user = User(
             username=username, hashed_password=hashed_password, role=role,
             full_name=full_name, email=email, phone=phone,
             enrollment_id=enrollment_id, course=course or "", must_change_password=must_change_password
         )
         db.add(user)
-        db.commit()
-        db.refresh(user)
-        return get_user(username)
+        try:
+            db.commit()
+        except IntegrityError as exc:
+            raise ValueError("user_exists") from exc
+        return user_dict(user)
 
 
 def has_sent_opportunity_alert(drive_id: int, student_id: int) -> bool:

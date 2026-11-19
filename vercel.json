@@ -10,10 +10,6 @@
     {
       "src": "/api/send-email",
       "dest": "api/send-email.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/send-email.py"
     }
   ]
 }

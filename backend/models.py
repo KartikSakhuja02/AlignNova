@@ -25,6 +25,15 @@ class UserPublic(BaseModel):
     course: Optional[str] = ""
     uni_performance: Optional[str] = "{}"
 
+class SignupPayload(BaseModel):
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    enrollment_id: Optional[str] = None
+
+
 class CreateStudentPayload(BaseModel):
     full_name: str
     email: str

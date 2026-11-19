@@ -1,24 +1,26 @@
-from passlib.context import CryptContext
-from dotenv import load_dotenv
-import os
-from database import create_user
+"""Provision an administrator with an interactive password prompt."""
+import argparse
+from getpass import getpass
 
-load_dotenv()
+from backend.database import create_user, init_db
+from backend.main import hash_password
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def create_admin(username: str, password: str, full_name: str = "Admin"):
-    hashed = pwd_context.hash(password)
-    # role 'admin'
-    create_user(username, hashed, role='admin', full_name=full_name, email='', phone='')
-    print(f"Admin user '{username}' created.")
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("email")
+    parser.add_argument("--name", default="Administrator")
+    args = parser.parse_args()
+    email = args.email.strip().lower()
+    if "@" not in email:
+        parser.error("Enter an email address")
+    password = getpass("Administrator password: ")
+    if len(password) < 12 or password != getpass("Repeat password: "):
+        parser.error("Use matching passwords of at least 12 characters")
+    init_db()
+    create_user(email, hash_password(password), role="admin", full_name=args.name, email=email)
+    print(f"Administrator {email} created.")
 
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) < 3:
-        print('Usage: python create_admin.py <username> <password> [full_name]')
-        sys.exit(1)
-    username = sys.argv[1]
-    password = sys.argv[2]
-    full_name = sys.argv[3] if len(sys.argv) > 3 else 'Admin'
-    create_admin(username, password, full_name)
+
+if __name__ == "__main__":
+    main()

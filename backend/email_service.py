@@ -22,12 +22,12 @@ Required env vars:
 import os
 import json
 import logging
-import threading
 import time
 import traceback
 import urllib.request
 import urllib.error
 
+from backend.background import submit_email
 from backend.email_templates import (
     build_welcome_html as _build_welcome_html,
     build_reset_password_html as _build_reset_password_html,
@@ -73,7 +73,6 @@ def _send_via_proxy(to_email: str, subject: str, html: str, plain: str) -> None:
     """Send via Vercel Serverless SMTP Proxy HTTP API. Raises on failure."""
     logger.info("[PROXY] Preparing request to Vercel proxy")
     logger.debug("[PROXY] Proxy URL: %s", EMAIL_PROXY_URL)
-    logger.debug("[PROXY] Proxy secret set: %s (length=%d)", bool(EMAIL_PROXY_SECRET), len(EMAIL_PROXY_SECRET))
     logger.debug("[PROXY] To: %s | Subject: %s | From: %s <%s>", to_email, subject, FROM_NAME, FROM_EMAIL)
     logger.debug("[PROXY] HTML body length: %d chars | Plain body length: %d chars", len(html), len(plain))
 
@@ -332,6 +331,13 @@ def send_test_email_sync(to_email: str) -> dict:
         return {"ok": False, "provider": cfg["provider"], "error": str(e), "config": cfg}
 
 
+def enqueue_email(send):
+    if submit_email(send):
+        return True
+    logger.error("Email queue is full")
+    return False
+
+
 def send_welcome_email(to_email: str, student_name: str, set_password_token: str, base_url: str = None) -> bool:
     """
     Send the welcome / account-activation email.
@@ -357,7 +363,6 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
 
     def _send():
         logger.info("[WELCOME] Background thread started for %s (student: %s)", to_email, student_name)
-        logger.debug("[WELCOME] set_password_url: %s", set_password_url)
         logger.debug("[WELCOME] base_url used: %s", active_base_url)
         send_start = time.time()
         try:
@@ -367,11 +372,7 @@ def send_welcome_email(to_email: str, student_name: str, set_password_token: str
             logger.error("[WELCOME] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[WELCOME] Full traceback:\n%s", traceback.format_exc())
 
-    threading.Thread(target=_send, daemon=True).start()
-    return True
-
-    threading.Thread(target=_send, daemon=True).start()
-    return True
+    return enqueue_email(_send)
 
 
 
@@ -398,7 +399,6 @@ def send_reset_password_email(to_email: str, student_name: str, reset_token: str
 
     def _send():
         logger.info("[RESET] Background thread started for %s (student: %s)", to_email, student_name)
-        logger.debug("[RESET] reset_url: %s", reset_url)
         send_start = time.time()
         try:
             provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=student_name, tag="RESET")
@@ -407,8 +407,7 @@ def send_reset_password_email(to_email: str, student_name: str, reset_token: str
             logger.error("[RESET] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[RESET] Full traceback:\n%s", traceback.format_exc())
 
-    threading.Thread(target=_send, daemon=True).start()
-    return True
+    return enqueue_email(_send)
 
 
 
@@ -425,7 +424,8 @@ def send_opportunity_alert_email(
     fit_explanation: str,
     base_url: str = None,
     updated_requirements_str: str = "",
-    company_logo_url: str = None
+    company_logo_url: str = None,
+    synchronous: bool = False,
 ) -> bool:
     """
     Send the opportunity alert email.
@@ -474,12 +474,14 @@ def send_opportunity_alert_email(
         try:
             provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=student_name, tag="OPPORTUNITY")
             logger.info("[OPPORTUNITY] ✓ Sent opportunity alert to %s via %s (%.2fs)", to_email, provider_used, time.time() - send_start)
+            return True
         except Exception as exc:
             logger.error("[OPPORTUNITY] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[OPPORTUNITY] Full traceback:\n%s", traceback.format_exc())
 
-    threading.Thread(target=_send, daemon=True).start()
-    return True
+            return False
+
+    return _send() if synchronous else enqueue_email(_send)
 
 
 
@@ -507,7 +509,6 @@ def send_partner_welcome_email(to_email: str, partner_name: str, company_name: s
 
     def _send():
         logger.info("[PARTNER] Background thread started for %s (partner: %s, company: %s)", to_email, partner_name, company_name)
-        logger.debug("[PARTNER] set_password_url: %s", set_password_url)
         send_start = time.time()
         try:
             provider_used = _send_with_fallback(to_email, subject, html, plain, recipient_name=partner_name, tag="PARTNER")
@@ -516,7 +517,6 @@ def send_partner_welcome_email(to_email: str, partner_name: str, company_name: s
             logger.error("[PARTNER] ✗ Failed sending to %s: %s", to_email, exc)
             logger.debug("[PARTNER] Full traceback:\n%s", traceback.format_exc())
 
-    threading.Thread(target=_send, daemon=True).start()
-    return True
+    return enqueue_email(_send)
 
 

@@ -1,30 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export default function HeroBanner() {
-  const { user, token } = useAuth();
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+export default function HeroBanner({ applications }) {
+  const { user } = useAuth();
   const firstName = user?.full_name ? user.full_name.trim().split(' ')[0] : (user?.username || 'Student');
-
-  useEffect(() => {
-    if (!token) return;
-    fetch('/api/applications', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to load applications');
-      })
-      .then((data) => {
-        setApplications(data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [token]);
 
   const totalApplied = applications.length;
   const interviewsCount = applications.filter((a) =>
