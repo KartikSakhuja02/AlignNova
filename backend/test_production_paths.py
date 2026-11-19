@@ -9,6 +9,7 @@ from sqlalchemy import create_engine, event
 
 from backend import database, main
 from backend.access_token import create_access_token, create_reset_password_token
+from backend.create_admin import reset_admin_password
 
 
 def bearer(username, role="student"):
@@ -114,3 +115,14 @@ class ProductionPathsTest(TestCase):
             asset = next(assets.glob("*.js"))
             self.assertEqual(self.client.get("/").headers["cache-control"], "no-cache")
             self.assertIn("immutable", self.client.get(f"/assets/{asset.name}").headers["cache-control"])
+
+    def test_recover_existing_production_admin(self):
+        with patch.object(main, "PRODUCTION", True):
+            rejected = self.client.post("/api/login", data={"username": "admin", "password": "adminpass"})
+            self.assertEqual(rejected.status_code, 401)
+            self.assertFalse(reset_admin_password("eligible", "sample-new-password"))
+            self.assertTrue(reset_admin_password("admin", "sample-new-password"))
+            for identifier in ("admin", "admin@demo.local"):
+                response = self.client.post("/api/login", data={"username": identifier, "password": "sample-new-password"})
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertEqual(response.json()["role"], "admin")

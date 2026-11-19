@@ -615,7 +615,7 @@ docker compose up --build -d
 | `EMAIL_PROXY_SECRET` on both hosts | The same random secret in Render and Vercel. The proxy rejects requests without a matching secret. |
 | `SMTP_USER`, `SMTP_PASS` on Vercel | SMTP credentials. The authenticated mailbox is the sender unless the provider authorizes a `SMTP_FROM_EMAIL` alias. |
 
-The production login rejects the demo admin password. Before updating a service that still uses it, provision a real administrator using the Neon connection and `python -m backend.create_admin admin@example.com`. The command prompts for the password. Production signup is by invitation unless `ALLOW_PUBLIC_SIGNUP=true` is configured.
+The production login rejects the demo admin password. To recover the existing `admin` account, run `python -m backend.create_admin --prompt-database-url --reset-password admin`. Paste the Neon `DATABASE_URL` used by Render at the hidden prompt and enter a new password. The command updates the existing account in place. On a new database, provision an administrator with `python -m backend.create_admin --prompt-database-url admin@example.com`. Production signup is by invitation unless `ALLOW_PUBLIC_SIGNUP=true` is configured.
 
 New resumes and marksheets are stored in Neon with owner-only access. Uploads are limited to 2 MiB per file and 20 MiB per account, so monitor your Neon storage quota. Replacing a resume or saving a profile after removing a marksheet frees that document's storage. Files already lost from Render's filesystem need to be uploaded again.
 

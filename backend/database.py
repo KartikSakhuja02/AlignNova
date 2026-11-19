@@ -272,11 +272,12 @@ def get_user_by_email(email: str):
 
 
 def login_record(identifier):
+    identifier = identifier.strip()
     with SessionLocal() as db:
         return (
             db.query(User.username, User.hashed_password, User.role)
-            .filter((User.username == identifier) | (User.email == identifier.lower()))
-            .order_by((User.username == identifier).desc(), User.id)
+            .filter((User.username == identifier) | User.email.in_((identifier, identifier.lower())))
+            .order_by((User.username == identifier).desc(), (User.email == identifier).desc(), User.id)
             .first()
         )
 
