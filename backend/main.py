@@ -560,8 +560,11 @@ def run_broadcast_task(drive, base_url, changes=None):
                 with SessionLocal.begin() as db:
                     db.bulk_insert_mappings(OpportunityAlertSent, sent)
 
-    if not submit_broadcast(broadcast):
-        logger.error("Broadcast backlog is full for drive %s", drive["id"])
+    try:
+        if not submit_broadcast(broadcast):
+            logger.error("Broadcast backlog is full for drive %s", drive["id"])
+    except RuntimeError:
+        logger.exception("Could not start the email worker for drive %s", drive["id"])
 
 
 @app.post('/api/drives')
@@ -581,8 +584,11 @@ def post_drive(request: Request, payload: dict):
         raise HTTPException(status_code=401, detail='invalid_token')
     if role != 'admin':
         raise HTTPException(status_code=403, detail='admin_required')
+    company, job_role = payload.get('company'), payload.get('role')
+    if not isinstance(company, str) or not company.strip() or not isinstance(job_role, str) or not job_role.strip():
+        raise HTTPException(422, detail='Enter a company name and job role.')
     drive = create_drive(
-        payload.get('company', ''), payload.get('role', ''), type=payload.get('type'),
+        company.strip(), job_role.strip(), type=payload.get('type'),
         eligibility=payload.get('eligibility'), package=payload.get('package'), drive_date=payload.get('drive_date'),
         location=payload.get('location'), stipend=payload.get('stipend'), description=payload.get('description'),
         other_benefits=payload.get('other_benefits'), duration=payload.get('duration'),
@@ -1385,12 +1391,11 @@ def request_activation(payload: RequestActivationPayload, request: Request):
     # Retrieve base URL respecting proxy headers if present (e.g. Render/Vercel)
     base_url = email_base_url(request)
 
-    send_welcome_email(
-        to_email=user['email'],
-        student_name=user.get('full_name') or user['username'],
-        set_password_token=sp_token,
-        base_url=base_url
-    )
+    name = user.get('full_name') or user['username']
+    if user['role'] == 'hr':
+        send_partner_welcome_email(user['email'], name, user.get('enrollment_id') or '', sp_token, base_url=base_url)
+    else:
+        send_welcome_email(user['email'], name, sp_token, base_url=base_url)
     return {'ok': True, 'message': 'activation_link_sent'}
 
 

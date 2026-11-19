@@ -64,7 +64,7 @@ const FAQS = [
   },
   {
     q: 'What payment methods do you accept?',
-    a: 'We accept all major credit cards, debit cards, and popular wallets (Stripe, Google Pay, Apple Pay). All payment information is securely processed using bank-grade encryption.',
+    a: 'Premium checkout is not available yet.',
   },
   {
     q: 'Is there a student discount or financial aid available?',
@@ -74,31 +74,7 @@ const FAQS = [
 
 export default function Premium() {
   const [billingCycle, setBillingCycle] = useState('monthly'); // 'monthly' | 'yearly'
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [checkoutStep, setCheckoutStep] = useState(null); // null | 'form' | 'processing' | 'success'
   const [expandedFaq, setExpandedFaq] = useState(null);
-
-  // Checkout Form State
-  const [cardForm, setCardForm] = useState({
-    name: '',
-    number: '',
-    expiry: '',
-    cvc: '',
-  });
-
-  const handleCheckoutSubmit = (e) => {
-    e.preventDefault();
-    setCheckoutStep('processing');
-    setTimeout(() => {
-      setCheckoutStep('success');
-    }, 2000);
-  };
-
-  const closeCheckout = () => {
-    setSelectedPlan(null);
-    setCheckoutStep(null);
-    setCardForm({ name: '', number: '', expiry: '', cvc: '' });
-  };
 
   return (
     <div
@@ -195,28 +171,13 @@ export default function Premium() {
 
                 {/* CTA Action */}
                 <div className="pt-8">
-                  {isFree ? (
-                    <button
-                      disabled
-                      className="w-full py-4 bg-surface-container-low text-on-surface-variant rounded-2xl font-bold text-label-md text-center opacity-80 cursor-not-allowed"
-                    >
-                      {plan.cta}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setSelectedPlan(plan);
-                        setCheckoutStep('form');
-                      }}
-                      className={`w-full py-4 rounded-2xl font-bold text-label-md text-center hover:scale-[1.01] transition-transform duration-200 shadow-md ${
-                        plan.recommended
-                          ? 'bg-primary-container text-on-primary hover:shadow-lg'
-                          : 'border border-outline-variant text-on-surface hover:bg-surface-container-low'
-                      }`}
-                    >
-                      {plan.cta}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full py-4 bg-surface-container-low text-on-surface-variant rounded-2xl font-bold text-label-md text-center opacity-80 cursor-not-allowed"
+                  >
+                    {isFree ? plan.cta : 'Coming soon'}
+                  </button>
                 </div>
               </div>
             );
@@ -294,150 +255,6 @@ export default function Premium() {
         </section>
       </div>
 
-      {/* ─── CHECKOUT DIALOG MODAL ─── */}
-      {selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white border border-outline-variant rounded-3xl shadow-2xl w-full max-w-md p-8 relative animate-fadeIn">
-            {/* Close Button */}
-            <button
-              onClick={closeCheckout}
-              disabled={checkoutStep === 'processing'}
-              className="absolute top-4 right-4 text-on-surface-variant hover:text-error transition-colors cursor-pointer"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-
-            {/* STEP 1: Card checkout form */}
-            {checkoutStep === 'form' && (
-              <form onSubmit={handleCheckoutSubmit} className="space-y-6">
-                <div>
-                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[12px] font-bold">
-                    Checkout Securely
-                  </span>
-                  <h3 className="text-headline-md font-bold text-on-surface mt-3">Upgrade Subscription</h3>
-                  <p className="text-on-surface-variant text-caption mt-1">
-                    You are subscribing to <strong className="text-on-surface">{selectedPlan.name}</strong> ({billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}).
-                  </p>
-                </div>
-
-                <div className="space-y-4 border-t border-outline-variant pt-4">
-                  <div>
-                    <label className="block text-label-md text-on-surface-variant mb-1">Cardholder Name</label>
-                    <input
-                      required
-                      type="text"
-                      value={cardForm.name}
-                      onChange={(e) => setCardForm((prev) => ({ ...prev, name: e.target.value }))}
-                      className="w-full h-12 px-4 border border-outline-variant rounded-xl bg-transparent outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-body-md text-on-surface"
-                      placeholder="Alex Rivera"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-label-md text-on-surface-variant mb-1">Card Number</label>
-                    <div className="relative">
-                      <input
-                        required
-                        type="text"
-                        maxLength="19"
-                        value={cardForm.number}
-                        onChange={(e) => setCardForm((prev) => ({ ...prev, number: e.target.value }))}
-                        className="w-full h-12 pl-12 pr-4 border border-outline-variant rounded-xl bg-transparent outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-body-md text-on-surface"
-                        placeholder="4111 2222 3333 4444"
-                      />
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-                        credit_card
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-label-md text-on-surface-variant mb-1">Expiration</label>
-                      <input
-                        required
-                        type="text"
-                        maxLength="5"
-                        value={cardForm.expiry}
-                        onChange={(e) => setCardForm((prev) => ({ ...prev, expiry: e.target.value }))}
-                        className="w-full h-12 px-4 border border-outline-variant rounded-xl bg-transparent outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-body-md text-on-surface text-center"
-                        placeholder="MM/YY"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-label-md text-on-surface-variant mb-1">CVC</label>
-                      <input
-                        required
-                        type="password"
-                        maxLength="4"
-                        value={cardForm.cvc}
-                        onChange={(e) => setCardForm((prev) => ({ ...prev, cvc: e.target.value }))}
-                        className="w-full h-12 px-4 border border-outline-variant rounded-xl bg-transparent outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-body-md text-on-surface text-center"
-                        placeholder="•••"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 pt-2">
-                  <button
-                    type="submit"
-                    className="w-full py-3.5 bg-primary-container text-on-primary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
-                  >
-                    Pay ${billingCycle === 'monthly' ? selectedPlan.priceMonthly : selectedPlan.priceYearly} Securely
-                  </button>
-                  <button
-                    type="button"
-                    onClick={closeCheckout}
-                    className="w-full py-3.5 border border-outline-variant rounded-xl text-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors"
-                  >
-                    Cancel Transaction
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* STEP 2: Payment processing loading animation */}
-            {checkoutStep === 'processing' && (
-              <div className="py-12 flex flex-col items-center justify-center space-y-6 text-center animate-fadeIn">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full border-4 border-outline-variant border-t-primary animate-spin" />
-                  <span className="material-symbols-outlined text-primary text-2xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    lock
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-body-lg text-on-surface">Securing Payment Gateway...</h4>
-                  <p className="text-on-surface-variant text-caption mt-1">Please do not refresh or close this window.</p>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: Payment success transaction display */}
-            {checkoutStep === 'success' && (
-              <div className="py-8 flex flex-col items-center justify-center space-y-6 text-center animate-fadeIn">
-                <div className="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-secondary text-[36px] font-black animate-bounce">
-                    check_circle
-                  </span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-headline-md text-on-surface">Payment Successful!</h4>
-                  <p className="text-on-surface-variant text-body-md mt-2 px-4">
-                    Congratulations! Your student profile has been upgraded to <strong>{selectedPlan.name}</strong>. Enjoy priority matching benefits.
-                  </p>
-                </div>
-                <button
-                  onClick={closeCheckout}
-                  className="w-full py-3.5 bg-secondary-solid text-on-secondary rounded-xl font-bold text-label-md hover:shadow-lg hover:scale-[1.01] transition-all"
-                >
-                  Return to Dashboard
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

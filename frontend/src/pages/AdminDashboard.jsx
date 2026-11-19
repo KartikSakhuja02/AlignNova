@@ -79,6 +79,8 @@ function StatCard({ icon, iconColor, iconBg, trend, label, value, sub, subColor 
 // ─── Success Modal ────────────────────────────────────────────────────────────
 
 function SuccessModal({ visible, companyName, onClose }) {
+  if (!visible) return null;
+
   return (
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm transition-all duration-300 ${
@@ -103,8 +105,7 @@ function SuccessModal({ visible, companyName, onClose }) {
             Drive Launched Successfully!
           </h3>
           <p className="text-body-md text-on-surface-variant mb-8">
-            The recruitment drive for <strong>{companyName || 'the company'}</strong> has been
-            posted. Eligible students will be notified instantly.
+            The recruitment drive for <strong>{companyName}</strong> is posted. Eligible students can find it in Drives.
           </p>
           <button
             onClick={onClose}
@@ -648,7 +649,7 @@ function RecruitersView({ token, onPreviewPartnerEmail }) {
   );
 }
 
-function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, onManageTimeline, driveSearch, setDriveSearch }) {
+function OpportunitiesView({ drives, loadingDrives, driveLoadError, onRetry, onEditDrive, onDeleteDrive, onManageTimeline, driveSearch, setDriveSearch }) {
   const filteredDrives = drives.filter((d) => {
     const q = driveSearch.toLowerCase();
     if (!q) return true;
@@ -668,6 +669,11 @@ function OpportunitiesView({ drives, loadingDrives, onEditDrive, onDeleteDrive, 
             <p className="text-body-md text-on-surface-variant">
               {loadingDrives ? 'Loading...' : `${filteredDrives.length} of ${drives.length} active placement/internship drives`}
             </p>
+            {driveLoadError && (
+              <p role="alert" className="mt-2 text-caption text-error">
+                {driveLoadError} <button type="button" onClick={onRetry} className="underline">Retry</button>
+              </p>
+            )}
           </div>
         </div>
 
@@ -1524,7 +1530,7 @@ function ConfirmDeleteDriveModal({ drive, onConfirm, onCancel, deleting }) {
           <div className="bg-error-container/20 border border-error/20 rounded-xl px-4 py-3 mb-6">
             <p className="text-caption text-error font-semibold flex items-center gap-1.5">
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>warning</span>
-              This will permanently delete this placement/internship drive and all student applications for it.
+              This removes the drive from Opportunities. Existing application records are kept.
             </p>
           </div>
           <div className="flex gap-3">
@@ -1919,7 +1925,7 @@ export default function AdminDashboard() {
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [launching, setLaunching] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [launchedDrive, setLaunchedDrive] = useState(null);
   const [formError, setFormError] = useState('');
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -1958,19 +1964,25 @@ export default function AdminDashboard() {
 
   const [loadingStats, setLoadingStats] = useState(true);
   const [statsData, setStatsData] = useState([]);
+  const [driveLoadError, setDriveLoadError] = useState('');
+  const driveRequestId = useRef(0);
 
   const fetchDrives = useCallback(async () => {
+    if (!token) return;
+    const requestId = ++driveRequestId.current;
     setLoadingDrives(true);
+    setDriveLoadError('');
     try {
-      const res = await fetch('/api/drives');
-      if (res.ok) {
-        const data = await res.json();
-        setDrives(data);
-      }
-    } catch { /* ignore */ } finally {
-      setLoadingDrives(false);
+      const res = await fetch('/api/drives', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Could not load the drive list.');
+      const data = await res.json();
+      if (requestId === driveRequestId.current) setDrives(data);
+    } catch {
+      if (requestId === driveRequestId.current) setDriveLoadError('Could not load the drive list.');
+    } finally {
+      if (requestId === driveRequestId.current) setLoadingDrives(false);
     }
-  }, []);
+  }, [token]);
 
   const [driveToDelete, setDriveToDelete] = useState(null);
   const [deletingDrive, setDeletingDrive] = useState(false);
@@ -2037,7 +2049,7 @@ export default function AdminDashboard() {
     fetchPartners();
   }, [fetchStudents, fetchDrives, fetchPartners]);
 
-  useEffect(() => {
+  const fetchStats = useCallback(() => {
     if (!token) return;
 
     setLoadingStats(true);
@@ -2047,18 +2059,9 @@ export default function AdminDashboard() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(async (res) => {
-        console.log("Status:", res.status);
-        console.log("URL:", res.url);
-
-        const text = await res.text();
-        console.log("Response Body:", text);
-
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}`);
-        }
-
-        return JSON.parse(text);
+      .then(res => {
+        if (!res.ok) throw new Error('Could not load dashboard statistics.');
+        return res.json();
       })
       .then((data) => {
         setStatsData([
@@ -2104,17 +2107,26 @@ export default function AdminDashboard() {
       .finally(() => setLoadingStats(false));
   }, [token]);
 
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   const handleFormChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleLaunchDrive = async (e) => {
     e.preventDefault();
+    if (launching || !token) return;
+    if (!form.company.trim() || !form.role.trim()) {
+      setFormError('Enter a company name and job role.');
+      return;
+    }
     setLaunching(true);
     setFormError('');
 
     const payload = {
-      company: form.company, role: form.role, type: form.type,
+      company: form.company.trim(), role: form.role.trim(), type: form.type,
       eligibility: form.eligibility && !isNaN(form.eligibility) ? parseFloat(form.eligibility).toFixed(2) : form.eligibility,
       package: form.package, drive_date: form.drive_date,
       location: form.location, stipend: form.stipend, description: form.description,
@@ -2142,9 +2154,16 @@ export default function AdminDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Failed to launch drive');
-      setShowModal(true);
+      if (!res.ok) {
+        const { detail } = await res.json().catch(() => ({}));
+        const message = typeof detail === 'string' && detail.includes(' ') ? detail : null;
+        throw new Error(message ?? `Could not launch the drive (HTTP ${res.status}).`);
+      }
+      const created = await res.json();
+      setLaunchedDrive(created);
+      setDrives(previous => [created, ...previous.filter(drive => drive.id !== created.id)]);
       fetchDrives();
+      fetchStats();
       setForm({
         company: '', role: '', type: 'Placement',
         eligibility: '', package: '', drive_date: '',
@@ -2725,12 +2744,6 @@ export default function AdminDashboard() {
 
                       <div className="pt-2 flex items-center justify-end gap-4">
                         <button
-                          type="button"
-                          className="px-6 py-3 border border-outline-variant text-on-surface-variant text-label-md font-semibold rounded-xl hover:bg-surface-container-low transition-colors"
-                        >
-                          Save as Draft
-                        </button>
-                        <button
                           type="submit"
                           disabled={launching}
                           className="px-8 py-3 bg-primary-container text-on-primary text-label-md font-semibold rounded-xl hover:scale-[1.02] active:scale-95 shadow-md transition-all disabled:opacity-70 flex items-center gap-2"
@@ -2834,6 +2847,8 @@ export default function AdminDashboard() {
             <OpportunitiesView
               drives={drives}
               loadingDrives={loadingDrives}
+            driveLoadError={driveLoadError}
+            onRetry={fetchDrives}
               onEditDrive={(d) => { setDriveToEdit(d); setShowEditDrive(true); }}
               onDeleteDrive={handleDeleteDrive}
               onManageTimeline={(d) => { setDriveForTimeline(d); setShowTimelineModal(true); }}
@@ -3116,9 +3131,9 @@ export default function AdminDashboard() {
 
       {/* Modals */}
       <SuccessModal
-        visible={showModal}
-        companyName={form.company}
-        onClose={() => setShowModal(false)}
+        visible={!!launchedDrive}
+        companyName={launchedDrive?.company}
+        onClose={() => setLaunchedDrive(null)}
       />
 
       <EditDriveModal
