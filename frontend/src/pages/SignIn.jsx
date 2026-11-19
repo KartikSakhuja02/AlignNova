@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Brand from '../components/Brand';
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, role } = useAuth();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState('');
@@ -16,23 +16,16 @@ export default function SignIn() {
   const isExpired = queryParams.get('expired') === 'true';
 
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const dest = role === 'admin' ? '/admin' : (role === 'hr' ? '/partner' : '/dashboard');
-      navigate(dest, { replace: true });
-    }
-  }, [isAuthenticated, role, navigate]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!identifier.trim() || !password) return;
     setStatus('loading');
     setErrorMsg('');
 
     try {
       // OAuth2PasswordRequestForm expects x-www-form-urlencoded
       const body = new URLSearchParams();
-      body.append('username', email); // backend treats email as username
+      body.append('username', identifier.trim());
       body.append('password', password);
 
       const res = await fetch('/api/login', {
@@ -45,7 +38,7 @@ export default function SignIn() {
         const data = await res.json().catch(() => ({}));
         throw new Error(
           data.detail === 'invalid_credentials'
-            ? 'Invalid email or password. Please try again.'
+            ? 'Invalid username, email, or password. Please try again.'
             : 'Login failed. Please try again.'
         );
       }
@@ -54,10 +47,6 @@ export default function SignIn() {
       login(data.access_token, data.role);
       setStatus('success');
 
-      setTimeout(() => {
-        const dest = data.role === 'admin' ? '/admin' : (data.role === 'hr' ? '/partner' : '/dashboard');
-        navigate(dest, { replace: true });
-      }, 900);
     } catch (err) {
       setStatus('error');
       setErrorMsg(err.message);
@@ -92,7 +81,7 @@ export default function SignIn() {
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl p-p-xl shadow-sm">
           <header className="mb-p-lg">
             <h2 className="font-headline-lg text-headline-lg text-on-surface">Sign In</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">Enter your university credentials to continue.</p>
+            <p className="font-body-md text-body-md text-on-surface-variant">Enter your AlignNova account details.</p>
           </header>
 
           {isExpired && (
@@ -106,22 +95,25 @@ export default function SignIn() {
 
           {/* Sign In Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
+            {/* Account identifier */}
             <div className="space-y-2">
-              <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block" htmlFor="email">
-                University Email
+              <label className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider block" htmlFor="username">
+                Username or email
               </label>
               <div className="relative group">
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
-                  mail
+                  person
                 </span>
                 <input
                   required
-                  id="email"
-                  type="email"
+                  id="username"
+                  type="text"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   disabled={isLoading}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   placeholder=""
                   className={`w-full pl-12 pr-4 py-4 border rounded-xl font-body-md text-body-md transition-all duration-200 outline-none
                     ${isLoading
